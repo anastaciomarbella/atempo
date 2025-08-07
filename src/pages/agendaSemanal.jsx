@@ -12,6 +12,9 @@ const AgendaSemanal = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
+  // Base URL desde variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);
     const day = d.getDay();
@@ -37,7 +40,7 @@ const AgendaSemanal = () => {
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/personas');
+        const res = await fetch(`${API_URL}/api/personas`);
         const data = await res.json();
         setPersonas(data);
       } catch (error) {
@@ -45,14 +48,14 @@ const AgendaSemanal = () => {
       }
     };
     fetchPersonas();
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     const fetchCitas = async () => {
       try {
-        let url = 'http://localhost:3001/api/citas';
+        let url = `${API_URL}/api/citas`;
         if (personaSeleccionada !== 'todos') {
-          url = `http://localhost:3001/api/citas/persona/${personaSeleccionada}`;
+          url = `${API_URL}/api/citas/persona/${personaSeleccionada}`;
         }
         const res = await fetch(url);
         const data = await res.json();
@@ -68,7 +71,7 @@ const AgendaSemanal = () => {
       }
     };
     fetchCitas();
-  }, [personaSeleccionada, diasSemana]);
+  }, [personaSeleccionada, diasSemana, API_URL]);
 
   const cambiarFecha = (dias) => {
     const nuevaFecha = new Date(fechaSeleccionada);
@@ -97,7 +100,6 @@ const AgendaSemanal = () => {
           ))}
         </select>
       </div>
-
 
       <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${diasSemana.length}, 1fr)` }}>
         <div className="employee-header weekly-clock-header">

@@ -14,6 +14,9 @@ const RegisterEmployees = () => {
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
 
+    // Define la URL base de la API
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
     const handleChange = (index, campo, valor) => {
         const nuevos = [...empleados];
         nuevos[index][campo] = valor;
@@ -31,10 +34,10 @@ const RegisterEmployees = () => {
 
                 if (!nombre || !email || !telefono) continue;
 
-                const res = await fetch('http://localhost:3001/api/personas', {
+                const res = await fetch(`${API_URL}/api/personas`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, email, telefono })
+                    body: JSON.stringify({ nombre, email, telefono }),
                 });
 
                 const data = await res.json();
@@ -52,7 +55,6 @@ const RegisterEmployees = () => {
             } else {
                 setError('⚠️ Completa al menos un registro');
             }
-
         } catch (err) {
             console.error(err);
             setError(err.message || 'Error inesperado');
@@ -65,7 +67,7 @@ const RegisterEmployees = () => {
                 <div className="employee-header">
                     <img src={logo} alt="Logo Atempo" className="register-logo" />
                     <h1 className="register-title">Atempo</h1>
-                    <h2 className="register-subtitle">Registro de empleadossdsdsd</h2>
+                    <h2 className="register-subtitle">Registro de empleados</h2>
                 </div>
 
                 <div className="register-carousel-wrapper">
@@ -74,7 +76,7 @@ const RegisterEmployees = () => {
                     <div className="register-carousel">
                         {empleados.map((empleado, i) => (
                             <div className="register-card" key={i}>
-                                <h3>Nuevo empleadodsdsdsd</h3>
+                                <h3>Nuevo empleado</h3>
                                 <img src={avatar} alt="Avatar empleado" className="register-avatar" />
                                 <button className="register-upload-button">
                                     <FaUpload className="icono-upload" />
@@ -82,7 +84,7 @@ const RegisterEmployees = () => {
                                 </button>
                                 <input
                                     type="text"
-                                    placeholder="Nombre sdsdsdsd"
+                                    placeholder="Nombre"
                                     className="register-input"
                                     value={empleado.nombre}
                                     onChange={(e) => handleChange(i, 'nombre', e.target.value)}

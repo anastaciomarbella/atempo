@@ -15,9 +15,12 @@ const Empleados = () => {
     const [empleadoEditar, setEmpleadoEditar] = useState(null);
     const [empleadoAEliminar, setEmpleadoAEliminar] = useState(null);
 
+    // Usa la variable de entorno o localhost por defecto
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
     const cargarEmpleados = async () => {
         try {
-            const res = await fetch('http://localhost:3001/api/personas');
+            const res = await fetch(`${API_URL}/api/personas`);
             const data = await res.json();
             setEmpleados(data);
         } catch (error) {
@@ -27,11 +30,11 @@ const Empleados = () => {
 
     useEffect(() => {
         cargarEmpleados();
-    }, []);
+    }, [API_URL]);
 
     const handleEditarClick = async (id) => {
         try {
-            const res = await fetch(`http://localhost:3001/api/personas/${id}`);
+            const res = await fetch(`${API_URL}/api/personas/${id}`);
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.message || 'No se pudo obtener el empleado');
@@ -62,7 +65,7 @@ const Empleados = () => {
         if (!empleadoAEliminar) return;
 
         try {
-            const res = await fetch(`http://localhost:3001/api/personas/${empleadoAEliminar.id}`, {
+            const res = await fetch(`${API_URL}/api/personas/${empleadoAEliminar.id}`, {
                 method: 'DELETE',
             });
             const data = await res.json();
@@ -103,8 +106,16 @@ const Empleados = () => {
                             <td>{emp.email}</td>
                             <td>{emp.telefono}</td>
                             <td>
-                                <FaEdit className="icono-editar" onClick={() => handleEditarClick(emp.id)} style={{ cursor: 'pointer' }} />
-                                <FaTrash className="icono-borrar" onClick={() => handleEliminarClick(emp)} style={{ cursor: 'pointer' }} />
+                                <FaEdit
+                                  className="icono-editar"
+                                  onClick={() => handleEditarClick(emp.id)}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                                <FaTrash
+                                  className="icono-borrar"
+                                  onClick={() => handleEliminarClick(emp)}
+                                  style={{ cursor: 'pointer' }}
+                                />
                             </td>
                         </tr>
                     ))}

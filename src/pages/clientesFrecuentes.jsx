@@ -10,8 +10,11 @@ const ClientesFrecuentes = () => {
   const [mostrarModalCita, setMostrarModalCita] = useState(false);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
+  // Base URL desde variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   const obtenerClientes = () => {
-    fetch('http://localhost:3001/api/frecuentes')
+    fetch(`${API_URL}/api/frecuentes`)
       .then((res) => {
         if (!res.ok) throw new Error('Error al obtener los clientes frecuentes');
         return res.json();
@@ -26,7 +29,7 @@ const ClientesFrecuentes = () => {
 
   useEffect(() => {
     obtenerClientes();
-  }, []);
+  }, [API_URL]);
 
   const handleEditar = (cliente) => {
     setCitaSeleccionada(cliente);
@@ -38,7 +41,7 @@ const ClientesFrecuentes = () => {
     if (!confirmar) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/api/frecuentes/${idCita}`, {
+      const res = await fetch(`${API_URL}/api/frecuentes/${idCita}`, {
         method: 'DELETE',
       });
 

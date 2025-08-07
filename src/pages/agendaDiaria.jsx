@@ -14,11 +14,14 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
+  // URL base desde variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/personas');
+        const res = await fetch(`${API_URL}/api/personas`);
         const data = await res.json();
         setPersonas(data);
       } catch (error) {
@@ -26,12 +29,12 @@ const AgendaDiaria = () => {
       }
     };
     fetchPersonas();
-  }, []);
+  }, [API_URL]);
 
   // Cargar citas filtradas por fecha y persona
   const fetchCitas = async () => {
     try {
-      let url = 'http://localhost:3001/api/citas';
+      let url = `${API_URL}/api/citas`;
       if (personaSeleccionada !== 'todos') {
         url += `?id_persona=${personaSeleccionada}`;
       }
@@ -49,7 +52,7 @@ const AgendaDiaria = () => {
 
   useEffect(() => {
     fetchCitas();
-  }, [personaSeleccionada, fechaSeleccionada]);
+  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
   const cambiarFecha = (delta) => {
     const nuevaFecha = new Date(fechaSeleccionada);
