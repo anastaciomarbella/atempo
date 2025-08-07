@@ -1,0 +1,12 @@
+.top-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.business-name {
+  font-size: 26px;
+  font-weight: 600;
+  color: #000;
+}

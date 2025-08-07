@@ -1,0 +1,235 @@
+.weekly-agenda-main {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  background-color: #fff;
+  overflow-x: auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.agenda-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.nav-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-nav-btn {
+  background: #e5e7eb;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.2s;
+  font-size: 1.2rem;
+}
+
+.date-nav-btn:hover {
+  background: #d1d5db;
+}
+
+.filter-select {
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+  min-width: 180px;
+}
+
+.employee-banner {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  padding-left: 12px;
+}
+
+.employee-banner img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.employee-banner span {
+  font-weight: bold;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.day-agenda {
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 10px;
+  user-select: none;
+}
+
+.agenda-grid {
+  display: grid;
+  position: relative;
+  grid-auto-rows: 62px;
+  width: 100%;
+  border-top: 2px solid #e5e7eb;
+  border-left: 2px solid #e5e7eb;
+  overflow-x: auto;
+}
+
+.employee-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.6rem;
+  border-right: 2px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.employee-header.last {
+  border-right: none;
+}
+
+.hour-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  font-size: 0.9rem;
+  border-right: 2px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.time-cell {
+  position: relative;
+  border-right: 2px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+  background-color: #ffffff;
+  overflow: visible;
+}
+
+.time-cell.last {
+  border-right: none;
+}
+
+/* Botón del reloj */
+.weekly-clock-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.weekly-clock-btn {
+  background: #E8EDFB;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 15px;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  height: 30px;
+  min-width: 42px;
+  user-select: none;
+}
+
+.weekly-clock-btn .dropdown-arrow {
+  font-size: 10px;
+  color: #333;
+  margin-left: 5px;
+  position: relative;
+  top: 1px;
+}
+
+/* Citas */
+.appointment {
+  position: absolute;
+  border-radius: 8px;
+  padding: 6px 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  gap: 2px;
+  z-index: 10;
+  cursor: pointer;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.appointment strong {
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+.appointment small {
+  color: #555;
+}
+
+/* Scroll horizontal para grid */
+.agenda-grid {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #a0aec0 transparent;
+}
+
+.agenda-grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.agenda-grid::-webkit-scrollbar-thumb {
+  background-color: #a0aec0;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .agenda-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .employee-banner span {
+    font-size: 16px;
+  }
+
+  .employee-banner img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .day-agenda {
+    font-size: 12px;
+  }
+
+  .appointment {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+}
