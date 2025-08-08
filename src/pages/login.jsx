@@ -10,9 +10,12 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+    // Detecta la URL base de la API (variable de entorno o URL producción o local)
+    const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+
     const handleLogin = async () => {
         try {
-            const url = `${process.env.REACT}/api/auth/login`;
+            const url = `${API_URL}/api/auth/login`;
             console.log('URL de login:', url);
 
             const response = await fetch(url, {
@@ -71,7 +74,10 @@ const Login = () => {
                 </button>
 
                 <p className="login-footer">
-                    ¿No tienes cuenta? <Link to="/register" className="login-link">Regístrate aquí</Link>
+                    ¿No tienes cuenta?{' '}
+                    <Link to="/register" className="login-link">
+                        Regístrate aquí
+                    </Link>
                 </p>
             </div>
         </div>
