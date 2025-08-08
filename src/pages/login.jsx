@@ -12,33 +12,28 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const url = `${process.env.REACT_APP_API_URL}/api/login`;
+            const url = `${process.env.REACT_APP_API_URL}/api/auth/login`;
             console.log('URL de login:', url);
 
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ correo, password }),
             });
 
-            const text = await response.text(); // Obtener como texto primero
+            const text = await response.text();
             console.log('Respuesta del servidor:', text);
 
             try {
-                const data = JSON.parse(text); // Intentar parsear JSON
+                const data = JSON.parse(text);
 
                 if (response.ok) {
                     console.log('Login exitoso:', data.usuario);
-                    // Puedes guardar datos en localStorage si quieres
-                    // localStorage.setItem('usuario', JSON.stringify(data.usuario));
                     navigate('/agenda-diaria');
                 } else {
                     setError(data.message || 'Error al iniciar sesión');
                 }
-            } catch (jsonError) {
-                console.error('Error parseando JSON:', jsonError);
+            } catch {
                 setError('Respuesta inesperada del servidor');
             }
         } catch (err) {
