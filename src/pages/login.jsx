@@ -12,7 +12,7 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const url = `${process.env.REACT_APP_API_URL}/api/auth/login`;
+            const url = `${process.env.REACT}/api/auth/login`;
             console.log('URL de login:', url);
 
             const response = await fetch(url, {
