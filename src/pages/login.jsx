@@ -12,7 +12,10 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+            const url = `${process.env.REACT_APP_API_URL}/api/login`;
+            console.log('URL de login:', url);
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -20,15 +23,23 @@ const Login = () => {
                 body: JSON.stringify({ correo, password }),
             });
 
-            const data = await response.json();
+            const text = await response.text(); // Obtener como texto primero
+            console.log('Respuesta del servidor:', text);
 
-            if (response.ok) {
-                console.log('Login exitoso:', data.usuario);
-                // Guardar datos del usuario si es necesario
-                // localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                navigate('/agenda-diaria');
-            } else {
-                setError(data.message || 'Error al iniciar sesión');
+            try {
+                const data = JSON.parse(text); // Intentar parsear JSON
+
+                if (response.ok) {
+                    console.log('Login exitoso:', data.usuario);
+                    // Puedes guardar datos en localStorage si quieres
+                    // localStorage.setItem('usuario', JSON.stringify(data.usuario));
+                    navigate('/agenda-diaria');
+                } else {
+                    setError(data.message || 'Error al iniciar sesión');
+                }
+            } catch (jsonError) {
+                console.error('Error parseando JSON:', jsonError);
+                setError('Respuesta inesperada del servidor');
             }
         } catch (err) {
             console.error('Error en login:', err);
@@ -60,7 +71,9 @@ const Login = () => {
 
                 {error && <p className="login-error">{error}</p>}
 
-                <button className="login-button" onClick={handleLogin}>Iniciar sesión</button>
+                <button className="login-button" onClick={handleLogin}>
+                    Iniciar sesión
+                </button>
 
                 <p className="login-footer">
                     ¿No tienes cuenta? <Link to="/register" className="login-link">Regístrate aquí</Link>
