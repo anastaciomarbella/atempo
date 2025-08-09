@@ -6,7 +6,6 @@ import logo from '../assets/LogoAtempoPNG.png';
 const Register = () => {
     const navigate = useNavigate();
 
-    // Estado para los inputs
     const [nombre, setNombre] = useState('');
     const [correo, setCorreo] = useState('');
     const [telefono, setTelefono] = useState('');
@@ -14,16 +13,21 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false); // Para controlar el estado de carga
 
     const handleRegister = async () => {
-        // Validación de contraseñas
+        setError('');
+        setSuccess('');
+
         if (password !== confirmPassword) {
             setError('Las contraseñas no coinciden');
             return;
         }
 
+        setLoading(true);
+
         try {
-            const response = await fetch('https://eoyqlzfxffarmnmuviqr.supabase.co/api/auth/registro', {
+            const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/registro', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -32,7 +36,7 @@ const Register = () => {
                     nombre,
                     correo,
                     telefono,
-                    password
+                    password,
                 }),
             });
 
@@ -41,17 +45,18 @@ const Register = () => {
             if (response.ok) {
                 setSuccess(data.message || 'Registro exitoso');
                 setError('');
-                // Redirige al login después de unos segundos
+                // Redirigir al login después de 1.5 segundos
                 setTimeout(() => navigate('/'), 1500);
             } else {
                 setError(data.message || 'Error al registrar');
                 setSuccess('');
             }
-
         } catch (err) {
             console.error('Error en registro:', err);
             setError('Error de conexión con el servidor');
             setSuccess('');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -101,8 +106,12 @@ const Register = () => {
                 {error && <p className="login-error">{error}</p>}
                 {success && <p className="login-success">{success}</p>}
 
-                <button className="login-button" onClick={handleRegister}>
-                    Registrar cuenta
+                <button
+                    className="login-button"
+                    onClick={handleRegister}
+                    disabled={loading}
+                >
+                    {loading ? 'Registrando...' : 'Registrar cuenta'}
                 </button>
 
                 <p className="login-footer">
