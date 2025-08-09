@@ -6,12 +6,11 @@ import avatar from '../assets/avatar.png';
 
 const RegisterEmployees = () => {
     const [empleados, setEmpleados] = useState([]);
-
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
 
-    // URL base de la API
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+    // URL base de la API en producción
+    const API_URL = 'https://mi-api-atempo.onrender.com';
 
     const handleChange = (index, campo, valor) => {
         const nuevos = [...empleados];
@@ -36,7 +35,12 @@ const RegisterEmployees = () => {
                     body: JSON.stringify({ nombre, email, telefono, foto })
                 });
 
-                const data = await res.json();
+                let data;
+                try {
+                    data = await res.json();
+                } catch {
+                    throw new Error('El servidor devolvió una respuesta no válida');
+                }
 
                 if (!res.ok) {
                     throw new Error(data.error || data.message || 'Error al registrar empleado');
