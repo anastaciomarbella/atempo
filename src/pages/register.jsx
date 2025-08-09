@@ -23,7 +23,7 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/registro', {
+            const response = await fetch('https://eoyqlzfxffarmnmuviqr.supabase.co/api/auth/registro', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
