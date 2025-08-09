@@ -5,16 +5,12 @@ import { FaUpload, FaSave } from 'react-icons/fa';
 import avatar from '../assets/avatar.png';
 
 const RegisterEmployees = () => {
-    const [empleados, setEmpleados] = useState([
-        { nombre: '', email: '', telefono: '' },
-        { nombre: '', email: '', telefono: '' },
-        { nombre: '', email: '', telefono: '' }
-    ]);
+    const [empleados, setEmpleados] = useState([]);
 
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
 
-    // Define la URL base de la API
+    // URL base de la API
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
     const handleChange = (index, campo, valor) => {
@@ -30,20 +26,20 @@ const RegisterEmployees = () => {
 
         try {
             for (const empleado of empleados) {
-                const { nombre, email, telefono } = empleado;
+                const { nombre, email, telefono, foto } = empleado;
 
                 if (!nombre || !email || !telefono) continue;
 
                 const res = await fetch(`${API_URL}/api/personas`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, email, telefono }),
+                    body: JSON.stringify({ nombre, email, telefono, foto })
                 });
 
                 const data = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data.message || 'Error al registrar empleado');
+                    throw new Error(data.error || data.message || 'Error al registrar empleado');
                 }
 
                 enviados.push(data);
@@ -77,7 +73,7 @@ const RegisterEmployees = () => {
                         {empleados.map((empleado, i) => (
                             <div className="register-card" key={i}>
                                 <h3>Nuevo empleado</h3>
-                                <img src={avatar} alt="Avatar empleado" className="register-avatar" />
+                                <img src={empleado.foto || avatar} alt="Avatar empleado" className="register-avatar" />
                                 <button className="register-upload-button">
                                     <FaUpload className="icono-upload" />
                                     Cargar foto
