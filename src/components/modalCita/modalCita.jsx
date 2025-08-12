@@ -37,7 +37,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/personas')
+    fetch('https://mi-api-atempo.onrender.com/api/personas')
       .then(res => res.json())
       .then(data => setPersonas(data))
       .catch(err => console.error('Error cargando personas:', err));
