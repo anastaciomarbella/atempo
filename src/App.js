@@ -8,7 +8,7 @@ import AgendaDiaria from "./pages/agendaDiaria";
 import AgendaSemanal from "./pages/agendaSemanal";
 import Empleados from "./pages/empleados";
 import ClientesFrecuentes from "./pages/clientesFrecuentes";
-
+import AvisoDePrivacidad from "./pages/avisodePrivacidad";
 
 function App() {
   return (
@@ -18,6 +18,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
+        <Route path="/aviso-de-privacidad" element={<AvisoDePrivacidad />} />
 
         {/* Páginas privadas con sidebar */}
         <Route
@@ -55,8 +56,6 @@ function App() {
             </AppLayout>
           }
         />
-
-
       </Routes>
     </Router>
   );
