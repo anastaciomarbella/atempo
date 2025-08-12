@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 import { FaUpload } from 'react-icons/fa';
+import avatar from '../../assets/avatar.png';
 import logo from '../assets/LogoAtempoPNG.png';
 
 const Register = () => {
