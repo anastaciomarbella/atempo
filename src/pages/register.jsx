@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 import { FaUpload } from 'react-icons/fa';
-import avatar from '../../assets/avatar.png';
 import logo from '../assets/LogoAtempoPNG.png';
 
 const Register = () => {
@@ -15,13 +14,18 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [foto, setFoto] = useState(null); // Guardará el archivo
+  const [preview, setPreview] = useState(null); // Vista previa de la imagen
 
-  const validarCorreo = (email) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
+  const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
+  const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
 
-  const validarTelefono = (tel) => {
-    return /^\d{7,15}$/.test(tel); // entre 7 y 15 dígitos
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFoto(file);
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleRegister = () => {
@@ -47,7 +51,7 @@ const Register = () => {
       return;
     }
 
-    // Navegar inmediatamente al login sin esperar la llamada al servidor
+    // Aquí podrías enviar la foto al servidor junto con los datos
     navigate('/');
   };
 
@@ -58,11 +62,28 @@ const Register = () => {
         <h1 className="login-title">Atempo</h1>
         <h2 className="login-subtitle">Registrar cuenta</h2>
 
-        <button className="btn-cargar-foto">
+        {/* Vista previa de la foto si existe */}
+        {preview && (
+          <img
+            src={preview}
+            alt="Vista previa"
+            className="preview-foto"
+            style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px' }}
+          />
+        )}
+
+        {/* Botón para subir foto */}
+        <label className="btn-cargar-foto">
           <FaUpload className="icono-upload" />
           Cargar foto
-        </button>
-        
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFotoChange}
+          />
+        </label>
+
         <input
           type="text"
           placeholder="Nombre del negocio"
