@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
+import { FaUpload } from 'react-icons/fa';
 import logo from '../assets/LogoAtempoPNG.png';
 
 const Register = () => {
   const navigate = useNavigate();
 
+  const [negocio, setNegocio] = useState('');
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -24,7 +26,7 @@ const Register = () => {
   const handleRegister = () => {
     setError('');
 
-    if (!nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
+    if (!negocio.trim() || !nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
       setError('Por favor, completa todos los campos');
       return;
     }
@@ -55,6 +57,18 @@ const Register = () => {
         <h1 className="login-title">Atempo</h1>
         <h2 className="login-subtitle">Registrar cuenta</h2>
 
+        <button className="btn-cargar-foto">
+          <FaUpload className="icono-upload" />
+          Cargar foto
+        </button>
+        
+        <input
+          type="text"
+          placeholder="Nombre del negocio"
+          className="login-input"
+          value={negocio}
+          onChange={(e) => setNegocio(e.target.value)}
+        />
         <input
           type="text"
           placeholder="Nombre completo"
