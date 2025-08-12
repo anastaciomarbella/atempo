@@ -14,6 +14,7 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
+  // URL base desde variable de entorno
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   // Cargar personas
@@ -30,7 +31,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas filtradas por fecha y persona, sin duplicados
+  // Cargar citas filtradas por fecha y persona
   const fetchCitas = async () => {
     try {
       let url = `${API_URL}/api/citas`;
@@ -43,18 +44,7 @@ const AgendaDiaria = () => {
       const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
-      // Eliminar duplicados
-      const citasUnicas = [];
-      const idsVistos = new Set();
-      for (const cita of data) {
-        const idUnico = cita.id || `${cita.id_persona}-${cita.fecha}-${cita.hora_inicio}`;
-        if (!idsVistos.has(idUnico)) {
-          idsVistos.add(idUnico);
-          citasUnicas.push(cita);
-        }
-      }
-
-      setCitas(citasUnicas);
+      setCitas(data);
     } catch (error) {
       console.error('Error al cargar citas:', error);
     }
