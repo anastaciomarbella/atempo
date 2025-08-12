@@ -62,17 +62,16 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     }
   }, [modo, cita, personas]);
 
-const handleChange = (e) => {
-  const { name, value } = e.target;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-  // Si está seleccionando hora, cerramos la lista de encargados si está abierta
-  if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
-    setMostrarListaEncargados(false);
-  }
+    if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
+      setMostrarListaEncargados(false);
+    }
 
-  setFormulario(prev => ({ ...prev, [name]: value }));
-  setMensaje('');
-};
+    setFormulario(prev => ({ ...prev, [name]: value }));
+    setMensaje('');
+  };
 
   const handleColorSelect = (color) => {
     setFormulario(prev => ({ ...prev, color }));
@@ -116,7 +115,7 @@ const handleChange = (e) => {
     };
 
     try {
-      const res = await fetch('http://localhost:3001/api/citas', {
+      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataParaEnviar)
@@ -125,7 +124,6 @@ const handleChange = (e) => {
 
       setMensaje('Tu cita ha sido agendada exitosamente.');
 
-      // Cerrar modal después de 3 segundos
       setTimeout(() => {
         onClose();
       }, 3000);
@@ -150,7 +148,6 @@ const handleChange = (e) => {
         </h2>
 
         <div className="agendar-formulario">
-          {/* Campos */}
           <div className="agendar-fila">
             <div>
               <label>Título *</label>
@@ -274,7 +271,6 @@ const handleChange = (e) => {
             ))}
           </div>
 
-          {/* Mensaje después de colores */}
           {mensaje && (
             <div
               style={{
