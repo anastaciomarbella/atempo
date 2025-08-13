@@ -43,16 +43,10 @@ const AgendaDiaria = () => {
       const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
-      // Eliminar duplicados
-      const citasUnicas = [];
-      const idsVistos = new Set();
-      for (const cita of data) {
-        const idUnico = cita.id || `${cita.id_persona}-${cita.fecha}-${cita.hora_inicio}`;
-        if (!idsVistos.has(idUnico)) {
-          idsVistos.add(idUnico);
-          citasUnicas.push(cita);
-        }
-      }
+      // Eliminar duplicados usando solo el ID
+      const citasUnicas = Array.from(
+        new Map(data.map(cita => [cita.id, cita])).values()
+      );
 
       setCitas(citasUnicas);
     } catch (error) {
@@ -74,11 +68,18 @@ const AgendaDiaria = () => {
 
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
+
     if (nuevaCita) {
-      const nuevaFecha = new Date(nuevaCita.fecha);
-      setFechaSeleccionada(nuevaFecha);
+      // Si hay una cita editada, actualizar directamente en el estado sin duplicar
+      setCitas(prev =>
+        prev.some(c => c.id === nuevaCita.id)
+          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c)
+          : [...prev, nuevaCita]
+      );
+      setFechaSeleccionada(new Date(nuevaCita.fecha));
+    } else {
+      await fetchCitas();
     }
-    await fetchCitas();
   };
 
   return (
@@ -134,8 +135,9 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
-                    return (
+                  {empCitas
+                    .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
+                    .map((cita, index) => (
                       <div
                         className="appointment"
                         key={index}
@@ -156,8 +158,7 @@ const AgendaDiaria = () => {
                         <div>{cita.titulo}</div>
                         <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
                       </div>
-                    );
-                  })}
+                    ))}
                 </div>
               );
             })}
