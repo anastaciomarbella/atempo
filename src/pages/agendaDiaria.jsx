@@ -14,8 +14,8 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
-  // URL base desde variable de entorno
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com/api/personas';
+  // Solo la raíz de la API
+  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
   useEffect(() => {
@@ -38,6 +38,9 @@ const AgendaDiaria = () => {
       if (personaSeleccionada !== 'todos') {
         url += `?id_persona=${personaSeleccionada}`;
       }
+
+      console.log('📡 URL de citas:', url);
+
       const res = await fetch(url);
       let data = await res.json();
 
@@ -62,13 +65,27 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
+  // Evitar duplicados al cerrar modal después de editar
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
+
     if (nuevaCita) {
+      setCitas(prevCitas => {
+        const existe = prevCitas.some(c => c.id === nuevaCita.id);
+        if (existe) {
+          // Actualizar cita existente
+          return prevCitas.map(c => c.id === nuevaCita.id ? nuevaCita : c);
+        } else {
+          // Agregar nueva cita si es realmente nueva
+          return [...prevCitas, nuevaCita];
+        }
+      });
+
       const nuevaFecha = new Date(nuevaCita.fecha);
       setFechaSeleccionada(nuevaFecha);
+    } else {
+      await fetchCitas();
     }
-    await fetchCitas();
   };
 
   return (
@@ -124,30 +141,28 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
-                    return (
-                      <div
-                        className="appointment"
-                        key={index}
-                        style={{
-                          height: '60px',
-                          backgroundColor: cita.color || '#e0e0e0',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente}</strong>
-                        <div>{cita.titulo}</div>
-                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
-                      </div>
-                    );
-                  })}
+                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => (
+                    <div
+                      className="appointment"
+                      key={index}
+                      style={{
+                        height: '60px',
+                        backgroundColor: cita.color || '#e0e0e0',
+                        borderRadius: '6px',
+                        padding: '4px',
+                        marginBottom: '4px',
+                        cursor: 'pointer',
+                        color: '#000',
+                        fontSize: '12px',
+                        overflow: 'hidden'
+                      }}
+                      onClick={() => setCitaSeleccionada(cita)}
+                    >
+                      <strong>{cita.nombre_cliente}</strong>
+                      <div>{cita.titulo}</div>
+                      <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                    </div>
+                  ))}
                 </div>
               );
             })}
