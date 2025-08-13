@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaSave } from 'react-icons/fa';
-import '../styles/modalCita.css';
+import '../modalCita/modalCita.css';
 
 const coloresDisponibles = [
   '#ffe4e6', '#ffedd5', '#fef3c7', '#dcfce7',
