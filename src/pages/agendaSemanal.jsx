@@ -13,7 +13,7 @@ const AgendaSemanal = () => {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
   // Base URL desde variable de entorno
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com/api/personas';
 
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);

@@ -15,7 +15,7 @@ const AgendaDiaria = () => {
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
   // URL base desde variable de entorno
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com/api/personas';
 
   // Cargar personas
   useEffect(() => {
