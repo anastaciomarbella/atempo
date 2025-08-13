@@ -16,6 +16,19 @@ const AgendaDiaria = () => {
 
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
+  // Calcular los 7 días de la semana de la fecha seleccionada
+  const getWeekDays = (date) => {
+    const start = new Date(date);
+    start.setDate(start.getDate() - start.getDay() + 1); // Lunes inicio
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      return d;
+    });
+  };
+
+  const weekDays = getWeekDays(fechaSeleccionada);
+
   // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
@@ -111,8 +124,11 @@ const AgendaDiaria = () => {
 
       <div
         className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
+        style={{
+          gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)`
+        }}
       >
+        {/* Cabecera reloj */}
         <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
@@ -120,13 +136,36 @@ const AgendaDiaria = () => {
           </button>
         </div>
 
+        {/* Encabezado personas + días de semana */}
         {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
           <div className="employee-header" key={emp?.id}>
             <img src={avatar} alt={emp?.nombre} />
             <span>{emp?.nombre}</span>
+            <div style={{ display: 'flex', gap: '4px', fontSize: '12px', marginTop: '4px' }}>
+              {weekDays.map((day, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    backgroundColor:
+                      day.toDateString() === fechaSeleccionada.toDateString()
+                        ? '#d1e7ff'
+                        : 'transparent',
+                    fontWeight:
+                      day.toDateString() === fechaSeleccionada.toDateString()
+                        ? 'bold'
+                        : 'normal'
+                  }}
+                >
+                  {day.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' })}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
 
+        {/* Horas y citas */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
@@ -134,30 +173,28 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
-                    return (
-                      <div
-                        className="appointment"
-                        key={index}
-                        style={{
-                          height: '60px',
-                          backgroundColor: cita.color || '#e0e0e0',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente}</strong>
-                        <div>{cita.titulo}</div>
-                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
-                      </div>
-                    );
-                  })}
+                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => (
+                    <div
+                      className="appointment"
+                      key={index}
+                      style={{
+                        height: '60px',
+                        backgroundColor: cita.color || '#e0e0e0',
+                        borderRadius: '6px',
+                        padding: '4px',
+                        marginBottom: '4px',
+                        cursor: 'pointer',
+                        color: '#000',
+                        fontSize: '12px',
+                        overflow: 'hidden'
+                      }}
+                      onClick={() => setCitaSeleccionada(cita)}
+                    >
+                      <strong>{cita.nombre_cliente}</strong>
+                      <div>{cita.titulo}</div>
+                      <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                    </div>
+                  ))}
                 </div>
               );
             })}
