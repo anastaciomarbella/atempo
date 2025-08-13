@@ -43,7 +43,7 @@ const AgendaDiaria = () => {
       const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
-      // Eliminar duplicados usando solo el ID
+      // Eliminar duplicados por ID
       const citasUnicas = Array.from(
         new Map(data.map(cita => [cita.id, cita])).values()
       );
@@ -66,19 +66,19 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
+  // Evitar duplicados al cerrar modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
 
     if (nuevaCita) {
-      // Si hay una cita editada, actualizar directamente en el estado sin duplicar
       setCitas(prev =>
         prev.some(c => c.id === nuevaCita.id)
-          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c)
-          : [...prev, nuevaCita]
+          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
+          : [...prev, nuevaCita] // Agregar nueva
       );
       setFechaSeleccionada(new Date(nuevaCita.fecha));
     } else {
-      await fetchCitas();
+      await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
     }
   };
 
