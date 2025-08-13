@@ -9,7 +9,8 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  // 🔹 Nueva URL fija
+  const API_BASE_URL = 'https://mi-api-atempo.onrender.com';
 
   const handleActualizar = async () => {
     setMensaje('');
