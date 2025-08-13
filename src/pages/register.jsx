@@ -28,7 +28,7 @@ const Register = () => {
     }
   };
 
-  const handleRegister = async () => {
+  const handleRegister = () => {
     setError('');
 
     if (!negocio.trim() || !nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
@@ -51,32 +51,8 @@ const Register = () => {
       return;
     }
 
-    try {
-      // Crear FormData para enviar foto y datos
-      const formData = new FormData();
-      formData.append('nombre_empresa', negocio);
-      formData.append('nombre', nombre);
-      formData.append('correo', correo);
-      formData.append('telefono', telefono);
-      formData.append('password', password);
-      if (foto) formData.append('foto', foto);
-
-      const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/register', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Error al registrar usuario');
-      }
-
-      alert('Usuario registrado correctamente');
-      navigate('/');
-
-    } catch (err) {
-      setError(err.message);
-    }
+    // Aquí podrías enviar la foto al servidor junto con los datos
+    navigate('/');
   };
 
   return (
@@ -86,6 +62,7 @@ const Register = () => {
         <h1 className="login-title">Atempo</h1>
         <h2 className="login-subtitle">Registrar cuenta</h2>
 
+        {/* Vista previa de la foto si existe */}
         {preview && (
           <img
             src={preview}
@@ -95,6 +72,7 @@ const Register = () => {
           />
         )}
 
+        {/* Botón para subir foto */}
         <label className="btn-cargar-foto">
           <FaUpload className="icono-upload" />
           Cargar foto
@@ -151,7 +129,10 @@ const Register = () => {
 
         {error && <p className="login-error">{error}</p>}
 
-        <button className="login-button" onClick={handleRegister}>
+        <button
+          className="login-button"
+          onClick={handleRegister}
+        >
           Registrar cuenta
         </button>
 
