@@ -113,6 +113,7 @@ const RegisterEmployees = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     overflow: 'hidden',
+                    marginBottom: '10px',
                   }}
                 >
                   {empleado.foto ? (
@@ -128,8 +129,19 @@ const RegisterEmployees = () => {
                   )}
                 </div>
 
-                <label className="register-upload-label" htmlFor={`foto-${i}`}>
-                  <FaUpload className="icono-upload" /> Cargar foto
+                <label
+                  className="register-upload-label"
+                  htmlFor={`foto-${i}`}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    marginBottom: '15px',
+                    color: '#007bff',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  <FaUpload className="icono-upload" style={{ marginRight: '5px' }} /> Cargar foto
                 </label>
                 <input
                   id={`foto-${i}`}
