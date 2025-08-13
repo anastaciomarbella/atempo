@@ -13,7 +13,9 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+
+  // URL base desde variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   // Cargar personas
   useEffect(() => {
@@ -36,21 +38,11 @@ const AgendaDiaria = () => {
       if (personaSeleccionada !== 'todos') {
         url += `?id_persona=${personaSeleccionada}`;
       }
-
-      console.log('📡 URL de citas:', url);
-
       const res = await fetch(url);
       let data = await res.json();
 
-      // Filtrar por fecha seleccionada
       const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
-
-      // Eliminar duplicados por ID
-      data = data.filter(
-        (cita, index, self) =>
-          index === self.findIndex(c => c.id === cita.id)
-      );
 
       setCitas(data);
     } catch (error) {
@@ -72,22 +64,11 @@ const AgendaDiaria = () => {
 
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-
     if (nuevaCita) {
-      setCitas(prevCitas => {
-        const existe = prevCitas.some(c => c.id === nuevaCita.id);
-        if (existe) {
-          return prevCitas.map(c => c.id === nuevaCita.id ? nuevaCita : c);
-        } else {
-          return [...prevCitas, nuevaCita];
-        }
-      });
-
       const nuevaFecha = new Date(nuevaCita.fecha);
       setFechaSeleccionada(nuevaFecha);
-    } else {
-      await fetchCitas();
     }
+    await fetchCitas();
   };
 
   return (
@@ -140,15 +121,14 @@ const AgendaDiaria = () => {
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
             {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
-              const empCitas = citas.filter(c => Number(c.id_persona) === Number(emp?.id));
+              const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas
-                    .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
-                    .map((cita) => (
+                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
+                    return (
                       <div
                         className="appointment"
-                        key={cita.id}
+                        key={index}
                         style={{
                           height: '60px',
                           backgroundColor: cita.color || '#e0e0e0',
@@ -166,7 +146,8 @@ const AgendaDiaria = () => {
                         <div>{cita.titulo}</div>
                         <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
                       </div>
-                    ))}
+                    );
+                  })}
                 </div>
               );
             })}
