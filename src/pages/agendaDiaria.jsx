@@ -14,8 +14,8 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
-  // URL base fija
-  const API_URL = 'https://mi-api-atempo.onrender.com';
+  // URL base desde variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   // Cargar personas
   useEffect(() => {
@@ -29,7 +29,7 @@ const AgendaDiaria = () => {
       }
     };
     fetchPersonas();
-  }, []);
+  }, [API_URL]);
 
   // Cargar citas filtradas por fecha y persona
   const fetchCitas = async () => {
@@ -52,7 +52,7 @@ const AgendaDiaria = () => {
 
   useEffect(() => {
     fetchCitas();
-  }, [personaSeleccionada, fechaSeleccionada]);
+  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
   const cambiarFecha = (delta) => {
     const nuevaFecha = new Date(fechaSeleccionada);
@@ -62,30 +62,12 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
-  const handleCloseModal = async (resultado) => {
+  const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-
-    // Si se eliminó
-    if (resultado?.eliminada) {
-      setCitas(prev => prev.filter(c => c.id !== resultado.id));
-      return;
-    }
-
-    // Si se agregó o editó
-    if (resultado) {
-      setCitas(prevCitas => {
-        const existe = prevCitas.some(c => c.id === resultado.id);
-        return existe
-          ? prevCitas.map(c => c.id === resultado.id ? resultado : c)
-          : [...prevCitas, resultado];
-      });
-
-      const nuevaFecha = new Date(resultado.fecha);
+    if (nuevaCita) {
+      const nuevaFecha = new Date(nuevaCita.fecha);
       setFechaSeleccionada(nuevaFecha);
-      return; // evitamos fetchCitas para no duplicar
     }
-
-    // Si solo cerraron modal sin cambios
     await fetchCitas();
   };
 
@@ -142,11 +124,11 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita) => {
+                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
                     return (
                       <div
                         className="appointment"
-                        key={cita.id}
+                        key={index}
                         style={{
                           height: '60px',
                           backgroundColor: cita.color || '#e0e0e0',

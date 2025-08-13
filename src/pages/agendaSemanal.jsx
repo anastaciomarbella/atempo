@@ -12,8 +12,8 @@ const AgendaSemanal = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
-  // Solo la raíz de la API, sin rutas extra
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+  // Base URL desde variable de entorno
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);
@@ -57,9 +57,6 @@ const AgendaSemanal = () => {
         if (personaSeleccionada !== 'todos') {
           url = `${API_URL}/api/citas/persona/${personaSeleccionada}`;
         }
-
-        console.log('📡 URL de citas:', url);
-
         const res = await fetch(url);
         const data = await res.json();
 
@@ -132,28 +129,39 @@ const AgendaSemanal = () => {
 
               return (
                 <div className={`time-cell ${index === diasSemana.length - 1 ? 'last' : ''}`} key={`${day.id}-${hour}`}>
-                  {citasDiaHora.map((cita, i) => (
-                    <div
-                      className="appointment"
-                      key={i}
-                      style={{
-                        height: '60px',
-                        backgroundColor: cita.color || '#e0e0e0',
-                        borderRadius: '6px',
-                        padding: '4px',
-                        marginBottom: '4px',
-                        cursor: 'pointer',
-                        color: '#000',
-                        fontSize: '12px',
-                        overflow: 'hidden'
-                      }}
-                      onClick={() => setCitaSeleccionada(cita)}
-                    >
-                      <strong>{cita.nombre_cliente || cita.client}</strong>
-                      <div>{cita.titulo || cita.service}</div>
-                      <small>{cita.hora_inicio} - {cita.hora_final}</small>
-                    </div>
-                  ))}
+                  {citasDiaHora.map((cita, i) => {
+                    const [startH, startM] = cita.hora_inicio.split(':').map(Number);
+                    const [endH, endM] = cita.hora_final.split(':').map(Number);
+                    const startTotal = startH * 60 + startM;
+                    const endTotal = endH * 60 + endM;
+                    const cellStart = parseInt(hour.split(':')[0], 10) * 60;
+                    const offset = startTotal - cellStart;
+                    const height = ((endTotal - startTotal) / 60) * 62;
+                    const top = (offset / 60) * 62;
+
+                    return (
+                      <div
+                        className="appointment"
+                        key={index}
+                        style={{
+                          height: '60px',
+                          backgroundColor: cita.color || '#e0e0e0',
+                          borderRadius: '6px',
+                          padding: '4px',
+                          marginBottom: '4px',
+                          cursor: 'pointer',
+                          color: '#000',
+                          fontSize: '12px',
+                          overflow: 'hidden'
+                        }}
+                        onClick={() => setCitaSeleccionada(cita)}
+                      >
+                        <strong>{cita.nombre_cliente || cita.client}</strong>
+                        <div>{cita.titulo || cita.service}</div>
+                        <small>{cita.hora_inicio} - {cita.hora_final}</small>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
