@@ -28,7 +28,7 @@ const Register = () => {
     }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     setError('');
 
     if (!negocio.trim() || !nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
@@ -51,8 +51,32 @@ const Register = () => {
       return;
     }
 
-    // Aquí podrías enviar la foto al servidor junto con los datos
-    navigate('/');
+    try {
+      // Petición POST enviando JSON
+      const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_empresa: negocio,
+          nombre,
+          correo,
+          telefono,
+          password
+          // La foto no se envía en JSON, si la quieres mandar tendrás que codificarla a Base64
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al registrar');
+      }
+
+      alert('Registro exitoso');
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
