@@ -61,7 +61,7 @@ const Register = () => {
       formData.append('password', password);
       if (foto) formData.append('foto', foto);
 
-      const response = await fetch('https://mi-api-atempo.onrender.com/api/auth', {
+      const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/register', {
         method: 'POST',
         body: formData,
       });
