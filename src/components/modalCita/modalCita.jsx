@@ -34,7 +34,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         const res = await fetch(`${API_BASE}/api/personas`);
         if (!res.ok) throw new Error('Error al cargar personas');
         const data = await res.json();
-        setPersonas(data);
+        setPersonas(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
         setMensaje('Error al cargar encargados');
@@ -52,8 +52,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         titulo: cita.titulo || '',
         encargado: encargadoEncontrado ? encargadoEncontrado.nombre : '',
         fecha: cita.fecha ? cita.fecha.slice(0, 10) : '',
-        start: cita.hora_inicio ? cita.hora_inicio.slice(0,5) : '',
-        end: cita.hora_final ? cita.hora_final.slice(0,5) : '',
+        start: cita.hora_inicio ? cita.hora_inicio.slice(0, 5) : '',
+        end: cita.hora_final ? cita.hora_final.slice(0, 5) : '',
         client: cita.nombre_cliente || '',
         clientPhone: cita.numero_cliente || '',
         comentario: cita.motivo || '',
@@ -80,19 +80,24 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     setMensaje('');
   };
 
-  // Guardar o editar cita
-  const handleGuardar = async () => {
-    // Validación de campos obligatorios
+  // Validar campos antes de enviar
+  const validarFormulario = () => {
     if (!formulario.id_persona || !formulario.titulo || !formulario.fecha || !formulario.start || !formulario.end) {
       setMensaje('Completa todos los campos obligatorios');
-      return;
+      return false;
     }
+    return true;
+  };
+
+  // Guardar o editar cita
+  const handleGuardar = async () => {
+    if (!validarFormulario()) return;
 
     setGuardando(true);
     setMensaje('');
 
     const dataParaEnviar = {
-      id_persona: formulario.id_persona,
+      id_persona: Number(formulario.id_persona),
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio: formulario.start + ':00',
@@ -103,31 +108,20 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       color: formulario.color,
     };
 
-    console.log('Datos que se enviarán al backend:', dataParaEnviar);
-
     try {
-      let res;
-      if (modo === 'editar') {
-        res = await fetch(`${API_BASE}/api/citas/${cita.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataParaEnviar),
-        });
-      } else {
-        res = await fetch(`${API_BASE}/api/citas`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dataParaEnviar),
-        });
-      }
+      const res = await fetch(`${API_BASE}/api/citas${modo === 'editar' ? `/${cita.id}` : ''}`, {
+        method: modo === 'editar' ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataParaEnviar),
+      });
+
+      const resultado = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const errorData = await res.json();
-        console.error('Error backend:', errorData);
-        throw new Error(errorData.detalle || 'Error al guardar la cita');
+        console.error('Error backend:', resultado);
+        throw new Error(resultado.mensaje || 'Error al guardar la cita');
       }
 
-      const resultado = await res.json();
       setMensaje('Cita guardada exitosamente');
       setTimeout(() => onClose(resultado), 1200);
 
@@ -147,12 +141,16 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     try {
       setGuardando(true);
       const res = await fetch(`${API_BASE}/api/citas/${cita.id}`, { method: 'DELETE' });
+      const resultado = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detalle || 'Error al eliminar la cita');
+        console.error('Error backend al eliminar:', resultado);
+        throw new Error(resultado.mensaje || 'Error al eliminar la cita');
       }
+
       setMensaje('Cita eliminada');
       setTimeout(() => onClose({ eliminada: true, id: cita.id }), 1200);
+
     } catch (error) {
       console.error(error);
       setMensaje('Error: ' + error.message);
@@ -166,7 +164,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       <div className="agendar-overlay visible"></div>
       <div className="agendar-modal">
         <button className="agendar-cerrar-modal" onClick={() => onClose()} disabled={guardando}><FaTimes /></button>
-        <h2 className="agendar-titulo-modal">{modo==='editar' ? 'Editar cita' : 'Agendar cita'}</h2>
+        <h2 className="agendar-titulo-modal">{modo === 'editar' ? 'Editar cita' : 'Agendar cita'}</h2>
 
         <div className="agendar-formulario">
           <div className="agendar-fila">
@@ -182,7 +180,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                 </button>
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{maxHeight:150, overflowY:'auto'}}>
-                    {personas.map(p => <li key={p.id} onClick={()=>handleEncargadoSelect(p)}>{p.nombre}</li>)}
+                    {personas.map(p => <li key={p.id} onClick={() => handleEncargadoSelect(p)}>{p.nombre}</li>)}
                   </ul>
                 )}
               </div>
@@ -224,21 +222,21 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
           <label>Color *</label>
           <div className="agendar-colores">
-            {coloresDisponibles.map((color,i)=>
-              <span key={i} className={`agendar-color ${formulario.color===color?'seleccionado':''}`} style={{backgroundColor:color}} onClick={()=>handleColorSelect(color)}/>
+            {coloresDisponibles.map((color, i) =>
+              <span key={i} className={`agendar-color ${formulario.color === color ? 'seleccionado' : ''}`} style={{backgroundColor: color}} onClick={() => handleColorSelect(color)}/>
             )}
           </div>
 
-          {mensaje && <div style={{marginTop:'10px', color:mensaje.startsWith('Error')?'red':'green', fontWeight:'bold', textAlign:'center'}}>{mensaje}</div>}
+          {mensaje && <div style={{marginTop:'10px', color:mensaje.startsWith('Error') ? 'red' : 'green', fontWeight:'bold', textAlign:'center'}}>{mensaje}</div>}
 
           <p className="agendar-obligatorio">* Campos obligatorios</p>
 
           <button className="agendar-btn-guardar" onClick={handleGuardar} disabled={guardando}>
             <FaSave className="icono-guardar"/>
-            {guardando ? 'Guardando...' : modo==='editar' ? 'Guardar cambios' : 'Guardar cita'}
+            {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
           </button>
 
-          {modo==='editar' && 
+          {modo === 'editar' && 
             <button className="agendar-btn-eliminar" onClick={handleEliminar} disabled={guardando} style={{backgroundColor:'red', color:'white', marginTop:'10px'}}>
               Eliminar cita
             </button>
