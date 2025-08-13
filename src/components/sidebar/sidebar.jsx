@@ -38,10 +38,10 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
           <FaUsers className="icon" />
           Empleados
         </NavLink>
-        <NavLink to="/clientes-frecuentes" className={({ isActive }) => (isActive && modalActivo !== 'cita' ? 'active' : '')}>
+        {/* <NavLink to="/clientes-frecuentes" className={({ isActive }) => (isActive && modalActivo !== 'cita' ? 'active' : '')}>
           <FaStar className="icon" />
           Clientes frecuentes
-        </NavLink>
+        </NavLink> */}
       </nav>
 
       <button className="logout-btn" onClick={handleLogout}>
