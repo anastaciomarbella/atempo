@@ -14,7 +14,6 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
-  // URL base desde variable de entorno
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
@@ -51,7 +50,9 @@ const AgendaDiaria = () => {
   };
 
   useEffect(() => {
-    fetchCitas();
+    if (!isNaN(fechaSeleccionada.getTime())) {
+      fetchCitas();
+    }
   }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
   const cambiarFecha = (delta) => {
@@ -64,10 +65,16 @@ const AgendaDiaria = () => {
 
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-    if (nuevaCita) {
+
+    // Si hay nueva cita con fecha válida, actualiza la fecha seleccionada
+    if (nuevaCita && nuevaCita.fecha) {
       const nuevaFecha = new Date(nuevaCita.fecha);
-      setFechaSeleccionada(nuevaFecha);
+      if (!isNaN(nuevaFecha.getTime())) {
+        setFechaSeleccionada(nuevaFecha);
+      }
     }
+
+    // Recargar citas con la fecha actual
     await fetchCitas();
   };
 
@@ -78,12 +85,14 @@ const AgendaDiaria = () => {
           <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
           <button className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
           <span>
-            {fechaSeleccionada.toLocaleDateString('es-MX', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            })}
+            {!isNaN(fechaSeleccionada?.getTime())
+              ? fechaSeleccionada.toLocaleDateString('es-MX', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })
+              : 'Sin fecha'}
           </span>
         </div>
 
