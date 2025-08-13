@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './modalUpdateEmpleado.css';
+import '../../components/modalNuevoEmpleado/modalNuevoEmpleado.css';
 import { FaTimes, FaSave } from 'react-icons/fa';
 
 const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
