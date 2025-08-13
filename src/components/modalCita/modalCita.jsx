@@ -107,6 +107,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       motivo: formulario.comentario?.trim() || null,
       color: formulario.color || coloresDisponibles[0],
     };
+    console.log('Datos a enviar:', dataParaEnviar);
 
     try {
       const res = await fetch(`${API_BASE}/api/citas${modo === 'editar' ? `/${cita.id}` : ''}`, {
