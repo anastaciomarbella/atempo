@@ -97,15 +97,15 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     setMensaje('');
 
     const dataParaEnviar = {
-      id_persona: Number(formulario.id_persona),
-      titulo: formulario.titulo,
-      fecha: formulario.fecha,
-      hora_inicio: formulario.start + ':00',
-      hora_final: formulario.end + ':00',
-      nombre_cliente: formulario.client || null,
-      numero_cliente: formulario.clientPhone || null,
-      motivo: formulario.comentario || null,
-      color: formulario.color,
+      id_persona: formulario.id_persona ? Number(formulario.id_persona) : null,
+      titulo: formulario.titulo || '',
+      fecha: formulario.fecha || null,
+      hora_inicio: formulario.start ? `${formulario.start}:00` : null,
+      hora_final: formulario.end ? `${formulario.end}:00` : null,
+      nombre_cliente: formulario.client?.trim() || null,
+      numero_cliente: formulario.clientPhone?.trim() || null,
+      motivo: formulario.comentario?.trim() || null,
+      color: formulario.color || coloresDisponibles[0],
     };
 
     try {
