@@ -11,9 +11,10 @@ const AgendaDiaria = () => {
   const [citas, setCitas] = useState([]);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
@@ -21,38 +22,44 @@ const AgendaDiaria = () => {
     const fetchPersonas = async () => {
       try {
         const res = await fetch(`${API_URL}/api/personas`);
+        if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
         setPersonas(data);
-      } catch (error) {
-        console.error('Error al cargar personas:', error);
+      } catch (err) {
+        console.error('Error al cargar personas:', err);
+        setError('No se pudieron cargar las personas.');
       }
     };
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas filtradas por fecha y persona
+  // Cargar citas
   const fetchCitas = async () => {
     try {
+      setCargando(true);
       let url = `${API_URL}/api/citas`;
-      if (personaSeleccionada !== 'todos') {
-        url += `?id_persona=${personaSeleccionada}`;
-      }
+      if (personaSeleccionada !== 'todos') url += `?id_persona=${personaSeleccionada}`;
+
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
       let data = await res.json();
 
-      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+      // Filtrar por fecha
+      const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       setCitas(data);
-    } catch (error) {
-      console.error('Error al cargar citas:', error);
+      setCargando(false);
+    } catch (err) {
+      console.error('Error al cargar citas:', err);
+      setCitas([]);
+      setError('No se pudieron cargar las citas.');
+      setCargando(false);
     }
   };
 
   useEffect(() => {
-    if (!isNaN(fechaSeleccionada.getTime())) {
-      fetchCitas();
-    }
+    if (!isNaN(fechaSeleccionada.getTime())) fetchCitas();
   }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
   const cambiarFecha = (delta) => {
@@ -65,16 +72,10 @@ const AgendaDiaria = () => {
 
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-
-    // Si hay nueva cita con fecha válida, actualiza la fecha seleccionada
-    if (nuevaCita && nuevaCita.fecha) {
+    if (nuevaCita?.fecha) {
       const nuevaFecha = new Date(nuevaCita.fecha);
-      if (!isNaN(nuevaFecha.getTime())) {
-        setFechaSeleccionada(nuevaFecha);
-      }
+      if (!isNaN(nuevaFecha.getTime())) setFechaSeleccionada(nuevaFecha);
     }
-
-    // Recargar citas con la fecha actual
     await fetchCitas();
   };
 
@@ -108,33 +109,36 @@ const AgendaDiaria = () => {
         </select>
       </div>
 
-      <div
-        className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
-      >
-        <div className="employee-header clock-header">
-          <button className="clock-btn">
-            <FaClock />
-            <FaChevronDown className="dropdown-arrow" />
-          </button>
-        </div>
-
-        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
-          <div className="employee-header" key={emp?.id}>
-            <img src={avatar} alt={emp?.nombre} />
-            <span>{emp?.nombre}</span>
+      {error && <div className="error-message">{error}</div>}
+      {cargando ? (
+        <div className="loading">Cargando citas...</div>
+      ) : (
+        <div
+          className="agenda-grid"
+          style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
+        >
+          <div className="employee-header clock-header">
+            <button className="clock-btn">
+              <FaClock />
+              <FaChevronDown className="dropdown-arrow" />
+            </button>
           </div>
-        ))}
 
-        {hours.map(hour => (
-          <React.Fragment key={hour}>
-            <div className="hour-cell">{hour}</div>
-            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
-              const empCitas = citas.filter(c => c.id_persona === emp?.id);
-              return (
-                <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
-                    return (
+          {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
+            <div className="employee-header" key={emp?.id}>
+              <img src={avatar} alt={emp?.nombre} />
+              <span>{emp?.nombre}</span>
+            </div>
+          ))}
+
+          {hours.map(hour => (
+            <React.Fragment key={hour}>
+              <div className="hour-cell">{hour}</div>
+              {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
+                const empCitas = citas.filter(c => c.id_persona === emp?.id);
+                return (
+                  <div className="time-cell" key={`${emp?.id}-${hour}`}>
+                    {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => (
                       <div
                         className="appointment"
                         key={index}
@@ -155,14 +159,14 @@ const AgendaDiaria = () => {
                         <div>{cita.titulo}</div>
                         <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
                       </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
-      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
 
       {citaSeleccionada && (
         <ModalCita
