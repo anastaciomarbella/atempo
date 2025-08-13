@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import '../styles/registerEmployees.css';
 import logo from '../assets/LogoAtempoPNG.png';
 import { FaUpload, FaSave, FaPlus } from 'react-icons/fa';
-import avatar from '../assets/avatar.png';
 
 const RegisterEmployees = () => {
   const [empleados, setEmpleados] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  // URL base de la API en producción
   const API_URL = 'https://mi-api-atempo.onrender.com';
 
   const handleChange = (index, campo, valor) => {
@@ -18,7 +16,6 @@ const RegisterEmployees = () => {
     setEmpleados(nuevos);
   };
 
-  // Maneja carga de foto y convierte a base64 para preview y envío
   const handleFotoChange = (index, e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -68,7 +65,7 @@ const RegisterEmployees = () => {
       if (enviados.length > 0) {
         setMensaje(`✅ Se registraron ${enviados.length} empleado(s)`);
         setError('');
-        setEmpleados([]); // Limpia el formulario si quieres
+        setEmpleados([]);
       } else {
         setError('⚠️ Completa al menos un registro');
       }
@@ -103,11 +100,33 @@ const RegisterEmployees = () => {
               <div className="register-card" key={i}>
                 <h3>Nuevo empleado</h3>
 
-                <img
-                  src={empleado.foto || avatar}
-                  alt="Avatar empleado"
-                  className="register-avatar"
-                />
+                {/* Vista previa de la foto o espacio vacío */}
+                <div
+                  className="register-avatar-placeholder"
+                  style={{
+                    width: '120px',
+                    height: '120px',
+                    background: empleado.foto ? 'transparent' : '#f0f0f0',
+                    border: '2px dashed #ccc',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {empleado.foto ? (
+                    <img
+                      src={empleado.foto}
+                      alt="Foto empleado"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '12px', color: '#888', textAlign: 'center' }}>
+                      Sin foto
+                    </span>
+                  )}
+                </div>
 
                 <label className="register-upload-label" htmlFor={`foto-${i}`}>
                   <FaUpload className="icono-upload" /> Cargar foto

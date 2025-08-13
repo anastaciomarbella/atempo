@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import './modalNuevoEmpleado.css';
-import { FaTimes, FaUpload, FaSave } from 'react-icons/fa';
-import avatar from '../../assets/avatar.png';
+import './modalUpdateEmpleado.css';
+import { FaTimes, FaSave } from 'react-icons/fa';
 
-const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [telefono, setTelefono] = useState('');
+const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
+  const [nombre, setNombre] = useState(empleado?.nombre || '');
+  const [email, setEmail] = useState(empleado?.email || '');
+  const [telefono, setTelefono] = useState(empleado?.telefono || '');
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  const handleGuardar = async () => {
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
+  const handleActualizar = async () => {
     setMensaje('');
     setError('');
 
@@ -20,8 +21,8 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
     }
 
     try {
-      const res = await fetch('http://localhost:3001/api/personas', {
-        method: 'POST',
+      const res = await fetch(`${API_BASE_URL}/api/personas/${empleado.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, telefono }),
       });
@@ -29,14 +30,13 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Error al registrar empleado');
+        throw new Error(data.message || 'Error al actualizar empleado');
       }
 
-      setMensaje('✅ Empleado registrado correctamente');
+      setMensaje('✅ Empleado actualizado correctamente');
 
-      // Notifica al componente padre que se creó un nuevo empleado
       setTimeout(() => {
-        onEmpleadoCreado(); // 🔁 Actualiza la lista y cierra el modal
+        onEmpleadoActualizado();
       }, 1000);
 
     } catch (err) {
@@ -52,12 +52,7 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
         <button className="cerrar-modal" onClick={onClose}>
           <FaTimes />
         </button>
-        <h2 className="titulo-modal">Nuevo empleado</h2>
-        <img src={avatar} alt="Avatar empleado" className="avatar-modal" />
-        <button className="btn-cargar-foto">
-          <FaUpload className="icono-upload" />
-          Cargar foto
-        </button>
+        <h2 className="titulo-modal">Editar empleado</h2>
 
         <div className="formulario-modal">
           <label>Nombre *</label>
@@ -87,7 +82,7 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
           {mensaje && <p className="mensaje-exito">{mensaje}</p>}
           {error && <p className="mensaje-error">{error}</p>}
 
-          <button className="btn-guardar" onClick={handleGuardar}>
+          <button className="btn-guardar" onClick={handleActualizar}>
             <FaSave className="icono-guardar" />
             Guardar
           </button>
@@ -97,4 +92,4 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
   );
 };
 
-export default ModalNuevoEmpleado;
+export default ModalUpdateEmpleado;

@@ -10,6 +10,9 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
+  // Usa la URL desde .env o localhost como respaldo
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   useEffect(() => {
     if (empleado) {
       setNombre(empleado.nombre || '');
@@ -28,7 +31,7 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:3001/api/personas/${empleado.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/personas/${empleado.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, telefono }),
@@ -40,7 +43,6 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
         throw new Error(data.message || 'Error al actualizar empleado');
       }
 
-      // Mostrar el mensaje que devuelve el backend
       setMensaje(data.message || 'Empleado actualizado correctamente');
 
       setTimeout(() => {
