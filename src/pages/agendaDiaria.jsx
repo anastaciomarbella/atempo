@@ -13,7 +13,6 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
@@ -21,10 +20,15 @@ const AgendaDiaria = () => {
     const fetchPersonas = async () => {
       try {
         const res = await fetch(`${API_URL}/api/personas`);
-        const data = await res.json();
+        let data = await res.json();
+        if (!Array.isArray(data)) {
+          console.warn("La respuesta de personas no es un array:", data);
+          data = [];
+        }
         setPersonas(data);
       } catch (error) {
         console.error('Error al cargar personas:', error);
+        setPersonas([]);
       }
     };
     fetchPersonas();
@@ -40,12 +44,18 @@ const AgendaDiaria = () => {
       const res = await fetch(url);
       let data = await res.json();
 
+      if (!Array.isArray(data)) {
+        console.warn("La respuesta de citas no es un array:", data);
+        data = [];
+      }
+
       const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
-      data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+      data = data.filter(cita => cita.fecha?.slice(0, 10) === fechaStr);
 
       setCitas(data);
     } catch (error) {
       console.error('Error al cargar citas:', error);
+      setCitas([]);
     }
   };
 
@@ -67,7 +77,7 @@ const AgendaDiaria = () => {
     setCitaSeleccionada(null);
 
     // Si hay nueva cita con fecha válida, actualiza la fecha seleccionada
-    if (nuevaCita && nuevaCita.fecha) {
+    if (nuevaCita?.fecha) {
       const nuevaFecha = new Date(nuevaCita.fecha);
       if (!isNaN(nuevaFecha.getTime())) {
         setFechaSeleccionada(nuevaFecha);
@@ -133,30 +143,28 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
-                    return (
-                      <div
-                        className="appointment"
-                        key={index}
-                        style={{
-                          height: '60px',
-                          backgroundColor: cita.color || '#e0e0e0',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente}</strong>
-                        <div>{cita.titulo}</div>
-                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
-                      </div>
-                    );
-                  })}
+                  {empCitas.filter(c => c.hora_inicio?.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => (
+                    <div
+                      className="appointment"
+                      key={index}
+                      style={{
+                        height: '60px',
+                        backgroundColor: cita.color || '#e0e0e0',
+                        borderRadius: '6px',
+                        padding: '4px',
+                        marginBottom: '4px',
+                        cursor: 'pointer',
+                        color: '#000',
+                        fontSize: '12px',
+                        overflow: 'hidden'
+                      }}
+                      onClick={() => setCitaSeleccionada(cita)}
+                    >
+                      <strong>{cita.nombre_cliente}</strong>
+                      <div>{cita.titulo}</div>
+                      <small>{cita.hora_inicio?.slice(0, 5)} - {cita.hora_final?.slice(0, 5)}</small>
+                    </div>
+                  ))}
                 </div>
               );
             })}

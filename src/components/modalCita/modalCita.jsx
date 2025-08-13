@@ -82,6 +82,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   // Guardar o editar cita
   const handleGuardar = async () => {
+    // Validación de campos obligatorios
     if (!formulario.id_persona || !formulario.titulo || !formulario.fecha || !formulario.start || !formulario.end) {
       setMensaje('Completa todos los campos obligatorios');
       return;
@@ -94,13 +95,15 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       id_persona: formulario.id_persona,
       titulo: formulario.titulo,
       fecha: formulario.fecha,
-      hora_inicio: formulario.start + ':00', // Agrega segundos
+      hora_inicio: formulario.start + ':00',
       hora_final: formulario.end + ':00',
-      nombre_cliente: formulario.client,
-      numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario,
+      nombre_cliente: formulario.client || null,
+      numero_cliente: formulario.clientPhone || null,
+      motivo: formulario.comentario || null,
       color: formulario.color,
     };
+
+    console.log('Datos que se enviarán al backend:', dataParaEnviar);
 
     try {
       let res;
@@ -120,7 +123,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Error al guardar la cita');
+        console.error('Error backend:', errorData);
+        throw new Error(errorData.detalle || 'Error al guardar la cita');
       }
 
       const resultado = await res.json();
@@ -128,7 +132,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       setTimeout(() => onClose(resultado), 1200);
 
     } catch (error) {
-      console.error(error);
+      console.error('Error al guardar la cita:', error);
       setMensaje('Error: ' + error.message);
     } finally {
       setGuardando(false);
@@ -145,7 +149,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       const res = await fetch(`${API_BASE}/api/citas/${cita.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Error al eliminar la cita');
+        throw new Error(errorData.detalle || 'Error al eliminar la cita');
       }
       setMensaje('Cita eliminada');
       setTimeout(() => onClose({ eliminada: true, id: cita.id }), 1200);
