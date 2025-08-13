@@ -14,8 +14,8 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [foto, setFoto] = useState(null); // Guardará el archivo
-  const [preview, setPreview] = useState(null); // Vista previa de la imagen
+  const [foto, setFoto] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
   const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
@@ -52,8 +52,7 @@ const Register = () => {
     }
 
     try {
-      // Petición POST enviando JSON
-      const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/register', {
+      const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -62,7 +61,6 @@ const Register = () => {
           correo,
           telefono,
           password
-          // La foto no se envía en JSON, si la quieres mandar tendrás que codificarla a Base64
         })
       });
 
@@ -86,7 +84,6 @@ const Register = () => {
         <h1 className="login-title">Atempo</h1>
         <h2 className="login-subtitle">Registrar cuenta</h2>
 
-        {/* Vista previa de la foto si existe */}
         {preview && (
           <img
             src={preview}
@@ -96,7 +93,6 @@ const Register = () => {
           />
         )}
 
-        {/* Botón para subir foto */}
         <label className="btn-cargar-foto">
           <FaUpload className="icono-upload" />
           Cargar foto
