@@ -13,28 +13,24 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
         const res = await fetch(`${API_URL}/api/personas`);
-        let data = await res.json();
-        if (!Array.isArray(data)) {
-          console.warn("La respuesta de personas no es un array:", data);
-          data = [];
-        }
+        const data = await res.json();
         setPersonas(data);
       } catch (error) {
         console.error('Error al cargar personas:', error);
-        setPersonas([]);
       }
     };
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas filtradas por fecha y persona
+  // Cargar citas filtradas por fecha y persona, sin duplicados
   const fetchCitas = async () => {
     try {
       let url = `${API_URL}/api/citas`;
@@ -44,25 +40,28 @@ const AgendaDiaria = () => {
       const res = await fetch(url);
       let data = await res.json();
 
-      if (!Array.isArray(data)) {
-        console.warn("La respuesta de citas no es un array:", data);
-        data = [];
+      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+      data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+
+      // Eliminar duplicados
+      const citasUnicas = [];
+      const idsVistos = new Set();
+      for (const cita of data) {
+        const idUnico = cita.id || `${cita.id_persona}-${cita.fecha}-${cita.hora_inicio}`;
+        if (!idsVistos.has(idUnico)) {
+          idsVistos.add(idUnico);
+          citasUnicas.push(cita);
+        }
       }
 
-      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
-      data = data.filter(cita => cita.fecha?.slice(0, 10) === fechaStr);
-
-      setCitas(data);
+      setCitas(citasUnicas);
     } catch (error) {
       console.error('Error al cargar citas:', error);
-      setCitas([]);
     }
   };
 
   useEffect(() => {
-    if (!isNaN(fechaSeleccionada.getTime())) {
-      fetchCitas();
-    }
+    fetchCitas();
   }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
   const cambiarFecha = (delta) => {
@@ -75,16 +74,10 @@ const AgendaDiaria = () => {
 
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-
-    // Si hay nueva cita con fecha válida, actualiza la fecha seleccionada
-    if (nuevaCita?.fecha) {
+    if (nuevaCita) {
       const nuevaFecha = new Date(nuevaCita.fecha);
-      if (!isNaN(nuevaFecha.getTime())) {
-        setFechaSeleccionada(nuevaFecha);
-      }
+      setFechaSeleccionada(nuevaFecha);
     }
-
-    // Recargar citas con la fecha actual
     await fetchCitas();
   };
 
@@ -95,14 +88,12 @@ const AgendaDiaria = () => {
           <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
           <button className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
           <span>
-            {!isNaN(fechaSeleccionada?.getTime())
-              ? fechaSeleccionada.toLocaleDateString('es-MX', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })
-              : 'Sin fecha'}
+            {fechaSeleccionada.toLocaleDateString('es-MX', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
           </span>
         </div>
 
@@ -143,28 +134,30 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio?.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => (
-                    <div
-                      className="appointment"
-                      key={index}
-                      style={{
-                        height: '60px',
-                        backgroundColor: cita.color || '#e0e0e0',
-                        borderRadius: '6px',
-                        padding: '4px',
-                        marginBottom: '4px',
-                        cursor: 'pointer',
-                        color: '#000',
-                        fontSize: '12px',
-                        overflow: 'hidden'
-                      }}
-                      onClick={() => setCitaSeleccionada(cita)}
-                    >
-                      <strong>{cita.nombre_cliente}</strong>
-                      <div>{cita.titulo}</div>
-                      <small>{cita.hora_inicio?.slice(0, 5)} - {cita.hora_final?.slice(0, 5)}</small>
-                    </div>
-                  ))}
+                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
+                    return (
+                      <div
+                        className="appointment"
+                        key={index}
+                        style={{
+                          height: '60px',
+                          backgroundColor: cita.color || '#e0e0e0',
+                          borderRadius: '6px',
+                          padding: '4px',
+                          marginBottom: '4px',
+                          cursor: 'pointer',
+                          color: '#000',
+                          fontSize: '12px',
+                          overflow: 'hidden'
+                        }}
+                        onClick={() => setCitaSeleccionada(cita)}
+                      >
+                        <strong>{cita.nombre_cliente}</strong>
+                        <div>{cita.titulo}</div>
+                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
