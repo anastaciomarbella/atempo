@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/agendaDiaria.css';
-import { FaClock, FaChevronDown } from 'react-icons/fa';
+import { FaClock, FaChevronDown, FaTrash } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ModalCita from '../components/modalCita/modalCita';
 
@@ -63,19 +63,26 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
-  // Evitar duplicados y actualizar al cerrar modal
+  // Eliminar cita
+  const eliminarCita = async (id) => {
+    if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/citas/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setCitas(prev => prev.filter(c => c.id !== id));
+      } else {
+        console.error('Error al eliminar cita');
+      }
+    } catch (error) {
+      console.error('Error en la petición de eliminación:', error);
+    }
+  };
+
+  // Actualizar citas al cerrar modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-
-    if (nuevaCita) {
-      setCitas(prev => {
-        const sinDuplicados = prev.filter(c => c.id !== nuevaCita.id);
-        return [...sinDuplicados, nuevaCita];
-      });
-      // No cambiamos la fecha para evitar "Invalid Date"
-    } else {
-      await fetchCitas();
-    }
+    await fetchCitas(); // Siempre recargamos desde backend para evitar duplicados
   };
 
   return (
@@ -154,15 +161,32 @@ const AgendaDiaria = () => {
                           cursor: 'pointer',
                           color: '#000',
                           fontSize: '12px',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
+                          position: 'relative'
                         }}
-                        onClick={() => setCitaSeleccionada(cita)}
                       >
-                        <strong>{cita.nombre_cliente}</strong>
-                        <div>{cita.titulo}</div>
-                        <small>
-                          {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
-                        </small>
+                        <div onClick={() => setCitaSeleccionada(cita)}>
+                          <strong>{cita.nombre_cliente}</strong>
+                          <div>{cita.titulo}</div>
+                          <small>
+                            {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
+                          </small>
+                        </div>
+                        <button
+                          className="delete-btn"
+                          onClick={() => eliminarCita(cita.id)}
+                          style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '4px',
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#900',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <FaTrash />
+                        </button>
                       </div>
                     ))}
                 </div>
