@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/agendaDiaria.css';
-import avatar from '../assets/avatar.png';
 import { FaClock, FaChevronDown } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ModalCita from '../components/modalCita/modalCita';
@@ -44,9 +43,7 @@ const AgendaDiaria = () => {
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
-      const citasUnicas = Array.from(
-        new Map(data.map(cita => [cita.id, cita])).values()
-      );
+      const citasUnicas = Array.from(new Map(data.map(cita => [cita.id, cita])).values());
 
       setCitas(citasUnicas);
     } catch (error) {
@@ -71,14 +68,13 @@ const AgendaDiaria = () => {
     setCitaSeleccionada(null);
 
     if (nuevaCita) {
-      setCitas(prev =>
-        prev.some(c => c.id === nuevaCita.id)
-          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
-          : [...prev, nuevaCita] // Agregar nueva
-      );
+      setCitas(prev => {
+        const sinDuplicados = prev.filter(c => c.id !== nuevaCita.id);
+        return [...sinDuplicados, nuevaCita];
+      });
       setFechaSeleccionada(new Date(nuevaCita.fecha));
     } else {
-      await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
+      await fetchCitas();
     }
   };
 
@@ -123,7 +119,6 @@ const AgendaDiaria = () => {
 
         {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
           <div className="employee-header" key={emp?.id}>
-            <img src={avatar} alt={emp?.nombre} />
             <span>{emp?.nombre}</span>
           </div>
         ))}
@@ -140,7 +135,7 @@ const AgendaDiaria = () => {
                     .map((cita, index) => (
                       <div
                         className="appointment"
-                        key={index}
+                        key={cita.id}
                         style={{
                           height: '60px',
                           backgroundColor: cita.color || '#e0e0e0',
