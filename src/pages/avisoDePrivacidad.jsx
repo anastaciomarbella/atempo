@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/avisodeprivacidad.css';
+import "../styles/avisoDePrivacidad.css";
 import logo from '../assets/LogoAtempoPNG.png';
 
 const AvisoPrivacidad = () => {

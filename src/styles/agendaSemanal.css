@@ -1,9 +1,10 @@
 .weekly-agenda-main {
-  flex: 1;
-  padding: 1.5rem 1rem;
-  background-color: #fff;
-  overflow-x: auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    flex: 1;
+    padding: 1.5rem 2rem;
+    background-color: #fff;
+    overflow-x: auto;
+    margin-left: 240px;
+    position: relative;
 }
 
 .agenda-header {
