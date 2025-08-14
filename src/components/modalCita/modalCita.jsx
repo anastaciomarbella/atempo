@@ -22,7 +22,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona_uuid: null, // ⚡ corregido a UUID
+    id_persona_uuid: null, // UUID
     titulo: '',
     encargado: '',
     fecha: '',
@@ -36,13 +36,15 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
+  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+
   // Cargar personas desde API
   useEffect(() => {
-    fetch('https://mi-api-atempo.onrender.com/api/personas')
+    fetch(`${API_URL}/api/personas`)
       .then(res => res.json())
       .then(data => setPersonas(data))
       .catch(err => console.error('Error cargando personas:', err));
-  }, []);
+  }, [API_URL]);
 
   // Inicializar formulario en modo editar
   useEffect(() => {
@@ -81,7 +83,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona_uuid: persona.id, // ⚡ enviar UUID
+      id_persona_uuid: persona.id, // UUID
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
@@ -90,28 +92,30 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   // Guardar cita
   const handleGuardar = async () => {
+    if (!formulario.id_persona_uuid || !formulario.titulo || !formulario.fecha) {
+      setMensaje('Faltan datos obligatorios (Encargado, Título o Fecha).');
+      return;
+    }
+
     setGuardando(true);
     setMensaje('');
 
-    const hora_inicio = formulario.start ? convertir24hAAmPm(formulario.start) : null;
-    const hora_final = formulario.end ? convertir24hAAmPm(formulario.end) : null;
-
     const dataParaEnviar = {
-      id_persona_uuid: formulario.id_persona_uuid || null, // ⚡ UUID
-      titulo: formulario.titulo || null,
-      fecha: formulario.fecha || null,
-      hora_inicio,
-      hora_final,
+      id_persona_uuid: formulario.id_persona_uuid, // UUID
+      titulo: formulario.titulo,
+      fecha: formulario.fecha,
+      hora_inicio: formulario.start ? convertir24hAAmPm(formulario.start) : null,
+      hora_final: formulario.end ? convertir24hAAmPm(formulario.end) : null,
       nombre_cliente: formulario.client || null,
       numero_cliente: formulario.clientPhone || null,
       motivo: formulario.comentario || null,
-      color: formulario.color || null
+      color: formulario.color
     };
 
     try {
       const url = modo === 'editar'
-        ? `https://mi-api-atempo.onrender.com/api/citas/${cita.id_cita}`
-        : 'https://mi-api-atempo.onrender.com/api/citas';
+        ? `${API_URL}/api/citas/${cita.id_cita}`
+        : `${API_URL}/api/citas`;
       const metodo = modo === 'editar' ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -130,7 +134,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         : 'Tu cita ha sido agendada exitosamente.'
       );
 
-      setTimeout(() => onClose(), 2000);
+      setTimeout(() => onClose(dataParaEnviar), 1500);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -144,11 +148,11 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     <>
       <div className="agendar-overlay visible"></div>
       <div className="agendar-modal">
-        <button className="agendar-cerrar-modal" onClick={onClose} disabled={guardando}>
+        <button className="agendar-cerrar-modal" onClick={() => onClose()} disabled={guardando}>
           <FaTimes />
         </button>
         <h2 className="agendar-titulo-modal">
-          {modo === 'editar' ? 'Detalles de la cita' : 'Agendar citas'}
+          {modo === 'editar' ? 'Detalles de la cita' : 'Agendar cita'}
         </h2>
 
         <div className="agendar-formulario">
@@ -158,7 +162,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               <input
                 name="titulo"
                 type="text"
-                placeholder="Título de la cita"
                 value={formulario.titulo}
                 onChange={handleChange}
                 disabled={guardando}
@@ -178,10 +181,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
                     {personas.map(p => (
-                      <li
-                        key={p.id}
-                        onClick={() => handleEncargadoSelect(p)}
-                      >
+                      <li key={p.id} onClick={() => handleEncargadoSelect(p)}>
                         {p.nombre}
                       </li>
                     ))}
@@ -230,7 +230,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               <input
                 name="client"
                 type="text"
-                placeholder="Nombre del cliente"
                 value={formulario.client}
                 onChange={handleChange}
                 disabled={guardando}
@@ -241,7 +240,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               <input
                 name="clientPhone"
                 type="tel"
-                placeholder="Número celular"
                 value={formulario.clientPhone}
                 onChange={handleChange}
                 disabled={guardando}
@@ -255,7 +253,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               <input
                 name="comentario"
                 type="text"
-                placeholder="Descripción o comentario"
                 value={formulario.comentario}
                 onChange={handleChange}
                 disabled={guardando}
@@ -276,14 +273,12 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
           </div>
 
           {mensaje && (
-            <div
-              style={{
-                marginTop: '10px',
-                color: mensaje.startsWith('Error') ? 'red' : 'green',
-                fontWeight: 'bold',
-                textAlign: 'center'
-              }}
-            >
+            <div style={{
+              marginTop: '10px',
+              color: mensaje.startsWith('Error') ? 'red' : 'green',
+              fontWeight: 'bold',
+              textAlign: 'center'
+            }}>
               {mensaje}
             </div>
           )}
