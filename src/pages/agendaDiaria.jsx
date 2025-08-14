@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/agendaDiaria.css';
-import { FaClock, FaChevronDown, FaTrash } from 'react-icons/fa';
+import { FaClock } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ModalCita from '../components/modalCita/modalCita';
 
@@ -39,12 +39,11 @@ const AgendaDiaria = () => {
       let data = await res.json();
 
       // Filtrar por fecha seleccionada
-      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE'); // YYYY-MM-DD
+      const fechaStr = fechaSeleccionada.toISOString().slice(0, 10); // YYYY-MM-DD
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
       const citasUnicas = Array.from(new Map(data.map(cita => [cita.id, cita])).values());
-
       setCitas(citasUnicas);
     } catch (error) {
       console.error('Error al cargar citas:', error);
@@ -63,10 +62,8 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
-  // Eliminar cita
+  // Función para eliminar cita desde el modal
   const eliminarCita = async (id) => {
-    if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
-
     try {
       const res = await fetch(`${API_URL}/api/citas/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -80,9 +77,9 @@ const AgendaDiaria = () => {
   };
 
   // Actualizar citas al cerrar modal
-  const handleCloseModal = async (nuevaCita) => {
+  const handleCloseModal = async () => {
     setCitaSeleccionada(null);
-    await fetchCitas(); // Siempre recargamos desde backend para evitar duplicados
+    await fetchCitas(); // Recarga desde backend para evitar duplicados
   };
 
   return (
@@ -127,7 +124,6 @@ const AgendaDiaria = () => {
         <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
-            <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
 
@@ -164,29 +160,13 @@ const AgendaDiaria = () => {
                           overflow: 'hidden',
                           position: 'relative'
                         }}
+                        onClick={() => setCitaSeleccionada(cita)}
                       >
-                        <div onClick={() => setCitaSeleccionada(cita)}>
-                          <strong>{cita.nombre_cliente}</strong>
-                          <div>{cita.titulo}</div>
-                          <small>
-                            {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
-                          </small>
-                        </div>
-                        <button
-                          className="delete-btn"
-                          onClick={() => eliminarCita(cita.id)}
-                          style={{
-                            position: 'absolute',
-                            top: '4px',
-                            right: '4px',
-                            background: 'transparent',
-                            border: 'none',
-                            color: '#900',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <FaTrash />
-                        </button>
+                        <strong>{cita.nombre_cliente}</strong>
+                        <div>{cita.titulo}</div>
+                        <small>
+                          {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
+                        </small>
                       </div>
                     ))}
                 </div>
@@ -201,6 +181,7 @@ const AgendaDiaria = () => {
           modo="editar"
           cita={citaSeleccionada}
           onClose={handleCloseModal}
+          onDelete={eliminarCita}
         />
       )}
     </main>
