@@ -64,11 +64,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
       setMostrarListaEncargados(false);
     }
-
     setFormulario(prev => ({ ...prev, [name]: value }));
     setMensaje('');
   };
@@ -111,25 +109,63 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       hora_final,
       nombre_cliente: formulario.client,
       numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario
+      motivo: formulario.comentario,
+      color: formulario.color
     };
 
     try {
-      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataParaEnviar)
-      });
+      let res;
+      if (modo === 'crear') {
+        // Crear nueva cita
+        res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataParaEnviar)
+        });
+      } else {
+        // Editar cita existente
+        res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id}`, {
+          method: 'PUT', // o PATCH según tu API
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataParaEnviar)
+        });
+      }
+
       if (!res.ok) throw new Error('Error al guardar la cita');
 
-      setMensaje('Tu cita ha sido agendada exitosamente.');
+      setMensaje('Tu cita ha sido guardada exitosamente.');
 
       setTimeout(() => {
         onClose();
-      }, 3000);
+      }, 2000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
+      console.error(error);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleEliminar = async () => {
+    if (!cita.id) return;
+
+    const confirmar = window.confirm('¿Deseas eliminar esta cita?');
+    if (!confirmar) return;
+
+    setGuardando(true);
+    try {
+      const res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Error al eliminar la cita');
+      setMensaje('Cita eliminada correctamente.');
+
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (error) {
+      setMensaje('Error al eliminar la cita: ' + error.message);
       console.error(error);
     } finally {
       setGuardando(false);
@@ -174,10 +210,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
                     {personas.map(p => (
-                      <li
-                        key={p.id}
-                        onClick={() => handleEncargadoSelect(p)}
-                      >
+                      <li key={p.id} onClick={() => handleEncargadoSelect(p)}>
                         {p.nombre}
                       </li>
                     ))}
@@ -285,14 +318,28 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
           )}
 
           <p className="agendar-obligatorio">* Campos obligatorios</p>
-          <button
-            className="agendar-btn-guardar"
-            onClick={handleGuardar}
-            disabled={guardando}
-          >
-            <FaSave className="icono-guardar" />
-            {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
-          </button>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+            <button
+              className="agendar-btn-guardar"
+              onClick={handleGuardar}
+              disabled={guardando}
+            >
+              <FaSave className="icono-guardar" />
+              {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
+            </button>
+
+            {modo === 'editar' && (
+              <button
+                className="agendar-btn-eliminar"
+                onClick={handleEliminar}
+                disabled={guardando}
+                style={{ backgroundColor: '#ff4d4f', color: 'white' }}
+              >
+                <FaTimes className="icono-eliminar" /> Eliminar
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </>
