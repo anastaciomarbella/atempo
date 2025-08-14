@@ -114,15 +114,19 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
     };
 
     try {
-      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
+      const url = modo === 'editar'
+        ? `https://mi-api-atempo.onrender.com/api/citas/${cita.id_cita}` // ✅ URL con ID
+        : `https://mi-api-atempo.onrender.com/api/citas`;
+
+      const res = await fetch(url, {
         method: modo === 'editar' ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataParaEnviar)
       });
+
       if (!res.ok) throw new Error('Error al guardar la cita');
 
       setMensaje('Tu cita ha sido guardada exitosamente.');
-
       setTimeout(() => onClose(), 1500);
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -134,9 +138,16 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
 
   const handleEliminar = async () => {
     if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
-    if (onDelete) {
-      await onDelete(cita.id);
+    try {
+      const res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id_cita}`, { // ✅ usar id_cita
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error('Error al eliminar la cita');
+      if (onDelete) await onDelete(cita.id_cita);
       onClose();
+    } catch (error) {
+      console.error('Error eliminando cita:', error);
+      setMensaje('Error al eliminar la cita');
     }
   };
 
@@ -152,7 +163,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
         </h2>
 
         <div className="agendar-formulario">
-          {/* Formulario de campos */}
+          {/* Campos */}
           <div className="agendar-fila">
             <div>
               <label>Título *</label>
