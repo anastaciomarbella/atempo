@@ -1,71 +1,152 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import '../styles/login.css';
 import { FaUpload } from 'react-icons/fa';
 import logo from '../assets/LogoAtempoPNG.png';
-import '../styles/login.css';
 
 const Register = () => {
   const navigate = useNavigate();
+
   const [negocio, setNegocio] = useState('');
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [telefono, setTelefono] = useState('');
   const [password, setPassword] = useState('');
-  const [foto, setFoto] = useState(null);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [foto, setFoto] = useState(null); // Guardará el archivo
+  const [preview, setPreview] = useState(null); // Vista previa de la imagen
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
+  const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
 
-    const formData = new FormData();
-    formData.append('negocio', negocio);
-    formData.append('nombre', nombre);
-    formData.append('correo', correo);
-    formData.append('telefono', telefono);
-    formData.append('password', password);
-    if (foto) {
-      formData.append('foto', foto);
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFoto(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRegister = () => {
+    setError('');
+
+    if (!negocio.trim() || !nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
+      setError('Por favor, completa todos los campos');
+      return;
     }
 
-    try {
-      const res = await fetch('https://mi-api-atempo.onrender.com/api/auth/registro', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || 'Error en el registro');
-        return;
-      }
-
-      alert('Registro exitoso');
-      navigate('/login');
-    } catch (error) {
-      console.error('Error en registro:', error);
-      alert('Error en el servidor');
+    if (!validarCorreo(correo)) {
+      setError('Ingresa un correo válido');
+      return;
     }
+
+    if (!validarTelefono(telefono)) {
+      setError('Ingresa un teléfono válido (solo números)');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    // Aquí podrías enviar la foto al servidor junto con los datos
+    navigate('/');
   };
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <img src={logo} alt="Logo" className="logo" />
-        <h2>Registro</h2>
+      <div className="login-card">
+        <img src={logo} alt="Atempo logo" className="login-logo" />
+        <h1 className="login-title">Atempo</h1>
+        <h2 className="login-subtitle">Registrar cuenta</h2>
 
-        <input type="text" placeholder="Nombre del Negocio" value={negocio} onChange={(e) => setNegocio(e.target.value)} />
-        <input type="text" placeholder="Nombre completo" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-        <input type="email" placeholder="Correo electrónico" value={correo} onChange={(e) => setCorreo(e.target.value)} />
-        <input type="text" placeholder="Teléfono" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-        <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} />
+        {/* Vista previa de la foto si existe */}
+        {preview && (
+          <img
+            src={preview}
+            alt="Vista previa"
+            className="preview-foto"
+            style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px' }}
+          />
+        )}
 
-        <label className="upload-label">
-          <FaUpload /> Subir Foto (opcional)
-          <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files[0])} hidden />
+        {/* Botón para subir foto */}
+        <label className="btn-cargar-foto">
+          <FaUpload className="icono-upload" />
+          Cargar foto
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFotoChange}
+          />
         </label>
 
-        <button type="submit" className="btn">Registrarse</button>
-      </form>
+        <input
+          type="text"
+          placeholder="Nombre del negocio"
+          className="login-input"
+          value={negocio}
+          onChange={(e) => setNegocio(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Nombre completo"
+          className="login-input"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+        />
+        <input
+          type="tel"
+          placeholder="Número de teléfono"
+          className="login-input"
+          value={telefono}
+          onChange={(e) => setTelefono(e.target.value)}
+        />
+        <input
+          type="email"
+          placeholder="Correo electrónico"
+          className="login-input"
+          value={correo}
+          onChange={(e) => setCorreo(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          className="login-input"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Confirmar contraseña"
+          className="login-input"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+
+        {error && <p className="login-error">{error}</p>}
+
+        <button
+          className="login-button"
+          onClick={handleRegister}
+        >
+          Registrar cuenta
+        </button>
+
+        <p className="login-footer">
+          ¿Ya tienes cuenta? <Link to="/" className="login-link">Inicia sesión</Link>
+        </p>
+
+        <p className="login-legal">
+          Protegemos tu información conforme a nuestro{" "}
+          <Link to="/aviso-privacidad" className="login-link" aria-label="Abrir aviso de privacidad">
+            Aviso de Privacidad
+          </Link>.
+        </p>
+      </div>
     </div>
   );
 };
