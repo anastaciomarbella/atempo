@@ -12,7 +12,6 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
@@ -39,7 +38,8 @@ const AgendaDiaria = () => {
       const res = await fetch(url);
       let data = await res.json();
 
-      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+      // Filtrar por fecha seleccionada
+      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE'); // YYYY-MM-DD
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
@@ -63,7 +63,7 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
-  // Evitar duplicados al cerrar modal
+  // Evitar duplicados y actualizar al cerrar modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
 
@@ -72,7 +72,7 @@ const AgendaDiaria = () => {
         const sinDuplicados = prev.filter(c => c.id !== nuevaCita.id);
         return [...sinDuplicados, nuevaCita];
       });
-      setFechaSeleccionada(new Date(nuevaCita.fecha));
+      // No cambiamos la fecha para evitar "Invalid Date"
     } else {
       await fetchCitas();
     }
@@ -82,8 +82,12 @@ const AgendaDiaria = () => {
     <main className="daily-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
-          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
-          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}>
+            <FiChevronLeft />
+          </button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}>
+            <FiChevronRight />
+          </button>
           <span>
             {fechaSeleccionada.toLocaleDateString('es-MX', {
               weekday: 'long',
@@ -108,8 +112,11 @@ const AgendaDiaria = () => {
 
       <div
         className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
+        style={{
+          gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)`
+        }}
       >
+        {/* Cabecera de horas */}
         <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
@@ -117,12 +124,14 @@ const AgendaDiaria = () => {
           </button>
         </div>
 
+        {/* Cabecera de empleados */}
         {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
           <div className="employee-header" key={emp?.id}>
             <span>{emp?.nombre}</span>
           </div>
         ))}
 
+        {/* Celdas de agenda */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
@@ -132,7 +141,7 @@ const AgendaDiaria = () => {
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
                   {empCitas
                     .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
-                    .map((cita, index) => (
+                    .map((cita) => (
                       <div
                         className="appointment"
                         key={cita.id}
@@ -151,7 +160,9 @@ const AgendaDiaria = () => {
                       >
                         <strong>{cita.nombre_cliente}</strong>
                         <div>{cita.titulo}</div>
-                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                        <small>
+                          {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
+                        </small>
                       </div>
                     ))}
                 </div>
