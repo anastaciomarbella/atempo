@@ -1,4 +1,3 @@
-// src/pages/agendaDiaria.jsx (NUBE) — versión estilizada como LOCAL, sin tocar lógica
 import React, { useState, useEffect } from 'react';
 import '../styles/agendaDiaria.css';
 import avatar from '../assets/avatar.png';
@@ -45,7 +44,10 @@ const AgendaDiaria = () => {
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
-      const citasUnicas = Array.from(new Map(data.map(cita => [cita.id, cita])).values());
+      const citasUnicas = Array.from(
+        new Map(data.map(cita => [cita.id, cita])).values()
+      );
+
       setCitas(citasUnicas);
     } catch (error) {
       console.error('Error al cargar citas:', error);
@@ -71,7 +73,7 @@ const AgendaDiaria = () => {
     if (nuevaCita) {
       setCitas(prev =>
         prev.some(c => c.id === nuevaCita.id)
-          ? prev.map(c => (c.id === nuevaCita.id ? nuevaCita : c)) // Editar existente
+          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
           : [...prev, nuevaCita] // Agregar nueva
       );
       setFechaSeleccionada(new Date(nuevaCita.fecha));
@@ -79,11 +81,6 @@ const AgendaDiaria = () => {
       await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
     }
   };
-
-  const listaEmpleados = (personaSeleccionada === 'todos'
-    ? personas
-    : [getPersonaById(Number(personaSeleccionada))].filter(Boolean)
-  );
 
   return (
     <main className="daily-agenda-main">
@@ -115,48 +112,45 @@ const AgendaDiaria = () => {
 
       <div
         className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${listaEmpleados.length}, 1fr)` }}
+        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
       >
-        {/* Cabecera reloj / selector (estilizado como local, sin dropdown funcional por ahora) */}
-        <div className="employee-header clock-header" style={{ position: 'relative' }}>
+        <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
             <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
 
-        {/* Cabeceras de empleados (avatar grande y nombre bold como en local) */}
-        {listaEmpleados.map((emp, index) => (
-          <div
-            className={`employee-header ${index === 0 ? 'first' : ''} ${index === listaEmpleados.length - 1 ? 'last' : ''}`}
-            key={emp?.id}
-          >
+        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
+          <div className="employee-header" key={emp?.id}>
             <img src={avatar} alt={emp?.nombre} />
             <span>{emp?.nombre}</span>
           </div>
         ))}
 
-        {/* Filas por hora */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-
-            {listaEmpleados.map((emp, index) => {
+            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
               const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
-                <div
-                  className={`time-cell ${index === 0 ? 'first' : ''} ${index === listaEmpleados.length - 1 ? 'last' : ''}`}
-                  key={`${emp?.id}-${hour}`}
-                >
+                <div className="time-cell" key={`${emp?.id}-${hour}`}>
                   {empCitas
                     .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
-                    .map((cita) => (
+                    .map((cita, index) => (
                       <div
                         className="appointment"
-                        key={cita.id}
+                        key={index}
                         style={{
-                          // Solo dejamos el color al estilo inline; el resto lo define CSS
-                          backgroundColor: cita.color || '#E8EDFB'
+                          height: '60px',
+                          backgroundColor: cita.color || '#e0e0e0',
+                          borderRadius: '6px',
+                          padding: '4px',
+                          marginBottom: '4px',
+                          cursor: 'pointer',
+                          color: '#000',
+                          fontSize: '12px',
+                          overflow: 'hidden'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
