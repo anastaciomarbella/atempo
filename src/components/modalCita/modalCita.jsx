@@ -64,9 +64,11 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
       setMostrarListaEncargados(false);
     }
+
     setFormulario(prev => ({ ...prev, [name]: value }));
     setMensaje('');
   };
@@ -109,59 +111,25 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       hora_final,
       nombre_cliente: formulario.client,
       numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario,
-      color: formulario.color
+      motivo: formulario.comentario
     };
 
     try {
-      let url = 'https://mi-api-atempo.onrender.com/api/citas';
-      let metodo = 'POST';
-
-      if (modo === 'editar' && cita.id) {
-        url = `https://mi-api-atempo.onrender.com/api/citas/${cita.id}`;
-        metodo = 'PUT';
-      }
-
-      const res = await fetch(url, {
-        method: metodo,
+      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataParaEnviar)
       });
-
       if (!res.ok) throw new Error('Error al guardar la cita');
 
-      setMensaje(modo === 'editar' ? 'Cita actualizada correctamente.' : 'Tu cita ha sido agendada exitosamente.');
+      setMensaje('Tu cita ha sido agendada exitosamente.');
 
       setTimeout(() => {
         onClose();
-      }, 2000);
+      }, 3000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
-      console.error(error);
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const handleEliminar = async () => {
-    if (!cita.id) return;
-    if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
-
-    setGuardando(true);
-    try {
-      const res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id}`, {
-        method: 'DELETE'
-      });
-
-      if (!res.ok) throw new Error('Error al eliminar la cita');
-
-      setMensaje('Cita eliminada correctamente.');
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    } catch (error) {
-      setMensaje('Error al eliminar la cita: ' + error.message);
       console.error(error);
     } finally {
       setGuardando(false);
@@ -206,7 +174,10 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
                     {personas.map(p => (
-                      <li key={p.id} onClick={() => handleEncargadoSelect(p)}>
+                      <li
+                        key={p.id}
+                        onClick={() => handleEncargadoSelect(p)}
+                      >
                         {p.nombre}
                       </li>
                     ))}
@@ -322,24 +293,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
             <FaSave className="icono-guardar" />
             {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
           </button>
-
-          {modo === 'editar' && (
-            <button
-              style={{
-                backgroundColor: 'red',
-                color: 'white',
-                marginTop: '10px',
-                padding: '8px 12px',
-                borderRadius: '5px',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-              onClick={handleEliminar}
-              disabled={guardando}
-            >
-              Eliminar cita
-            </button>
-          )}
         </div>
       </div>
     </>
