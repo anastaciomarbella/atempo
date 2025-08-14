@@ -13,21 +13,8 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-  const fechaLocalYYYYMMDD = (d) => {
-    const dt = new Date(d);
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth() + 1).padStart(2, '0');
-    const day = String(dt.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
-
-  const horaEntera = (hhmmss) => {
-    if (!hhmmss) return null;
-    const [h] = hhmmss.split(':');
-    return parseInt(h, 10);
-  };
+  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
   useEffect(() => {
@@ -35,7 +22,7 @@ const AgendaDiaria = () => {
       try {
         const res = await fetch(`${API_URL}/api/personas`);
         const data = await res.json();
-        setPersonas(Array.isArray(data) ? data : []);
+        setPersonas(data);
       } catch (error) {
         console.error('Error al cargar personas:', error);
       }
@@ -43,15 +30,25 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas
+  // Cargar citas filtradas por fecha y persona, sin duplicados
   const fetchCitas = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/citas`);
+      let url = `${API_URL}/api/citas`;
+      if (personaSeleccionada !== 'todos') {
+        url += `?id_persona=${personaSeleccionada}`;
+      }
+      const res = await fetch(url);
       let data = await res.json();
-      if (!Array.isArray(data)) data = [];
-      const fechaStr = fechaLocalYYYYMMDD(fechaSeleccionada);
-      data = data.filter((c) => c.fecha?.slice(0, 10) === fechaStr);
-      setCitas(data);
+
+      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+      data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+
+      // Eliminar duplicados por ID
+      const citasUnicas = Array.from(
+        new Map(data.map(cita => [cita.id, cita])).values()
+      );
+
+      setCitas(citasUnicas);
     } catch (error) {
       console.error('Error al cargar citas:', error);
     }
@@ -59,33 +56,38 @@ const AgendaDiaria = () => {
 
   useEffect(() => {
     fetchCitas();
-  }, [fechaSeleccionada]);
+  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
   const cambiarFecha = (delta) => {
-    const nueva = new Date(fechaSeleccionada);
-    nueva.setDate(nueva.getDate() + delta);
-    setFechaSeleccionada(nueva);
+    const nuevaFecha = new Date(fechaSeleccionada);
+    nuevaFecha.setDate(nuevaFecha.getDate() + delta);
+    setFechaSeleccionada(nuevaFecha);
   };
 
-  const getPersonaByUuid = (uuid) => personas.find((p) => p.id_persona_uuid === uuid);
-  const personasVisibles =
-    personaSeleccionada === 'todos' ? personas : [getPersonaByUuid(personaSeleccionada)].filter(Boolean);
+  const getPersonaById = (id) => personas.find(p => p.id === id);
 
+  // Evitar duplicados al cerrar modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-    await fetchCitas();
+
+    if (nuevaCita) {
+      setCitas(prev =>
+        prev.some(c => c.id === nuevaCita.id)
+          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
+          : [...prev, nuevaCita] // Agregar nueva
+      );
+      setFechaSeleccionada(new Date(nuevaCita.fecha));
+    } else {
+      await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
+    }
   };
 
   return (
     <main className="daily-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
-          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}>
-            <FiChevronLeft />
-          </button>
-          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}>
-            <FiChevronRight />
-          </button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
           <span>
             {fechaSeleccionada.toLocaleDateString('es-MX', {
               weekday: 'long',
@@ -99,22 +101,18 @@ const AgendaDiaria = () => {
         <select
           className="filter-select"
           value={personaSeleccionada}
-          onChange={(e) => setPersonaSeleccionada(e.target.value)}
+          onChange={e => setPersonaSeleccionada(e.target.value)}
         >
           <option value="todos">Todos</option>
-          {personas.map((p) => (
-            <option key={p.id_persona_uuid} value={p.id_persona_uuid}>
-              {p.nombre}
-            </option>
+          {personas.map(p => (
+            <option key={p.id} value={p.id}>{p.nombre}</option>
           ))}
         </select>
       </div>
 
       <div
         className="agenda-grid"
-        style={{
-          gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)`
-        }}
+        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
       >
         <div className="employee-header clock-header">
           <button className="clock-btn">
@@ -123,30 +121,26 @@ const AgendaDiaria = () => {
           </button>
         </div>
 
-        {personasVisibles.map((emp) => (
-          <div className="employee-header" key={emp.id_persona_uuid}>
-            <img src={avatar} alt={emp.nombre} />
-            <span>{emp.nombre}</span>
+        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
+          <div className="employee-header" key={emp?.id}>
+            <img src={avatar} alt={emp?.nombre} />
+            <span>{emp?.nombre}</span>
           </div>
         ))}
 
-        {hours.map((hour) => (
+        {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {personasVisibles.map((emp) => {
-              const empCitas = citas.filter(
-                (c) => c.id_persona_uuid === emp.id_persona_uuid
-              );
+            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
+              const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
-                <div className="time-cell" key={`${emp.id_persona_uuid}-${hour}`}>
+                <div className="time-cell" key={`${emp?.id}-${hour}`}>
                   {empCitas
-                    .filter(
-                      (c) => horaEntera(c.hora_inicio) === parseInt(hour.split(':')[0], 10)
-                    )
-                    .map((cita) => (
+                    .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
+                    .map((cita, index) => (
                       <div
                         className="appointment"
-                        key={cita.id_cita}
+                        key={index}
                         style={{
                           height: '60px',
                           backgroundColor: cita.color || '#e0e0e0',
@@ -160,12 +154,9 @@ const AgendaDiaria = () => {
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
-                        <strong>{cita.nombre_cliente || 'Sin nombre'}</strong>
-                        <div>{cita.titulo || ''}</div>
-                        <small>
-                          {(cita.hora_inicio || '').slice(0, 5)} -{' '}
-                          {(cita.hora_final || '').slice(0, 5)}
-                        </small>
+                        <strong>{cita.nombre_cliente}</strong>
+                        <div>{cita.titulo}</div>
+                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
                       </div>
                     ))}
                 </div>
@@ -176,7 +167,11 @@ const AgendaDiaria = () => {
       </div>
 
       {citaSeleccionada && (
-        <ModalCita modo="editar" cita={citaSeleccionada} onClose={handleCloseModal} />
+        <ModalCita
+          modo="editar"
+          cita={citaSeleccionada}
+          onClose={handleCloseModal}
+        />
       )}
     </main>
   );
