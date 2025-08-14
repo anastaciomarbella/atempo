@@ -1,4 +1,4 @@
-aviso-wrapper {
+.aviso-wrapper {
   background-color: #f7f8fd;
   min-height: 100vh;
   display: flex;
@@ -6,7 +6,7 @@ aviso-wrapper {
   align-items: center;
 }
 
-aviso-card {
+.aviso-card {
   background: #fff;
   max-width: 1000px;
   width: 100%;
@@ -24,7 +24,7 @@ aviso-card {
   margin-bottom: -30px;
 }
 
-aviso-title {
+.aviso-title {
   text-align: center;
   font-size: 30px;
 }
@@ -49,15 +49,16 @@ aviso-title {
   margin-top: 20px;
 }
 
-aviso-content ul {
+.aviso-content ul {
   padding-left: 30px;
   font-size: 17px;
 }
-aviso-content li {
+
+.aviso-content li {
   margin-bottom: 5px;
 }
 
-aviso-btn {
+.aviso-btn {
   background: #2a9d8f;
   color: #fff;
   border: none;
@@ -71,6 +72,6 @@ aviso-btn {
   transition: background-color 0.3s ease;
 }
 
-aviso-btn:hover {
+.aviso-btn:hover {
   background: #21867c;
 }
