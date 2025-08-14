@@ -51,8 +51,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         titulo: cita.titulo || '',
         encargado: encargadoEncontrado ? encargadoEncontrado.nombre : '',
         fecha: cita.fecha || '',
-        start: cita.hora_inicio || '',
-        end: cita.hora_final || '',
+        start: cita.hora_inicio ? cita.hora_inicio.slice(0,5) : '',
+        end: cita.hora_final ? cita.hora_final.slice(0,5) : '',
         client: cita.nombre_cliente || '',
         clientPhone: cita.numero_cliente || '',
         comentario: cita.motivo || '',
@@ -111,18 +111,32 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       hora_final,
       nombre_cliente: formulario.client,
       numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario
+      motivo: formulario.comentario,
+      color: formulario.color
     };
 
     try {
-      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
-        method: 'POST',
+      const url = modo === 'editar'
+        ? `https://mi-api-atempo.onrender.com/api/citas/${cita.id_cita}`
+        : 'https://mi-api-atempo.onrender.com/api/citas';
+
+      const metodo = modo === 'editar' ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: metodo,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataParaEnviar)
       });
-      if (!res.ok) throw new Error('Error al guardar la cita');
 
-      setMensaje('Tu cita ha sido agendada exitosamente.');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Error al guardar la cita');
+      }
+
+      setMensaje(modo === 'editar'
+        ? 'La cita ha sido actualizada exitosamente.'
+        : 'Tu cita ha sido agendada exitosamente.'
+      );
 
       setTimeout(() => {
         onClose();
