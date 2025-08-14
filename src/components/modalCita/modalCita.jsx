@@ -36,7 +36,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  // Cargar personas
+  // Cargar personas desde API
   useEffect(() => {
     fetch('https://mi-api-atempo.onrender.com/api/personas')
       .then(res => res.json())
@@ -44,7 +44,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       .catch(err => console.error('Error cargando personas:', err));
   }, []);
 
-  // Llenar formulario en modo editar
+  // Inicializar formulario en modo editar
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
       const encargadoEncontrado = personas.find(p => p.id === cita.id_persona_uuid);
@@ -64,13 +64,12 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     }
   }, [modo, cita, personas]);
 
+  // Manejar cambios en inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
       setMostrarListaEncargados(false);
     }
-
     setFormulario(prev => ({ ...prev, [name]: value }));
     setMensaje('');
   };
@@ -89,17 +88,16 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     setMensaje('');
   };
 
-  // NUEVA función de guardar con validación robusta
+  // Guardar cita con validación completa
   const handleGuardar = async () => {
-    const errores = [];
+    console.log('Formulario antes de guardar:', formulario);
 
+    const errores = [];
     if (!formulario.titulo.trim()) errores.push('Título');
     if (!formulario.id_persona) errores.push('Encargado');
     if (!formulario.fecha) errores.push('Fecha');
     if (!formulario.start) errores.push('Hora de inicio');
     if (!formulario.end) errores.push('Hora de fin');
-
-    // Validar que la hora de inicio sea menor que la hora final
     if (formulario.start && formulario.end && formulario.start >= formulario.end) {
       errores.push('Hora de inicio debe ser menor que hora de fin');
     }
