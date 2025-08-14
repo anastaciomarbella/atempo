@@ -14,7 +14,8 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+  // URL de la API
+  const API_URL = 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
   useEffect(() => {
@@ -22,13 +23,13 @@ const AgendaDiaria = () => {
       try {
         const res = await fetch(`${API_URL}/api/personas`);
         const data = await res.json();
-        setPersonas(data);
+        setPersonas(data || []);
       } catch (error) {
         console.error('Error al cargar personas:', error);
       }
     };
     fetchPersonas();
-  }, [API_URL]);
+  }, []);
 
   // Cargar citas filtradas por fecha y persona
   const fetchCitas = async () => {
@@ -37,17 +38,17 @@ const AgendaDiaria = () => {
       if (personaSeleccionada !== 'todos') {
         url += `?id_persona=${personaSeleccionada}`;
       }
+
       const res = await fetch(url);
       let data = await res.json();
+      data = data || [];
 
-      // Convertimos la fecha a YYYY-MM-DD
+      // Filtrar por fecha seleccionada
       const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
-      const citasUnicas = Array.from(
-        new Map(data.map(cita => [cita.id, cita])).values()
-      );
+      const citasUnicas = Array.from(new Map(data.map(cita => [cita.id, cita])).values());
 
       setCitas(citasUnicas);
     } catch (error) {
@@ -57,7 +58,7 @@ const AgendaDiaria = () => {
 
   useEffect(() => {
     fetchCitas();
-  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
+  }, [personaSeleccionada, fechaSeleccionada]);
 
   const cambiarFecha = (delta) => {
     const nuevaFecha = new Date(fechaSeleccionada);
