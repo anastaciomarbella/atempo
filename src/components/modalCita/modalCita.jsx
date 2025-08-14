@@ -4,8 +4,7 @@ import './modalCita.css';
 
 const coloresDisponibles = [
   '#ffe4e6', '#ffedd5', '#fef9c3', '#bbf7d0',
-  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', 
-  
+  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe',
 ];
 
 function convertir24hAAmPm(hora24) {
@@ -23,7 +22,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona: null, // ahora será un número
+    id_persona: null,
     titulo: '',
     encargado: '',
     fecha: '',
@@ -79,7 +78,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id_persona_num, // ahora enviamos número
+      id_persona: persona.id_persona_num,
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
@@ -138,8 +137,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       );
 
       setTimeout(() => {
-        onClose();
-      }, 3000);
+        onClose(dataParaEnviar);
+      }, 2000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -185,7 +184,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                   {formulario.encargado || 'Selecciona un encargado'}
                 </button>
                 {mostrarListaEncargados && (
-                  <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
+                  <ul className="dropdown-lista">
                     {personas.map(p => (
                       <li
                         key={p.id_persona_num}
@@ -200,8 +199,92 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
             </div>
           </div>
 
-          {/* Resto del formulario igual */}
-          {/* Fecha, hora, cliente, comentario, color, mensaje y botón guardar */}
+          <div className="agendar-fila">
+            <div>
+              <label>Fecha *</label>
+              <input
+                name="fecha"
+                type="date"
+                value={formulario.fecha}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Hora inicio *</label>
+              <input
+                name="start"
+                type="time"
+                value={formulario.start}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Hora fin *</label>
+              <input
+                name="end"
+                type="time"
+                value={formulario.end}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+          </div>
+
+          <div className="agendar-fila">
+            <div>
+              <label>Cliente</label>
+              <input
+                name="client"
+                type="text"
+                value={formulario.client}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Teléfono</label>
+              <input
+                name="clientPhone"
+                type="text"
+                value={formulario.clientPhone}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+          </div>
+
+          <div className="agendar-fila">
+            <div>
+              <label>Comentario</label>
+              <textarea
+                name="comentario"
+                value={formulario.comentario}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Color</label>
+              <div className="color-picker">
+                {coloresDisponibles.map(color => (
+                  <span
+                    key={color}
+                    className={`color-circle ${formulario.color === color ? 'selected' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => handleColorSelect(color)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {mensaje && <div className="mensaje">{mensaje}</div>}
+
+          <button className="guardar-btn" onClick={handleGuardar} disabled={guardando}>
+            <FaSave /> {guardando ? 'Guardando...' : 'Guardar'}
+          </button>
         </div>
       </div>
     </>
