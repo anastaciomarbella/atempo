@@ -4,7 +4,7 @@ import './modalCita.css';
 
 const coloresDisponibles = [
   '#ffe4e6', '#ffedd5', '#fef9c3', '#bbf7d0',
-  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe',
+  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3'
 ];
 
 function convertir24hAAmPm(hora24) {
@@ -45,7 +45,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
-      const encargadoEncontrado = personas.find(p => p.id_persona_num === cita.id_persona);
+      const encargadoEncontrado = personas.find(p => p.id === cita.id_persona);
       setFormulario({
         id_persona: cita.id_persona || null,
         titulo: cita.titulo || '',
@@ -64,9 +64,11 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
       setMostrarListaEncargados(false);
     }
+
     setFormulario(prev => ({ ...prev, [name]: value }));
     setMensaje('');
   };
@@ -78,7 +80,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id_persona_num,
+      id_persona: persona.id,
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
@@ -137,8 +139,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       );
 
       setTimeout(() => {
-        onClose(dataParaEnviar);
-      }, 2000);
+        onClose();
+      }, 3000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -184,10 +186,10 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                   {formulario.encargado || 'Selecciona un encargado'}
                 </button>
                 {mostrarListaEncargados && (
-                  <ul className="dropdown-lista">
+                  <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
                     {personas.map(p => (
                       <li
-                        key={p.id_persona_num}
+                        key={p.id}
                         onClick={() => handleEncargadoSelect(p)}
                       >
                         {p.nombre}
@@ -211,24 +213,24 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               />
             </div>
             <div>
-              <label>Hora inicio *</label>
-              <input
-                name="start"
-                type="time"
-                value={formulario.start}
-                onChange={handleChange}
-                disabled={guardando}
-              />
-            </div>
-            <div>
-              <label>Hora fin *</label>
-              <input
-                name="end"
-                type="time"
-                value={formulario.end}
-                onChange={handleChange}
-                disabled={guardando}
-              />
+              <label>Hora *</label>
+              <div className="agendar-horario">
+                <input
+                  name="start"
+                  type="time"
+                  value={formulario.start}
+                  onChange={handleChange}
+                  disabled={guardando}
+                />
+                <span>a</span>
+                <input
+                  name="end"
+                  type="time"
+                  value={formulario.end}
+                  onChange={handleChange}
+                  disabled={guardando}
+                />
+              </div>
             </div>
           </div>
 
@@ -238,16 +240,18 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               <input
                 name="client"
                 type="text"
+                placeholder="Nombre del cliente"
                 value={formulario.client}
                 onChange={handleChange}
                 disabled={guardando}
               />
             </div>
             <div>
-              <label>Teléfono</label>
+              <label>Número celular</label>
               <input
                 name="clientPhone"
-                type="text"
+                type="tel"
+                placeholder="Número celular"
                 value={formulario.clientPhone}
                 onChange={handleChange}
                 disabled={guardando}
@@ -256,34 +260,52 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
           </div>
 
           <div className="agendar-fila">
-            <div>
+            <div style={{ gridColumn: 'span 2', margin: '0 18px' }}>
               <label>Comentario</label>
-              <textarea
+              <input
                 name="comentario"
+                type="text"
+                placeholder="Descripción o comentario"
                 value={formulario.comentario}
                 onChange={handleChange}
                 disabled={guardando}
               />
             </div>
-            <div>
-              <label>Color</label>
-              <div className="color-picker">
-                {coloresDisponibles.map(color => (
-                  <span
-                    key={color}
-                    className={`color-circle ${formulario.color === color ? 'selected' : ''}`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => handleColorSelect(color)}
-                  />
-                ))}
-              </div>
-            </div>
           </div>
 
-          {mensaje && <div className="mensaje">{mensaje}</div>}
+          <label>Color *</label>
+          <div className="agendar-colores">
+            {coloresDisponibles.map((color, i) => (
+              <span
+                key={i}
+                className={`agendar-color ${formulario.color === color ? 'seleccionado' : ''}`}
+                style={{ backgroundColor: color }}
+                onClick={() => handleColorSelect(color)}
+              />
+            ))}
+          </div>
 
-          <button className="guardar-btn" onClick={handleGuardar} disabled={guardando}>
-            <FaSave /> {guardando ? 'Guardando...' : 'Guardar'}
+          {mensaje && (
+            <div
+              style={{
+                marginTop: '10px',
+                color: mensaje.startsWith('Error') ? 'red' : 'green',
+                fontWeight: 'bold',
+                textAlign: 'center'
+              }}
+            >
+              {mensaje}
+            </div>
+          )}
+
+          <p className="agendar-obligatorio">* Campos obligatorios</p>
+          <button
+            className="agendar-btn-guardar"
+            onClick={handleGuardar}
+            disabled={guardando}
+          >
+            <FaSave className="icono-guardar" />
+            {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
           </button>
         </div>
       </div>
