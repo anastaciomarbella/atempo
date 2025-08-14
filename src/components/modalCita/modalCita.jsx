@@ -4,7 +4,7 @@ import './modalCita.css';
 
 const coloresDisponibles = [
   '#ffe4e6', '#ffedd5', '#fef9c3', '#bbf7d0',
-  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', 
+  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe',
   '#eb74b7ff','#4cf2f8ff','#b0ec6aff',
 ];
 
@@ -23,7 +23,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona: null, // ahora será un número
+    id_persona: null,
     titulo: '',
     encargado: '',
     fecha: '',
@@ -79,7 +79,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id_persona_num, // ahora enviamos número
+      id_persona: persona.id_persona_num,
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
@@ -137,9 +137,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         : 'Tu cita ha sido agendada exitosamente.'
       );
 
-      setTimeout(() => {
-        onClose();
-      }, 3000);
+      setTimeout(() => onClose(), 3000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -187,10 +185,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
                     {personas.map(p => (
-                      <li
-                        key={p.id_persona_num}
-                        onClick={() => handleEncargadoSelect(p)}
-                      >
+                      <li key={p.id_persona_num} onClick={() => handleEncargadoSelect(p)}>
                         {p.nombre}
                       </li>
                     ))}
@@ -200,8 +195,99 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
             </div>
           </div>
 
-          {/* Resto del formulario igual */}
-          {/* Fecha, hora, cliente, comentario, color, mensaje y botón guardar */}
+          <div className="agendar-fila">
+            <div>
+              <label>Fecha *</label>
+              <input
+                type="date"
+                name="fecha"
+                value={formulario.fecha}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Hora inicio *</label>
+              <input
+                type="time"
+                name="start"
+                value={formulario.start}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Hora fin *</label>
+              <input
+                type="time"
+                name="end"
+                value={formulario.end}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+          </div>
+
+          <div className="agendar-fila">
+            <div>
+              <label>Cliente</label>
+              <input
+                type="text"
+                name="client"
+                placeholder="Nombre del cliente"
+                value={formulario.client}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Teléfono</label>
+              <input
+                type="text"
+                name="clientPhone"
+                placeholder="Teléfono del cliente"
+                value={formulario.clientPhone}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+          </div>
+
+          <div className="agendar-fila">
+            <div>
+              <label>Comentario</label>
+              <textarea
+                name="comentario"
+                placeholder="Motivo de la cita"
+                value={formulario.comentario}
+                onChange={handleChange}
+                disabled={guardando}
+              />
+            </div>
+            <div>
+              <label>Color</label>
+              <div className="agendar-colores">
+                {coloresDisponibles.map(color => (
+                  <span
+                    key={color}
+                    className={`color-circulo ${formulario.color === color ? 'seleccionado' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => handleColorSelect(color)}
+                  ></span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {mensaje && <p className="agendar-mensaje">{mensaje}</p>}
+
+          <button
+            className="agendar-boton-guardar"
+            onClick={handleGuardar}
+            disabled={guardando}
+          >
+            <FaSave /> {guardando ? 'Guardando...' : 'Guardar'}
+          </button>
         </div>
       </div>
     </>
