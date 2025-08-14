@@ -36,6 +36,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
+  // Cargar personas
   useEffect(() => {
     fetch('https://mi-api-atempo.onrender.com/api/personas')
       .then(res => res.json())
@@ -43,6 +44,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       .catch(err => console.error('Error cargando personas:', err));
   }, []);
 
+  // Llenar formulario en modo editar
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
       const encargadoEncontrado = personas.find(p => p.id === cita.id_persona_uuid);
@@ -87,13 +89,24 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     setMensaje('');
   };
 
+  // NUEVA función de guardar con validación robusta
   const handleGuardar = async () => {
-    if (!formulario.id_persona) {
-      setMensaje('Por favor selecciona un encargado válido.');
-      return;
+    const errores = [];
+
+    if (!formulario.titulo.trim()) errores.push('Título');
+    if (!formulario.id_persona) errores.push('Encargado');
+    if (!formulario.fecha) errores.push('Fecha');
+    if (!formulario.start) errores.push('Hora de inicio');
+    if (!formulario.end) errores.push('Hora de fin');
+
+    // Validar que la hora de inicio sea menor que la hora final
+    if (formulario.start && formulario.end && formulario.start >= formulario.end) {
+      errores.push('Hora de inicio debe ser menor que hora de fin');
     }
-    if (!formulario.titulo || !formulario.fecha || !formulario.start || !formulario.end) {
-      setMensaje('Por favor completa todos los campos obligatorios.');
+
+    if (errores.length > 0) {
+      setMensaje('Faltan o son incorrectos los campos: ' + errores.join(', '));
+      console.log('Campos faltantes o incorrectos:', errores);
       return;
     }
 
@@ -104,7 +117,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     const hora_final = convertir24hAAmPm(formulario.end);
 
     const dataParaEnviar = {
-      id_persona_uuid: formulario.id_persona, // enviar UUID directo
+      id_persona_uuid: formulario.id_persona,
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio,
@@ -119,7 +132,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       const url = modo === 'editar'
         ? `https://mi-api-atempo.onrender.com/api/citas/${cita.id_cita}`
         : 'https://mi-api-atempo.onrender.com/api/citas';
-
       const metodo = modo === 'editar' ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -138,9 +150,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         : 'Tu cita ha sido agendada exitosamente.'
       );
 
-      setTimeout(() => {
-        onClose();
-      }, 3000);
+      setTimeout(() => onClose(), 3000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
