@@ -66,19 +66,31 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
-  // Evitar duplicados al cerrar modal
+  // Manejar cierre del modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
 
     if (nuevaCita) {
+      let citaExistente = false;
+
       setCitas(prev =>
-        prev.some(c => c.id === nuevaCita.id)
-          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
-          : [...prev, nuevaCita] // Agregar nueva
+        prev.map(c => {
+          if (c.id === nuevaCita.id) {
+            citaExistente = true;
+            return nuevaCita; // actualizar cita existente
+          }
+          return c;
+        }).concat(!citaExistente ? [nuevaCita] : []) // agregar si es nueva
       );
-      setFechaSeleccionada(new Date(nuevaCita.fecha));
+
+      // Actualizar fecha solo si es nueva cita y válida
+      if (!citaExistente && nuevaCita.fecha) {
+        const fechaNueva = new Date(nuevaCita.fecha);
+        if (!isNaN(fechaNueva.getTime())) setFechaSeleccionada(fechaNueva);
+        alert('Tu cita ha sido agendada exitosamente');
+      }
     } else {
-      await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
+      await fetchCitas(); // recargar citas si modal cerró sin cambios
     }
   };
 
