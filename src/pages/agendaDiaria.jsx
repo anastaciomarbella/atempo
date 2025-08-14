@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/agendaDiaria.css';
-import { FaClock } from 'react-icons/fa';
+import avatar from '../assets/avatar.png';
+import { FaClock, FaChevronDown } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ModalCita from '../components/modalCita/modalCita';
 
@@ -12,6 +13,7 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   // Cargar personas
@@ -38,12 +40,14 @@ const AgendaDiaria = () => {
       const res = await fetch(url);
       let data = await res.json();
 
-      // Filtrar por fecha seleccionada
-      const fechaStr = fechaSeleccionada.toISOString().slice(0, 10); // YYYY-MM-DD
+      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
-      const citasUnicas = Array.from(new Map(data.map(cita => [cita.id, cita])).values());
+      const citasUnicas = Array.from(
+        new Map(data.map(cita => [cita.id, cita])).values()
+      );
+
       setCitas(citasUnicas);
     } catch (error) {
       console.error('Error al cargar citas:', error);
@@ -62,36 +66,28 @@ const AgendaDiaria = () => {
 
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
-  // Función para eliminar cita desde el modal
-  const eliminarCita = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/api/citas/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setCitas(prev => prev.filter(c => c.id !== id));
-      } else {
-        console.error('Error al eliminar cita');
-      }
-    } catch (error) {
-      console.error('Error en la petición de eliminación:', error);
-    }
-  };
-
-  // Actualizar citas al cerrar modal
-  const handleCloseModal = async () => {
+  // Evitar duplicados al cerrar modal
+  const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-    await fetchCitas(); // Recarga desde backend para evitar duplicados
+
+    if (nuevaCita) {
+      setCitas(prev =>
+        prev.some(c => c.id === nuevaCita.id)
+          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
+          : [...prev, nuevaCita] // Agregar nueva
+      );
+      setFechaSeleccionada(new Date(nuevaCita.fecha));
+    } else {
+      await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
+    }
   };
 
   return (
     <main className="daily-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
-          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}>
-            <FiChevronLeft />
-          </button>
-          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}>
-            <FiChevronRight />
-          </button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
           <span>
             {fechaSeleccionada.toLocaleDateString('es-MX', {
               weekday: 'long',
@@ -116,25 +112,22 @@ const AgendaDiaria = () => {
 
       <div
         className="agenda-grid"
-        style={{
-          gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)`
-        }}
+        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
       >
-        {/* Cabecera de horas */}
         <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
+            <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
 
-        {/* Cabecera de empleados */}
         {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
           <div className="employee-header" key={emp?.id}>
+            <img src={avatar} alt={emp?.nombre} />
             <span>{emp?.nombre}</span>
           </div>
         ))}
 
-        {/* Celdas de agenda */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
@@ -144,10 +137,10 @@ const AgendaDiaria = () => {
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
                   {empCitas
                     .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
-                    .map((cita) => (
+                    .map((cita, index) => (
                       <div
                         className="appointment"
-                        key={cita.id}
+                        key={index}
                         style={{
                           height: '60px',
                           backgroundColor: cita.color || '#e0e0e0',
@@ -157,16 +150,13 @@ const AgendaDiaria = () => {
                           cursor: 'pointer',
                           color: '#000',
                           fontSize: '12px',
-                          overflow: 'hidden',
-                          position: 'relative'
+                          overflow: 'hidden'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
                         <strong>{cita.nombre_cliente}</strong>
                         <div>{cita.titulo}</div>
-                        <small>
-                          {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
-                        </small>
+                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
                       </div>
                     ))}
                 </div>
@@ -181,7 +171,6 @@ const AgendaDiaria = () => {
           modo="editar"
           cita={citaSeleccionada}
           onClose={handleCloseModal}
-          onDelete={eliminarCita}
         />
       )}
     </main>
