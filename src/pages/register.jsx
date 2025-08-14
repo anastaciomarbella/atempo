@@ -1,3 +1,4 @@
+// pages/Register.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
@@ -14,8 +15,8 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [foto, setFoto] = useState(null); // Guardará el archivo
-  const [preview, setPreview] = useState(null); // Vista previa de la imagen
+  const [foto, setFoto] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   // Validaciones
   const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
@@ -53,7 +54,7 @@ const Register = () => {
     }
 
     // Aquí podrías enviar la foto y datos al servidor
-    navigate('/'); // Redirige al login o a otra página después de registrar
+    navigate('/'); // Redirige al login u otra página
   };
 
   return (
@@ -63,13 +64,19 @@ const Register = () => {
         <h1 className="login-title">Atempo</h1>
         <h2 className="login-subtitle">Registrar cuenta</h2>
 
-        {/* Vista previa de la foto si existe */}
+        {/* Vista previa de la foto */}
         {preview && (
           <img
             src={preview}
             alt="Vista previa"
             className="preview-foto"
-            style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px' }}
+            style={{
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              marginBottom: '10px',
+            }}
           />
         )}
 
@@ -140,7 +147,11 @@ const Register = () => {
 
         <p className="login-legal">
           Protegemos tu información conforme a nuestro{' '}
-          <Link to="/aviso-privacidad" className="login-link" aria-label="Abrir aviso de privacidad">
+          <Link
+            to="/aviso-privacidad"
+            className="login-link"
+            aria-label="Abrir aviso de privacidad"
+          >
             Aviso de Privacidad
           </Link>.
         </p>
