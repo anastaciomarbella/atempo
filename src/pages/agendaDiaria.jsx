@@ -15,7 +15,6 @@ const AgendaDiaria = () => {
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
-  // Helper: fecha local YYYY-MM-DD
   const fechaLocalYYYYMMDD = (d) => {
     const dt = new Date(d);
     const y = dt.getFullYear();
@@ -24,7 +23,6 @@ const AgendaDiaria = () => {
     return `${y}-${m}-${day}`;
   };
 
-  // Helper: obtener hora entera
   const horaEntera = (hhmmss) => {
     if (!hhmmss) return null;
     const [h] = hhmmss.split(':');
@@ -47,14 +45,10 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas
+  // Cargar citas solo por fecha
   const fetchCitas = async () => {
     try {
-      let url = `${API_URL}/api/citas`;
-      if (personaSeleccionada !== 'todos') {
-        url += `?id_persona_uuid=${personaSeleccionada}`;
-      }
-      const res = await fetch(url);
+      const res = await fetch(`${API_URL}/api/citas`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
       if (!Array.isArray(data)) data = [];
@@ -75,21 +69,18 @@ const AgendaDiaria = () => {
 
   useEffect(() => {
     fetchCitas();
-  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
+  }, [fechaSeleccionada, API_URL]);
 
-  // Cambiar fecha
   const cambiarFecha = (delta) => {
     const nueva = new Date(fechaSeleccionada);
     nueva.setDate(nueva.getDate() + delta);
     setFechaSeleccionada(nueva);
   };
 
-  // Buscar persona por uuid
   const getPersonaByUuid = (uuid) => personas.find((p) => String(p.id_persona_uuid) === String(uuid));
   const personasVisibles =
     personaSeleccionada === 'todos' ? personas : [getPersonaByUuid(personaSeleccionada)].filter(Boolean);
 
-  // Cierre modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
     if (nuevaCita) {
