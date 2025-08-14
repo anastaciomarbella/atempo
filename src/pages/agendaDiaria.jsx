@@ -13,7 +13,7 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   const fechaLocalYYYYMMDD = (d) => {
     const dt = new Date(d);
@@ -34,42 +34,32 @@ const AgendaDiaria = () => {
     const fetchPersonas = async () => {
       try {
         const res = await fetch(`${API_URL}/api/personas`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setPersonas(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error al cargar personas:', error);
-        setPersonas([]);
       }
     };
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas solo por fecha
+  // Cargar citas
   const fetchCitas = async () => {
     try {
       const res = await fetch(`${API_URL}/api/citas`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
       if (!Array.isArray(data)) data = [];
-
       const fechaStr = fechaLocalYYYYMMDD(fechaSeleccionada);
-      data = data.filter((cita) => {
-        const f = typeof cita.fecha === 'string' ? cita.fecha.slice(0, 10) : fechaStr;
-        return f === fechaStr;
-      });
-
-      const citasUnicas = Array.from(new Map(data.map((c) => [c.id_cita, c])).values());
-      setCitas(citasUnicas);
+      data = data.filter((c) => c.fecha?.slice(0, 10) === fechaStr);
+      setCitas(data);
     } catch (error) {
       console.error('Error al cargar citas:', error);
-      setCitas([]);
     }
   };
 
   useEffect(() => {
     fetchCitas();
-  }, [fechaSeleccionada, API_URL]);
+  }, [fechaSeleccionada]);
 
   const cambiarFecha = (delta) => {
     const nueva = new Date(fechaSeleccionada);
@@ -77,29 +67,14 @@ const AgendaDiaria = () => {
     setFechaSeleccionada(nueva);
   };
 
-  const getPersonaByUuid = (uuid) => personas.find((p) => String(p.id_persona_uuid) === String(uuid));
+  const getPersonaByUuid = (uuid) => personas.find((p) => p.id_persona_uuid === uuid);
   const personasVisibles =
     personaSeleccionada === 'todos' ? personas : [getPersonaByUuid(personaSeleccionada)].filter(Boolean);
 
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
-    if (nuevaCita) {
-      setCitas((prev) =>
-        prev.some((c) => c.id_cita === nuevaCita.id_cita)
-          ? prev.map((c) => (c.id_cita === nuevaCita.id_cita ? nuevaCita : c))
-          : [...prev, nuevaCita]
-      );
-      if (nuevaCita.fecha) setFechaSeleccionada(new Date(nuevaCita.fecha));
-    } else {
-      await fetchCitas();
-    }
+    await fetchCitas();
   };
-
-  // Debug
-  useEffect(() => {
-    console.log('Personas:', personas);
-    console.log('Citas:', citas);
-  }, [personas, citas]);
 
   return (
     <main className="daily-agenda-main">
@@ -158,12 +133,10 @@ const AgendaDiaria = () => {
         {hours.map((hour) => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-
             {personasVisibles.map((emp) => {
               const empCitas = citas.filter(
-                (c) => String(c.id_persona_uuid) === String(emp.id_persona_uuid)
+                (c) => c.id_persona_uuid === emp.id_persona_uuid
               );
-
               return (
                 <div className="time-cell" key={`${emp.id_persona_uuid}-${hour}`}>
                   {empCitas
