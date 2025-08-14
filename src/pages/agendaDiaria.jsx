@@ -16,7 +16,6 @@ const AgendaDiaria = () => {
 
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
-  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -31,60 +30,56 @@ const AgendaDiaria = () => {
   }, [API_URL]);
 
   const fetchCitas = async () => {
-  try {
-    let url = `${API_URL}/api/citas`;
-    if (personaSeleccionada !== 'todos') {
-      url += `?id_persona=${personaSeleccionada}`;
+    try {
+      let url = `${API_URL}/api/citas`;
+      if (personaSeleccionada !== 'todos') {
+        url += `?id_persona=${personaSeleccionada}`;
+      }
+
+      const res = await fetch(url);
+      let data = await res.json();
+
+      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+
+      data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+
+      const citasUnicas = Array.from(
+        new Map(data.map(cita => [cita.id_cita, cita])).values()
+      );
+
+      setCitas(citasUnicas);
+    } catch (error) {
+      console.error('Error al cargar citas:', error);
     }
+  };
 
-    const res = await fetch(url);
-    let data = await res.json();
+  useEffect(() => {
+    fetchCitas();
+  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
 
-    const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+  const cambiarFecha = (delta) => {
+    const nuevaFecha = new Date(fechaSeleccionada);
+    nuevaFecha.setDate(nuevaFecha.getDate() + delta);
+    setFechaSeleccionada(nuevaFecha);
+  };
 
-    // Filtrar por fecha exacta
-    data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+  const getPersonaById = (id) => personas.find(p => p.id === id);
 
-    // Eliminar duplicados por id_cita
-    const citasUnicas = Array.from(
-      new Map(data.map(cita => [cita.id_cita, cita])).values()
-    );
+  const handleCloseModal = async (nuevaCita) => {
+    setCitaSeleccionada(null);
 
-    setCitas(citasUnicas);
-  } catch (error) {
-    console.error('Error al cargar citas:', error);
-  }
-};
+    if (nuevaCita) {
+      setCitas(prev =>
+        prev.some(c => c.id_cita === nuevaCita.id_cita)
+          ? prev.map(c => c.id_cita === nuevaCita.id_cita ? nuevaCita : c)
+          : [...prev, nuevaCita]
+      );
+      setFechaSeleccionada(new Date(nuevaCita.fecha));
+    } else {
+      await fetchCitas();
+    }
+  };
 
-useEffect(() => {
-  fetchCitas();
-}, [personaSeleccionada, fechaSeleccionada, API_URL]);
-
-const cambiarFecha = (delta) => {
-  const nuevaFecha = new Date(fechaSeleccionada);
-  nuevaFecha.setDate(nuevaFecha.getDate() + delta);
-  setFechaSeleccionada(nuevaFecha);
-};
-
-const getPersonaById = (id) => personas.find(p => p.id === id);
-
-// Evitar duplicados al cerrar modal
-const handleCloseModal = async (nuevaCita) => {
-  setCitaSeleccionada(null);
-
-  if (nuevaCita) {
-    setCitas(prev =>
-      prev.some(c => c.id_cita === nuevaCita.id_cita)
-        ? prev.map(c => c.id_cita === nuevaCita.id_cita ? nuevaCita : c) // Reemplaza si existe
-        : [...prev, nuevaCita] // Agrega si es nueva
-    );
-    setFechaSeleccionada(new Date(nuevaCita.fecha));
-  } else {
-    await fetchCitas(); // Solo recarga si no se pasó cita nueva/editada
-  }
-};
-
-  
   return (
     <main className="daily-agenda-main">
       <div className="agenda-header">
@@ -144,17 +139,7 @@ const handleCloseModal = async (nuevaCita) => {
                       <div
                         className="appointment"
                         key={index}
-                        style={{
-                          height: '60px',
-                          backgroundColor: cita.color || '#e0e0e0',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}
+                        style={{ backgroundColor: cita.color || '#e0e0e0' }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
                         <strong>{cita.nombre_cliente}</strong>
