@@ -17,6 +17,7 @@ const Register = () => {
   const [foto, setFoto] = useState(null); // Guardará el archivo
   const [preview, setPreview] = useState(null); // Vista previa de la imagen
 
+  // Validaciones
   const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
   const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
 
@@ -51,8 +52,8 @@ const Register = () => {
       return;
     }
 
-    // Aquí podrías enviar la foto al servidor junto con los datos
-    navigate('/');
+    // Aquí podrías enviar la foto y datos al servidor
+    navigate('/'); // Redirige al login o a otra página después de registrar
   };
 
   return (
@@ -129,10 +130,7 @@ const Register = () => {
 
         {error && <p className="login-error">{error}</p>}
 
-        <button
-          className="login-button"
-          onClick={handleRegister}
-        >
+        <button className="login-button" onClick={handleRegister}>
           Registrar cuenta
         </button>
 
@@ -141,7 +139,7 @@ const Register = () => {
         </p>
 
         <p className="login-legal">
-          Protegemos tu información conforme a nuestro{" "}
+          Protegemos tu información conforme a nuestro{' '}
           <Link to="/aviso-privacidad" className="login-link" aria-label="Abrir aviso de privacidad">
             Aviso de Privacidad
           </Link>.
