@@ -22,7 +22,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona: null,
+    id_persona_uuid: null, // ✅ Cambiado de id_persona a id_persona_uuid
     titulo: '',
     encargado: '',
     fecha: '',
@@ -45,9 +45,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
-      const encargadoEncontrado = personas.find(p => p.id === cita.id_persona);
+      const encargadoEncontrado = personas.find(p => p.id_persona_uuid === cita.id_persona_uuid);
       setFormulario({
-        id_persona: cita.id_persona || null,
+        id_persona_uuid: cita.id_persona_uuid || null,
         titulo: cita.titulo || '',
         encargado: encargadoEncontrado ? encargadoEncontrado.nombre : '',
         fecha: cita.fecha || '',
@@ -80,7 +80,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id,
+      id_persona_uuid: persona.id_persona_uuid, // ✅ Aquí también cambiamos
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
@@ -88,7 +88,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   };
 
   const handleGuardar = async () => {
-    if (!formulario.id_persona) {
+    if (!formulario.id_persona_uuid) {
       setMensaje('Por favor selecciona un encargado válido.');
       return;
     }
@@ -104,14 +104,15 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     const hora_final = convertir24hAAmPm(formulario.end);
 
     const dataParaEnviar = {
-      id_persona: formulario.id_persona,
+      id_persona_uuid: formulario.id_persona_uuid, // ✅ Usamos UUID
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio,
       hora_final,
       nombre_cliente: formulario.client,
       numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario
+      motivo: formulario.comentario,
+      color: formulario.color
     };
 
     try {
@@ -126,7 +127,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
       setTimeout(() => {
         onClose();
-      }, 3000);
+      }, 2000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -175,7 +176,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
                     {personas.map(p => (
                       <li
-                        key={p.id}
+                        key={p.id_persona_uuid} // ✅ UUID como key
                         onClick={() => handleEncargadoSelect(p)}
                       >
                         {p.nombre}
