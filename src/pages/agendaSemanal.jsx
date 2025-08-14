@@ -12,7 +12,6 @@ const AgendaSemanal = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
-  // Base URL desde variable de entorno
   const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
 
   const fechaInicioSemana = useMemo(() => {
@@ -122,46 +121,24 @@ const AgendaSemanal = () => {
               const citasDiaHora = citas.filter(cita => {
                 const citaDateStr = new Date(cita.fecha).toISOString().slice(0, 10);
                 if (citaDateStr !== day.dateStr) return false;
-
                 const [startHour] = cita.hora_inicio.split(':');
                 return parseInt(startHour, 10) === parseInt(hour.split(':')[0], 10);
               });
 
               return (
                 <div className={`time-cell ${index === diasSemana.length - 1 ? 'last' : ''}`} key={`${day.id}-${hour}`}>
-                  {citasDiaHora.map((cita, i) => {
-                    const [startH, startM] = cita.hora_inicio.split(':').map(Number);
-                    const [endH, endM] = cita.hora_final.split(':').map(Number);
-                    const startTotal = startH * 60 + startM;
-                    const endTotal = endH * 60 + endM;
-                    const cellStart = parseInt(hour.split(':')[0], 10) * 60;
-                    const offset = startTotal - cellStart;
-                    const height = ((endTotal - startTotal) / 60) * 62;
-                    const top = (offset / 60) * 62;
-
-                    return (
-                      <div
-                        className="appointment"
-                        key={index}
-                        style={{
-                          height: '60px',
-                          backgroundColor: cita.color || '#e0e0e0',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente || cita.client}</strong>
-                        <div>{cita.titulo || cita.service}</div>
-                        <small>{cita.hora_inicio} - {cita.hora_final}</small>
-                      </div>
-                    );
-                  })}
+                  {citasDiaHora.map((cita, i) => (
+                    <div
+                      className="appointment"
+                      key={i}
+                      style={{ backgroundColor: cita.color || '#e0e0e0' }}
+                      onClick={() => setCitaSeleccionada(cita)}
+                    >
+                      <strong>{cita.nombre_cliente || cita.client}</strong>
+                      <div>{cita.titulo || cita.service}</div>
+                      <small>{cita.hora_inicio} - {cita.hora_final}</small>
+                    </div>
+                  ))}
                 </div>
               );
             })}
