@@ -45,9 +45,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
-      const encargadoEncontrado = personas.find(p => p.id === cita.id_persona);
+      const encargadoEncontrado = personas.find(p => p.id === cita.id_persona_uuid);
       setFormulario({
-        id_persona: cita.id_persona || null,
+        id_persona: cita.id_persona_uuid || null,
         titulo: cita.titulo || '',
         encargado: encargadoEncontrado ? encargadoEncontrado.nombre : '',
         fecha: cita.fecha || '',
@@ -103,16 +103,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     const hora_inicio = convertir24hAAmPm(formulario.start);
     const hora_final = convertir24hAAmPm(formulario.end);
 
-    // Convertimos id_persona a número para evitar error de tipo
-    const id_persona_num = Number(formulario.id_persona);
-    if (isNaN(id_persona_num)) {
-      setMensaje('ID de encargado inválido. Selecciona un encargado válido.');
-      setGuardando(false);
-      return;
-    }
-
     const dataParaEnviar = {
-      id_persona: id_persona_num,
+      id_persona_uuid: formulario.id_persona, // enviar UUID directo
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio,
