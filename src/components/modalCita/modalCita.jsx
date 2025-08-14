@@ -22,7 +22,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona: null,
+    id_persona_uuid: null, // ⚡ corregido a UUID
     titulo: '',
     encargado: '',
     fecha: '',
@@ -49,7 +49,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     if (modo === 'editar' && cita && personas.length > 0) {
       const encargadoEncontrado = personas.find(p => p.id === cita.id_persona_uuid);
       setFormulario({
-        id_persona: cita.id_persona_uuid || null,
+        id_persona_uuid: cita.id_persona_uuid || null,
         titulo: cita.titulo || '',
         encargado: encargadoEncontrado ? encargadoEncontrado.nombre : '',
         fecha: cita.fecha || '',
@@ -81,14 +81,14 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id,
+      id_persona_uuid: persona.id, // ⚡ enviar UUID
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
     setMensaje('');
   };
 
-  // Guardar cita sin validaciones obligatorias
+  // Guardar cita
   const handleGuardar = async () => {
     setGuardando(true);
     setMensaje('');
@@ -97,7 +97,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     const hora_final = formulario.end ? convertir24hAAmPm(formulario.end) : null;
 
     const dataParaEnviar = {
-      id_persona_uuid: formulario.id_persona || null,
+      id_persona_uuid: formulario.id_persona_uuid || null, // ⚡ UUID
       titulo: formulario.titulo || null,
       fecha: formulario.fecha || null,
       hora_inicio,
