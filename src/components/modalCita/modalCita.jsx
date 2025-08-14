@@ -1,303 +1,235 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaSave } from 'react-icons/fa';
-import './modalCita.css';
+import '../styles/agendaDiaria.css';
+import avatar from '../assets/avatar.png';
+import { FaClock, FaChevronDown } from 'react-icons/fa';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import ModalCita from '../components/modalCita/modalCita';
 
-const coloresDisponibles = [
-  '#ffe4e6', '#ffedd5', '#fef9c3', '#bbf7d0',
-  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3'
-];
-
-function convertir24hAAmPm(hora24) {
-  if (!hora24) return '';
-  const [horaStr, minStr] = hora24.split(':');
-  let hora = parseInt(horaStr, 10);
-  const minutos = minStr;
-  const ampm = hora >= 12 ? 'PM' : 'AM';
-  hora = hora % 12;
-  if (hora === 0) hora = 12;
-  return `${hora}:${minutos} ${ampm}`;
-}
-
-const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
+const AgendaDiaria = () => {
   const [personas, setPersonas] = useState([]);
-  const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
-  const [formulario, setFormulario] = useState({
-    id_persona_uuid: null, // ✅ Cambiado de id_persona a id_persona_uuid
-    titulo: '',
-    encargado: '',
-    fecha: '',
-    start: '',
-    end: '',
-    client: '',
-    clientPhone: '',
-    comentario: '',
-    color: coloresDisponibles[0]
-  });
-  const [guardando, setGuardando] = useState(false);
-  const [mensaje, setMensaje] = useState('');
+  const [personaSeleccionada, setPersonaSeleccionada] = useState('todos'); // value será uuid o 'todos'
+  const [citas, setCitas] = useState([]);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
+  // Horas visibles (08:00 a 17:00)
+  const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+
+  const API_URL = process.env.REACT_APP_API_URL || 'https://mi-api-atempo.onrender.com';
+
+  // ------- Helpers -------
+  const fechaLocalYYYYMMDD = (d) => {
+    const dt = new Date(d);
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const horaEntera = (hhmmss) => {
+    if (!hhmmss) return null;
+    const [h] = hhmmss.split(':');
+    return parseInt(h, 10);
+  };
+
+  // ------- Cargar personas -------
   useEffect(() => {
-    fetch('https://mi-api-atempo.onrender.com/api/personas')
-      .then(res => res.json())
-      .then(data => setPersonas(data))
-      .catch(err => console.error('Error cargando personas:', err));
-  }, []);
-
-  useEffect(() => {
-    if (modo === 'editar' && cita && personas.length > 0) {
-      const encargadoEncontrado = personas.find(p => p.id_persona_uuid === cita.id_persona_uuid);
-      setFormulario({
-        id_persona_uuid: cita.id_persona_uuid || null,
-        titulo: cita.titulo || '',
-        encargado: encargadoEncontrado ? encargadoEncontrado.nombre : '',
-        fecha: cita.fecha || '',
-        start: cita.hora_inicio || '',
-        end: cita.hora_final || '',
-        client: cita.nombre_cliente || '',
-        clientPhone: cita.numero_cliente || '',
-        comentario: cita.motivo || '',
-        color: cita.color || coloresDisponibles[0]
-      });
-      setMensaje('');
-    }
-  }, [modo, cita, personas]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
-      setMostrarListaEncargados(false);
-    }
-
-    setFormulario(prev => ({ ...prev, [name]: value }));
-    setMensaje('');
-  };
-
-  const handleColorSelect = (color) => {
-    setFormulario(prev => ({ ...prev, color }));
-  };
-
-  const handleEncargadoSelect = (persona) => {
-    setFormulario(prev => ({
-      ...prev,
-      id_persona_uuid: persona.id_persona_uuid, // ✅ Aquí también cambiamos
-      encargado: persona.nombre
-    }));
-    setMostrarListaEncargados(false);
-    setMensaje('');
-  };
-
-  const handleGuardar = async () => {
-    if (!formulario.id_persona_uuid) {
-      setMensaje('Por favor selecciona un encargado válido.');
-      return;
-    }
-    if (!formulario.titulo || !formulario.fecha || !formulario.start || !formulario.end) {
-      setMensaje('Por favor completa todos los campos obligatorios.');
-      return;
-    }
-
-    setGuardando(true);
-    setMensaje('');
-
-    const hora_inicio = convertir24hAAmPm(formulario.start);
-    const hora_final = convertir24hAAmPm(formulario.end);
-
-    const dataParaEnviar = {
-      id_persona_uuid: formulario.id_persona_uuid, // ✅ Usamos UUID
-      titulo: formulario.titulo,
-      fecha: formulario.fecha,
-      hora_inicio,
-      hora_final,
-      nombre_cliente: formulario.client,
-      numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario,
-      color: formulario.color
+    const fetchPersonas = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/personas`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setPersonas(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error al cargar personas:', error);
+        setPersonas([]);
+      }
     };
+    fetchPersonas();
+  }, [API_URL]);
 
+  // ------- Cargar citas (filtradas por fecha y persona) -------
+  const fetchCitas = async () => {
     try {
-      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataParaEnviar)
+      let url = `${API_URL}/api/citas`;
+
+      // Filtrar por persona usando id_persona_uuid
+      if (personaSeleccionada !== 'todos') {
+        url += `?id_persona_uuid=${personaSeleccionada}`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      let data = await res.json();
+      if (!Array.isArray(data)) data = [];
+
+      // Filtrar por fecha local exacta YYYY-MM-DD
+      const fechaStr = fechaLocalYYYYMMDD(fechaSeleccionada);
+      data = data.filter((cita) => {
+        const f = typeof cita.fecha === 'string' ? cita.fecha.slice(0, 10) : fechaStr;
+        return f === fechaStr;
       });
-      if (!res.ok) throw new Error('Error al guardar la cita');
 
-      setMensaje('Tu cita ha sido agendada exitosamente.');
+      // Eliminar duplicados por id_cita
+      const citasUnicas = Array.from(new Map(data.map((c) => [c.id_cita, c])).values());
 
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-
+      setCitas(citasUnicas);
     } catch (error) {
-      setMensaje('Error al guardar la cita: ' + error.message);
-      console.error(error);
-    } finally {
-      setGuardando(false);
+      console.error('Error al cargar citas:', error);
+      setCitas([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchCitas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
+
+  // ------- Navegación de fecha -------
+  const cambiarFecha = (delta) => {
+    const nueva = new Date(fechaSeleccionada);
+    nueva.setDate(nueva.getDate() + delta);
+    setFechaSeleccionada(nueva);
+  };
+
+  // ------- Utilidades de persona -------
+  const getPersonaByUuid = (uuid) =>
+    personas.find((p) => String(p.id_persona_uuid) === String(uuid));
+
+  const personasVisibles =
+    personaSeleccionada === 'todos'
+      ? personas
+      : [getPersonaByUuid(personaSeleccionada)].filter(Boolean);
+
+  // ------- Cierre modal -------
+  const handleCloseModal = async (nuevaCita) => {
+    setCitaSeleccionada(null);
+
+    if (nuevaCita) {
+      setCitas((prev) =>
+        prev.some((c) => c.id_cita === nuevaCita.id_cita)
+          ? prev.map((c) => (c.id_cita === nuevaCita.id_cita ? nuevaCita : c))
+          : [...prev, nuevaCita]
+      );
+      if (nuevaCita.fecha) setFechaSeleccionada(new Date(nuevaCita.fecha));
+    } else {
+      await fetchCitas();
     }
   };
 
   return (
-    <>
-      <div className="agendar-overlay visible"></div>
-      <div className="agendar-modal">
-        <button className="agendar-cerrar-modal" onClick={onClose} disabled={guardando}>
-          <FaTimes />
-        </button>
-        <h2 className="agendar-titulo-modal">
-          {modo === 'editar' ? 'Detalles de la cita' : 'Agendar citas'}
-        </h2>
+    <main className="daily-agenda-main">
+      <div className="agenda-header">
+        <div className="nav-date">
+          <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}>
+            <FiChevronLeft />
+          </button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(1)}>
+            <FiChevronRight />
+          </button>
+          <span>
+            {fechaSeleccionada.toLocaleDateString('es-MX', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
+          </span>
+        </div>
 
-        <div className="agendar-formulario">
-          <div className="agendar-fila">
-            <div>
-              <label>Título *</label>
-              <input
-                name="titulo"
-                type="text"
-                placeholder="Título de la cita"
-                value={formulario.titulo}
-                onChange={handleChange}
-                disabled={guardando}
-              />
-            </div>
-            <div>
-              <label>Encargado *</label>
-              <div className="dropdown-encargado">
-                <button
-                  type="button"
-                  className="dropdown-boton"
-                  onClick={() => setMostrarListaEncargados(!mostrarListaEncargados)}
-                  disabled={guardando}
-                >
-                  {formulario.encargado || 'Selecciona un encargado'}
-                </button>
-                {mostrarListaEncargados && (
-                  <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
-                    {personas.map(p => (
-                      <li
-                        key={p.id_persona_uuid} // ✅ UUID como key
-                        onClick={() => handleEncargadoSelect(p)}
-                      >
-                        {p.nombre}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
+        <select
+          className="filter-select"
+          value={personaSeleccionada}
+          onChange={(e) => setPersonaSeleccionada(e.target.value)}
+        >
+          <option value="todos">Todos</option>
+          {personas.map((p) => (
+            <option key={p.id_persona_uuid} value={p.id_persona_uuid}>
+              {p.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          <div className="agendar-fila">
-            <div>
-              <label>Fecha *</label>
-              <input
-                name="fecha"
-                type="date"
-                value={formulario.fecha}
-                onChange={handleChange}
-                disabled={guardando}
-              />
-            </div>
-            <div>
-              <label>Hora *</label>
-              <div className="agendar-horario">
-                <input
-                  name="start"
-                  type="time"
-                  value={formulario.start}
-                  onChange={handleChange}
-                  disabled={guardando}
-                />
-                <span>a</span>
-                <input
-                  name="end"
-                  type="time"
-                  value={formulario.end}
-                  onChange={handleChange}
-                  disabled={guardando}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="agendar-fila">
-            <div>
-              <label>Cliente</label>
-              <input
-                name="client"
-                type="text"
-                placeholder="Nombre del cliente"
-                value={formulario.client}
-                onChange={handleChange}
-                disabled={guardando}
-              />
-            </div>
-            <div>
-              <label>Número celular</label>
-              <input
-                name="clientPhone"
-                type="tel"
-                placeholder="Número celular"
-                value={formulario.clientPhone}
-                onChange={handleChange}
-                disabled={guardando}
-              />
-            </div>
-          </div>
-
-          <div className="agendar-fila">
-            <div style={{ gridColumn: 'span 2', margin: '0 18px' }}>
-              <label>Comentario</label>
-              <input
-                name="comentario"
-                type="text"
-                placeholder="Descripción o comentario"
-                value={formulario.comentario}
-                onChange={handleChange}
-                disabled={guardando}
-              />
-            </div>
-          </div>
-
-          <label>Color *</label>
-          <div className="agendar-colores">
-            {coloresDisponibles.map((color, i) => (
-              <span
-                key={i}
-                className={`agendar-color ${formulario.color === color ? 'seleccionado' : ''}`}
-                style={{ backgroundColor: color }}
-                onClick={() => handleColorSelect(color)}
-              />
-            ))}
-          </div>
-
-          {mensaje && (
-            <div
-              style={{
-                marginTop: '10px',
-                color: mensaje.startsWith('Error') ? 'red' : 'green',
-                fontWeight: 'bold',
-                textAlign: 'center'
-              }}
-            >
-              {mensaje}
-            </div>
-          )}
-
-          <p className="agendar-obligatorio">* Campos obligatorios</p>
-          <button
-            className="agendar-btn-guardar"
-            onClick={handleGuardar}
-            disabled={guardando}
-          >
-            <FaSave className="icono-guardar" />
-            {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
+      <div
+        className="agenda-grid"
+        style={{
+          gridTemplateColumns: `80px repeat(${
+            personaSeleccionada === 'todos' ? personas.length : 1
+          }, 1fr)`
+        }}
+      >
+        <div className="employee-header clock-header">
+          <button className="clock-btn">
+            <FaClock />
+            <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
+
+        {personasVisibles.map((emp) => (
+          <div className="employee-header" key={emp.id_persona_uuid}>
+            <img src={avatar} alt={emp.nombre} />
+            <span>{emp.nombre}</span>
+          </div>
+        ))}
+
+        {hours.map((hour) => (
+          <React.Fragment key={hour}>
+            <div className="hour-cell">{hour}</div>
+
+            {personasVisibles.map((emp) => {
+              const empCitas = citas.filter(
+                (c) => String(c.id_persona_uuid) === String(emp.id_persona_uuid)
+              );
+
+              return (
+                <div className="time-cell" key={`${emp.id_persona_uuid}-${hour}`}>
+                  {empCitas
+                    .filter(
+                      (c) =>
+                        horaEntera(c.hora_inicio) === parseInt(hour.split(':')[0], 10)
+                    )
+                    .map((cita) => (
+                      <div
+                        className="appointment"
+                        key={cita.id_cita}
+                        style={{
+                          height: '60px',
+                          backgroundColor: cita.color || '#e0e0e0',
+                          borderRadius: '6px',
+                          padding: '4px',
+                          marginBottom: '4px',
+                          cursor: 'pointer',
+                          color: '#000',
+                          fontSize: '12px',
+                          overflow: 'hidden'
+                        }}
+                        onClick={() => setCitaSeleccionada(cita)}
+                      >
+                        <strong>{cita.nombre_cliente || 'Sin nombre'}</strong>
+                        <div>{cita.titulo || ''}</div>
+                        <small>
+                          {(cita.hora_inicio || '').slice(0, 5)} -{' '}
+                          {(cita.hora_final || '').slice(0, 5)}
+                        </small>
+                      </div>
+                    ))}
+                </div>
+              );
+            })}
+          </React.Fragment>
+        ))}
       </div>
-    </>
+
+      {citaSeleccionada && (
+        <ModalCita
+          modo="editar"
+          cita={citaSeleccionada}
+          onClose={handleCloseModal}
+        />
+      )}
+    </main>
   );
 };
 
-export default ModalCita;
+export default AgendaDiaria;
