@@ -7,17 +7,6 @@ const coloresDisponibles = [
   '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3'
 ];
 
-function convertir24hAAmPm(hora24) {
-  if (!hora24) return '';
-  const [horaStr, minStr] = hora24.split(':');
-  let hora = parseInt(horaStr, 10);
-  const minutos = minStr;
-  const ampm = hora >= 12 ? 'PM' : 'AM';
-  hora = hora % 12;
-  if (hora === 0) hora = 12;
-  return `${hora}:${minutos} ${ampm}`;
-}
-
 const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
@@ -36,6 +25,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
+  // Cargar personas
   useEffect(() => {
     fetch('https://mi-api-atempo.onrender.com/api/personas')
       .then(res => res.json())
@@ -43,6 +33,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
       .catch(err => console.error('Error cargando personas:', err));
   }, []);
 
+  // Cargar datos si es modo editar
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
       const encargadoEncontrado = personas.find(p => p.id === cita.id_persona);
@@ -98,15 +89,13 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     setGuardando(true);
     setMensaje('');
 
-    const hora_inicio = convertir24hAAmPm(formulario.start);
-    const hora_final = convertir24hAAmPm(formulario.end);
-
+    // Preparar datos para enviar (24h directo, backend los convierte)
     const dataParaEnviar = {
       id_persona: formulario.id_persona,
       titulo: formulario.titulo,
       fecha: formulario.fecha,
-      hora_inicio,
-      hora_final,
+      hora_inicio: formulario.start,
+      hora_final: formulario.end,
       nombre_cliente: formulario.client,
       numero_cliente: formulario.clientPhone,
       motivo: formulario.comentario,
@@ -116,14 +105,12 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     try {
       let res;
       if (modo === 'crear') {
-        // Crear nueva cita
         res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dataParaEnviar)
         });
       } else {
-        // Editar cita existente
         res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id}`, {
           method: 'PUT', // o PATCH según tu API
           headers: { 'Content-Type': 'application/json' },
