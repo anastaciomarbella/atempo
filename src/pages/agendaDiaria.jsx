@@ -30,7 +30,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas filtradas por fecha y persona, sin duplicados
+  // Cargar citas filtradas por fecha y persona
   const fetchCitas = async () => {
     try {
       let url = `${API_URL}/api/citas`;
@@ -40,7 +40,8 @@ const AgendaDiaria = () => {
       const res = await fetch(url);
       let data = await res.json();
 
-      const fechaStr = fechaSeleccionada.toLocaleDateString('sv-SE');
+      // Convertimos la fecha a YYYY-MM-DD
+      const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
       data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
 
       // Eliminar duplicados por ID
@@ -64,21 +65,20 @@ const AgendaDiaria = () => {
     setFechaSeleccionada(nuevaFecha);
   };
 
-  const getPersonaById = (id) => personas.find(p => p.id === id);
+  const getPersonaById = (id) => personas.find(p => String(p.id) === String(id));
 
-  // Evitar duplicados al cerrar modal
   const handleCloseModal = async (nuevaCita) => {
     setCitaSeleccionada(null);
 
     if (nuevaCita) {
       setCitas(prev =>
         prev.some(c => c.id === nuevaCita.id)
-          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c) // Editar existente
-          : [...prev, nuevaCita] // Agregar nueva
+          ? prev.map(c => c.id === nuevaCita.id ? nuevaCita : c)
+          : [...prev, nuevaCita]
       );
       setFechaSeleccionada(new Date(nuevaCita.fecha));
     } else {
-      await fetchCitas(); // Solo recargar si no se pasó una cita nueva/editada
+      await fetchCitas();
     }
   };
 
@@ -121,7 +121,7 @@ const AgendaDiaria = () => {
           </button>
         </div>
 
-        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
+        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(personaSeleccionada)]).map(emp => (
           <div className="employee-header" key={emp?.id}>
             <img src={avatar} alt={emp?.nombre} />
             <span>{emp?.nombre}</span>
@@ -131,12 +131,12 @@ const AgendaDiaria = () => {
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
-              const empCitas = citas.filter(c => c.id_persona === emp?.id);
+            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(personaSeleccionada)]).map(emp => {
+              const empCitas = citas.filter(c => String(c.id_persona) === String(emp?.id));
               return (
                 <div className="time-cell" key={`${emp?.id}-${hour}`}>
                   {empCitas
-                    .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
+                    .filter(c => parseInt(c.hora_inicio.split(':')[0]) === parseInt(hour.split(':')[0]))
                     .map((cita, index) => (
                       <div
                         className="appointment"
