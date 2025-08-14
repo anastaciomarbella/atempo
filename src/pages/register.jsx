@@ -52,16 +52,17 @@ const Register = () => {
     }
 
     try {
+      const formData = new FormData();
+      formData.append('negocio', negocio);
+      formData.append('nombre', nombre);
+      formData.append('correo', correo);
+      formData.append('telefono', telefono);
+      formData.append('password', password);
+      if (foto) formData.append('foto', foto);
+
       const response = await fetch('https://mi-api-atempo.onrender.com/api/auth/registro', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre_empresa: negocio,
-          nombre,
-          correo,
-          telefono,
-          password
-        })
+        body: formData
       });
 
       const data = await response.json();
