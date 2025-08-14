@@ -8,7 +8,7 @@ const coloresDisponibles = [
 ];
 
 function convertir24hAAmPm(hora24) {
-  if (!hora24) return '';
+  if (!hora24) return null;
   const [horaStr, minStr] = hora24.split(':');
   let hora = parseInt(horaStr, 10);
   const minutos = minStr;
@@ -88,42 +88,24 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
     setMensaje('');
   };
 
-  // Guardar cita con validación completa
+  // Guardar cita sin validaciones obligatorias
   const handleGuardar = async () => {
-    console.log('Formulario antes de guardar:', formulario);
-
-    const errores = [];
-    if (!formulario.titulo.trim()) errores.push('Título');
-    if (!formulario.id_persona) errores.push('Encargado');
-    if (!formulario.fecha) errores.push('Fecha');
-    if (!formulario.start) errores.push('Hora de inicio');
-    if (!formulario.end) errores.push('Hora de fin');
-    if (formulario.start && formulario.end && formulario.start >= formulario.end) {
-      errores.push('Hora de inicio debe ser menor que hora de fin');
-    }
-
-    if (errores.length > 0) {
-      setMensaje('Faltan o son incorrectos los campos: ' + errores.join(', '));
-      console.log('Campos faltantes o incorrectos:', errores);
-      return;
-    }
-
     setGuardando(true);
     setMensaje('');
 
-    const hora_inicio = convertir24hAAmPm(formulario.start);
-    const hora_final = convertir24hAAmPm(formulario.end);
+    const hora_inicio = formulario.start ? convertir24hAAmPm(formulario.start) : null;
+    const hora_final = formulario.end ? convertir24hAAmPm(formulario.end) : null;
 
     const dataParaEnviar = {
-      id_persona_uuid: formulario.id_persona,
-      titulo: formulario.titulo,
-      fecha: formulario.fecha,
+      id_persona_uuid: formulario.id_persona || null,
+      titulo: formulario.titulo || null,
+      fecha: formulario.fecha || null,
       hora_inicio,
       hora_final,
-      nombre_cliente: formulario.client,
-      numero_cliente: formulario.clientPhone,
-      motivo: formulario.comentario,
-      color: formulario.color
+      nombre_cliente: formulario.client || null,
+      numero_cliente: formulario.clientPhone || null,
+      motivo: formulario.comentario || null,
+      color: formulario.color || null
     };
 
     try {
@@ -148,7 +130,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         : 'Tu cita ha sido agendada exitosamente.'
       );
 
-      setTimeout(() => onClose(), 3000);
+      setTimeout(() => onClose(), 2000);
 
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -172,7 +154,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         <div className="agendar-formulario">
           <div className="agendar-fila">
             <div>
-              <label>Título *</label>
+              <label>Título</label>
               <input
                 name="titulo"
                 type="text"
@@ -183,7 +165,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               />
             </div>
             <div>
-              <label>Encargado *</label>
+              <label>Encargado</label>
               <div className="dropdown-encargado">
                 <button
                   type="button"
@@ -211,7 +193,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
 
           <div className="agendar-fila">
             <div>
-              <label>Fecha *</label>
+              <label>Fecha</label>
               <input
                 name="fecha"
                 type="date"
@@ -221,7 +203,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
               />
             </div>
             <div>
-              <label>Hora *</label>
+              <label>Hora</label>
               <div className="agendar-horario">
                 <input
                   name="start"
@@ -281,7 +263,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
             </div>
           </div>
 
-          <label>Color *</label>
+          <label>Color</label>
           <div className="agendar-colores">
             {coloresDisponibles.map((color, i) => (
               <span
@@ -306,7 +288,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
             </div>
           )}
 
-          <p className="agendar-obligatorio">* Campos obligatorios</p>
           <button
             className="agendar-btn-guardar"
             onClick={handleGuardar}
