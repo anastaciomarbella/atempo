@@ -137,23 +137,19 @@ const Register = () => {
 
         {error && <p className="login-error">{error}</p>}
 
+        <p className="login-legal">
+                    Protegemos tu información conforme a nuestro{" "}
+                    <Link to="/aviso-privacidad" className="login-link" aria-label="Abrir aviso de privacidad">
+                        Aviso de Privacidad
+                    </Link>.
+                </p>
+
         <button className="login-button" onClick={handleRegister}>
           Registrar cuenta
         </button>
 
         <p className="login-footer">
           ¿Ya tienes cuenta? <Link to="/" className="login-link">Inicia sesión</Link>
-        </p>
-
-        <p className="login-legal">
-          Protegemos tu información conforme a nuestro{' '}
-          <Link
-            to="/aviso-privacidad"
-            className="login-link"
-            aria-label="Abrir aviso de privacidad"
-          >
-            Aviso de Privacidad
-          </Link>.
         </p>
       </div>
     </div>
