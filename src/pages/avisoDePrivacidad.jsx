@@ -1,156 +1,136 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../styles/login.css';
-import { FaUpload } from 'react-icons/fa';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/avisoDePrivacidad.css";
 import logo from '../assets/LogoAtempoPNG.png';
 
-const Register = () => {
+const AvisoPrivacidad = () => {
   const navigate = useNavigate();
 
-  const [negocio, setNegocio] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [foto, setFoto] = useState(null);
-  const [preview, setPreview] = useState(null);
-
-  const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
-  const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
-
-  const handleFotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFoto(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleRegister = () => {
-    setError('');
-
-    if (!negocio.trim() || !nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
-      setError('Por favor, completa todos los campos');
-      return;
-    }
-
-    if (!validarCorreo(correo)) {
-      setError('Ingresa un correo válido');
-      return;
-    }
-
-    if (!validarTelefono(telefono)) {
-      setError('Ingresa un teléfono válido (solo números)');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-
-    // Aquí podrías enviar la foto al servidor junto con los datos
-    navigate('/');
+  const handleAccept = () => {
+    navigate(-1);
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <img src={logo} alt="Atempo logo" className="login-logo" />
-        <h1 className="login-title">Atempo</h1>
-        <h2 className="login-subtitle">Registrar cuenta</h2>
+    <div className="aviso-wrapper">
+      <div className="aviso-card">
+        <div className="aviso-content">
+          <img src={logo} alt="Atempo Logo" className="aviso-logo" />
+          <h1 className="aviso-title">Aviso de Privacidad</h1>
+          <p className="aviso-fecha">
+            Fecha de última actualización: 6 de agosto de 2025
+          </p>
 
-        {preview && (
-          <img
-            src={preview}
-            alt="Vista previa"
-            className="preview-foto"
-            style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px' }}
-          />
-        )}
+          <p>
+            En cumplimiento con lo establecido por la Ley Federal de Protección
+            de Datos Personales en Posesión de los Particulares y demás
+            disposiciones aplicables en la materia, se emite el presente aviso
+            de privacidad para los usuarios del sistema SaaS de gestión de citas
+            para negocios, en adelante "el sistema".
+          </p>
 
-        <label className="btn-cargar-foto">
-          <FaUpload className="icono-upload" />
-          Cargar foto
-          <input
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={handleFotoChange}
-          />
-        </label>
+          <h2>1. Responsable del tratamiento de datos personales</h2>
+          <p>
+            El responsable del tratamiento de los datos personales es el equipo
+            desarrollador de Atempo, sistema SaaS de gestión de citas para
+            negocios, cuya finalidad es ofrecer una herramienta digital
+            exclusiva para dueños de negocios que deseen gestionar su agenda,
+            citas, empleados y clientes de forma eficiente.
+          </p>
+          <p>
+            Para cualquier duda, aclaración o ejercicio de derechos relacionados
+            con sus datos personales, puede contactarse al siguiente correo
+            electrónico:
+          </p>
+          <p>✉️ privacidad@atempo.com</p>
 
-        <input
-          type="text"
-          placeholder="Nombre del negocio"
-          className="login-input"
-          value={negocio}
-          onChange={(e) => setNegocio(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Nombre completo"
-          className="login-input"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        <input
-          type="tel"
-          placeholder="Número de teléfono"
-          className="login-input"
-          value={telefono}
-          onChange={(e) => setTelefono(e.target.value)}
-        />
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          className="login-input"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          className="login-input"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Confirmar contraseña"
-          className="login-input"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
+          <h2>2. Datos personales que se recopilan</h2>
+          <ul>
+            <li>Nombre completo del usuario (dueño del negocio)</li>
+            <li>Correo electrónico del usuario</li>
+            <li>Número telefónico</li>
+            <li>Nombre del negocio</li>
+            <li>
+              Datos de clientes frecuentes: nombre, teléfono y correo
+              electrónico
+            </li>
+            <li>
+              Datos de empleados: nombre, correo, teléfono y avatar (imagen)
+            </li>
+            <li>
+              Información de citas programadas: fecha, hora, servicio,
+              encargado, cliente y observaciones
+            </li>
+          </ul>
 
-        {error && <p className="login-error">{error}</p>}
+          <h2>3. Finalidades del tratamiento de datos</h2>
+          <ul>
+            <li>Permitir el acceso y uso seguro del sistema</li>
+            <li>Gestionar la agenda y citas del negocio</li>
+            <li>Personalizar la experiencia con el nombre del negocio</li>
+            <li>Administrar empleados y clientes frecuentes</li>
+            <li>
+              Generar reportes y estadísticas internas para mejorar el servicio
+            </li>
+            <li>
+              En ningún caso se utilizarán los datos con fines distintos a los
+              descritos
+            </li>
+          </ul>
 
-        <button
-          className="login-button"
-          onClick={handleRegister}
-        >
-          Registrar cuenta
+          <h2>4. Acceso y control de la información</h2>
+          <p>
+            El sistema está diseñado para ser utilizado exclusivamente por el
+            dueño del negocio que creó la cuenta. No se han implementado roles
+            ni distintos niveles de acceso.
+          </p>
+          <p>
+            No se comparten, venden ni transfieren datos personales a terceros
+            sin el consentimiento expreso del usuario.
+          </p>
+
+          <h2>5. Medidas de seguridad</h2>
+          <p>
+            Se implementan medidas técnicas, administrativas y organizativas
+            razonables para proteger los datos personales contra pérdida, uso
+            indebido, acceso no autorizado, alteración o divulgación.
+          </p>
+
+          <h2>6. Derechos ARCO</h2>
+          <p>
+            El usuario tiene derecho a acceder, rectificar, cancelar u oponerse
+            al tratamiento de sus datos personales.
+          </p>
+          <p>
+            Para ejercer estos derechos, el usuario deberá enviar su solicitud
+            al correo: ✉️ privacidad@atempo.com
+          </p>
+
+          <h2>7. Cambios en el aviso de privacidad</h2>
+          <p>
+            Este aviso puede ser modificado en cualquier momento para adaptarse
+            a cambios legales, operativos o de servicios.
+          </p>
+          <p>
+            Cualquier modificación será publicada dentro de Atempo con la fecha
+            actualizada y, en caso necesario, se notificará al correo
+            electrónico registrado.
+          </p>
+
+          <h2>8. Uso de cookies y tecnologías de rastreo</h2>
+          <p>
+            Actualmente, el sistema no utiliza cookies ni tecnologías de
+            rastreo. En caso de implementar alguna de estas herramientas en el
+            futuro, se notificará previamente al usuario para obtener su
+            consentimiento.
+          </p>
+        </div>
+
+        <button className="aviso-btn" onClick={handleAccept}>
+          Aceptar
         </button>
-
-        <p className="login-footer">
-          ¿Ya tienes cuenta? <Link to="/" className="login-link">Inicia sesión</Link>
-        </p>
-
-        <p className="login-legal">
-          Protegemos tu información conforme a nuestro{" "}
-          <Link 
-            to="/avisoDePrivacidad" 
-            className="login-link" 
-            aria-label="Abrir aviso de privacidad"
-          >
-            Aviso de Privacidad
-          </Link>.
-        </p>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default AvisoPrivacidad;
