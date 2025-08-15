@@ -1,4 +1,37 @@
-/* Cabecera de empleados con avatar y nombre */
+/* Contenedor del header principal */
+.agenda-header {
+  display: flex;
+  justify-content: space-between; /* flechas a extremos */
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Título de la semana */
+.week-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0c4a6e;
+  text-align: center;
+}
+
+/* Botones de navegación (flechitas) */
+.nav-arrow {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #0c4a6e;
+  padding: 4px 8px;
+  transition: background 0.2s ease;
+}
+.nav-arrow:hover {
+  background: #e0f2fe;
+  border-radius: 6px;
+}
+
+/* Cabecera de empleados y días */
 .employee-header {
   display: flex;
   flex-direction: column;
@@ -9,24 +42,25 @@
   border-bottom: 2px solid #e5e7eb;
   background: #f9fafb;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   white-space: nowrap;
 }
 
 .employee-header img.person-avatar {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .employee-header .person-name {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: #0c4a6e;
+  text-align: center;
 }
 
-/* Cabecera de reloj (primer celda de la fila) */
+/* Cabecera del reloj */
 .weekly-clock-header {
   display: flex;
   align-items: center;
@@ -40,24 +74,16 @@
   background: #E8EDFB;
   border: none;
   border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 15px;
+  padding: 4px 8px;
+  font-size: 14px;
   cursor: default;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  height: 30px;
-  min-width: 42px;
+  height: 28px;
+  min-width: 40px;
   user-select: none;
-}
-
-.weekly-clock-btn .dropdown-arrow {
-  font-size: 10px;
-  color: #333;
-  margin-left: 5px;
-  position: relative;
-  top: 1px;
+  font-weight: 500;
 }
 
 /* Filas de horas */
@@ -66,7 +92,7 @@
   align-items: center;
   justify-content: center;
   background-color: #f3f4f6;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   border-right: 2px solid #e5e7eb;
   border-bottom: 2px solid #e5e7eb;
 }
@@ -77,28 +103,24 @@
   border-right: 2px solid #e5e7eb;
   border-bottom: 2px solid #e5e7eb;
   background-color: #ffffff;
-  overflow: visible; /* permite que las citas sobresalgan si es necesario */
 }
 
 /* Citas */
 .appointment {
   position: absolute;
-  border-radius: 8px;
-  padding: 6px 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  font-size: 13px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  justify-content: center;
   gap: 2px;
   z-index: 10;
   cursor: pointer;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  width: 90%; /* para que no ocupe toda la celda */
-  left: 5%;   /* centrado horizontal */
+  width: 90%;
+  left: 5%;
 }
 
 .appointment strong {
@@ -110,7 +132,7 @@
   color: #555;
 }
 
-/* Scroll horizontal para grid */
+/* Scroll horizontal */
 .agenda-grid {
   overflow-x: auto;
   scrollbar-width: thin;
@@ -118,7 +140,7 @@
 }
 
 .agenda-grid::-webkit-scrollbar {
-  height: 8px;
+  height: 6px;
 }
 
 .agenda-grid::-webkit-scrollbar-thumb {
@@ -128,27 +150,17 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .agenda-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.7rem;
+  .week-title {
+    font-size: 0.9rem;
   }
-
-  .filter-select {
-    width: 100%;
-  }
-
   .employee-header img.person-avatar {
-    width: 35px;
-    height: 35px;
+    width: 32px;
+    height: 32px;
   }
-
   .employee-header .person-name {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
-
   .appointment {
-    font-size: 11px;
-    padding: 4px 6px;
+    font-size: 10px;
   }
 }
