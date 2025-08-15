@@ -142,6 +142,7 @@ const AgendaDiaria = () => {
             style={{ minHeight: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
           >
             <img src={avatar} alt={`Avatar de ${emp.nombre}`} style={{ width: '40px', height: '40px', borderRadius: '50%', marginBottom: '4px' }} />
+            <span className="person-name">{emp.nombre}</span>
             <span>{emp.nombre}</span>
           </div>
         ))}
