@@ -12,14 +12,13 @@ const AgendaSemanal = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
-  // Base URL desde variable de entorno
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   // Calcular inicio de semana (lunes)
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // lunes como inicio
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
   }, [fechaSeleccionada]);
 
@@ -31,7 +30,7 @@ const AgendaSemanal = () => {
       return {
         id: i + 1,
         label: date.toLocaleDateString('es-MX', { weekday: 'long' }),
-        date: date,
+        date,
         dateStr: date.toISOString().slice(0, 10),
       };
     });
@@ -69,7 +68,19 @@ const AgendaSemanal = () => {
           return citaFecha >= diasSemana[0].date && citaFecha <= diasSemana[6].date;
         });
 
-        setCitas(citasFiltradas);
+        // Evitar duplicados y actualizar citas existentes
+        setCitas(prev => {
+          const citasUnicas = [...prev];
+          citasFiltradas.forEach(nuevaCita => {
+            const index = citasUnicas.findIndex(c => c.id_cita === nuevaCita.id_cita);
+            if (index !== -1) {
+              citasUnicas[index] = nuevaCita;
+            } else {
+              citasUnicas.push(nuevaCita);
+            }
+          });
+          return citasUnicas;
+        });
       } catch (error) {
         console.error('Error cargando citas:', error);
       }
@@ -77,21 +88,21 @@ const AgendaSemanal = () => {
     fetchCitas();
   }, [personaSeleccionada, diasSemana, API_URL]);
 
-  const cambiarFecha = (dias) => {
+  const cambiarFecha = dias => {
     const nuevaFecha = new Date(fechaSeleccionada);
     nuevaFecha.setDate(nuevaFecha.getDate() + dias);
     setFechaSeleccionada(nuevaFecha);
   };
 
-  // ✅ Función para actualizar o agregar cita sin duplicados
-  const actualizarCita = (citaEditada) => {
+  // Actualizar o eliminar cita sin duplicados
+  const actualizarCita = citaEditada => {
     setCitas(prev => {
       if (citaEditada.eliminar) {
         return prev.filter(c => c.id_cita !== citaEditada.id_cita);
       }
       const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
       if (existe) {
-        return prev.map(c => c.id_cita === citaEditada.id_cita ? citaEditada : c);
+        return prev.map(c => (c.id_cita === citaEditada.id_cita ? citaEditada : c));
       } else {
         return [...prev, citaEditada];
       }
@@ -103,10 +114,15 @@ const AgendaSemanal = () => {
     <main className="weekly-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
-          <button className="date-nav-btn" onClick={() => cambiarFecha(-7)}><FiChevronLeft /></button>
-          <button className="date-nav-btn" onClick={() => cambiarFecha(7)}><FiChevronRight /></button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(-7)}>
+            <FiChevronLeft />
+          </button>
+          <button className="date-nav-btn" onClick={() => cambiarFecha(7)}>
+            <FiChevronRight />
+          </button>
           <span>
-            Del {diasSemana[0].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })} al {diasSemana[6].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
+            Del {diasSemana[0].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })} al{' '}
+            {diasSemana[6].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
         </div>
         <select
@@ -116,25 +132,29 @@ const AgendaSemanal = () => {
         >
           <option value="todos">Todos</option>
           {personas.map(p => (
-            <option key={p.id} value={p.id}>{p.nombre}</option>
+            <option key={p.id} value={p.id}>
+              {p.nombre}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${diasSemana.length}, 1fr)` }}>
+        {/* Cabecera con avatares y nombres */}
         <div className="employee-header weekly-clock-header">
           <button className="weekly-clock-btn">
             <FaClock />
             <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
-
-        {diasSemana.map((day, index) => (
-          <div className={`employee-header ${index === diasSemana.length - 1 ? 'last' : ''}`} key={day.id}>
-            <span className='day-agenda'>{day.label}<br />{day.date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' })}</span>
+        {personas.map((p, index) => (
+          <div className={`employee-header ${index === personas.length - 1 ? 'last' : ''}`} key={p.id}>
+            <img src={avatar} alt={p.nombre} className="person-avatar" />
+            <span className="person-name">{p.nombre}</span>
           </div>
         ))}
 
+        {/* Filas de horas */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
@@ -149,7 +169,7 @@ const AgendaSemanal = () => {
 
               return (
                 <div className={`time-cell ${index === diasSemana.length - 1 ? 'last' : ''}`} key={`${day.id}-${hour}`}>
-                  {citasDiaHora.map((cita, i) => {
+                  {citasDiaHora.map(cita => {
                     const [startH, startM] = cita.hora_inicio.split(':').map(Number);
                     const [endH, endM] = cita.hora_final.split(':').map(Number);
                     const startTotal = startH * 60 + startM;
@@ -164,7 +184,9 @@ const AgendaSemanal = () => {
                         className="appointment"
                         key={cita.id_cita}
                         style={{
-                          height: '60px',
+                          position: 'absolute',
+                          top: `${top}px`,
+                          height: `${height}px`,
                           backgroundColor: cita.color || '#e0e0e0',
                           borderRadius: '6px',
                           padding: '4px',
@@ -172,13 +194,16 @@ const AgendaSemanal = () => {
                           cursor: 'pointer',
                           color: '#000',
                           fontSize: '12px',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
+                          width: '90%',
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
                         <strong>{cita.nombre_cliente || cita.client}</strong>
                         <div>{cita.titulo || cita.service}</div>
-                        <small>{cita.hora_inicio} - {cita.hora_final}</small>
+                        <small>
+                          {cita.hora_inicio} - {cita.hora_final}
+                        </small>
                       </div>
                     );
                   })}
@@ -190,12 +215,7 @@ const AgendaSemanal = () => {
       </div>
 
       {citaSeleccionada && (
-        <ModalCita
-          modo="editar"
-          cita={citaSeleccionada}
-          onClose={() => setCitaSeleccionada(null)}
-          onSave={actualizarCita} // ✅ Refleja cambios en la agenda semanal
-        />
+        <ModalCita modo="editar" cita={citaSeleccionada} onClose={() => setCitaSeleccionada(null)} onSave={actualizarCita} />
       )}
     </main>
   );
