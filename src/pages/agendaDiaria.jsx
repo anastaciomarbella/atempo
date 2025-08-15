@@ -3,75 +3,72 @@ import '../styles/agendaDiaria.css';
 import avatar from '../assets/avatar.png';
 import { FaClock, FaChevronDown } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+
 import ModalCita from '../components/modalCita/modalCita';
 
 const AgendaDiaria = () => {
   const [personas, setPersonas] = useState([]);
   const [personaSeleccionada, setPersonaSeleccionada] = useState('todos');
   const [citas, setCitas] = useState([]);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date('2025-07-18'));
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const cellHeight = 62;
 
-  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/personas`);
+        const res = await fetch('https://mi-api-atempo.onrender.com/api/personas');
         const data = await res.json();
         setPersonas(data);
       } catch (error) {
-        console.error('Error cargando personas:', error);
+        console.error('Error al cargar personas:', error);
       }
     };
     fetchPersonas();
-  }, [API_URL]);
+  }, []);
 
-  // Cargar citas filtradas por día y persona
   useEffect(() => {
     const fetchCitas = async () => {
       try {
-        let url = `${API_URL}/api/citas`;
+        let url = 'https://mi-api-atempo.onrender.com/api/citas';
         if (personaSeleccionada !== 'todos') {
-          url = `${API_URL}/api/citas/persona/${personaSeleccionada}`;
+          url += `?id_persona=${personaSeleccionada}`;
         }
         const res = await fetch(url);
-        const data = await res.json();
-
+        let data = await res.json();
         const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
-        const citasFiltradas = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
-
-        setCitas(citasFiltradas);
+        data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+        setCitas(data);
       } catch (error) {
-        console.error('Error cargando citas:', error);
+        console.error('Error al cargar citas:', error);
       }
     };
     fetchCitas();
-  }, [personaSeleccionada, fechaSeleccionada, API_URL]);
+  }, [personaSeleccionada, fechaSeleccionada]);
 
-  const cambiarFecha = (dias) => {
+  const cambiarFecha = (delta) => {
     const nuevaFecha = new Date(fechaSeleccionada);
-    nuevaFecha.setDate(nuevaFecha.getDate() + dias);
+    nuevaFecha.setDate(nuevaFecha.getDate() + delta);
     setFechaSeleccionada(nuevaFecha);
   };
 
-  // Lista de empleados a mostrar
-  const empleados = personaSeleccionada === 'todos'
-    ? personas
-    : [personas.find(p => p.id === Number(personaSeleccionada))].filter(Boolean);
+  const getPersonaById = (id) => {
+    return personas.find(p => p.id === id);
+  };
 
   return (
-    <main className="weekly-agenda-main">
+    <main className="daily-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
           <button className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
           <button className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
           <span>
             {fechaSeleccionada.toLocaleDateString('es-MX', {
-              weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
             })}
           </span>
         </div>
@@ -88,51 +85,51 @@ const AgendaDiaria = () => {
         </select>
       </div>
 
-      <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${empleados.length}, 1fr)` }}>
-        <div className="employee-header weekly-clock-header">
-          <button className="weekly-clock-btn">
+      <div
+        className="agenda-grid"
+        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
+      >
+        <div className="employee-header clock-header">
+          <button className="clock-btn">
             <FaClock />
             <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
 
-        {empleados.map(emp => (
-          <div className="employee-header" key={emp.id}>
-            <img src={avatar} alt={emp.nombre} />
-            <span>{emp.nombre}</span>
+        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
+          <div className="employee-header" key={emp?.id}>
+            <img src={avatar} alt={emp?.nombre} />
+            <span>{emp?.nombre}</span>
           </div>
         ))}
 
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {empleados.map(emp => {
-              const empCitas = citas.filter(c => c.id_persona === emp.id);
+            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
+              const empCitas = citas.filter(c => c.id_persona === emp?.id);
               return (
-                <div className="time-cell" key={`${emp.id}-${hour}`}>
-                  {empCitas
-                    .filter(c => parseInt(c.hora_inicio.slice(0, 2)) === parseInt(hour.slice(0, 2)))
-                    .map((cita, index) => {
-                      const [startH, startM] = cita.hora_inicio.split(':').map(Number);
-                      const [endH, endM] = cita.hora_final.split(':').map(Number);
-                      const startMin = startH * 60 + startM;
-                      const endMin = endH * 60 + endM;
-                      const offsetTop = ((startMin - startH * 60) / 60) * cellHeight;
-                      const height = ((endMin - startMin) / 60) * cellHeight;
+                <div className="time-cell" key={`${emp?.id}-${hour}`}>
+                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
+                    const start = cita.hora_inicio.split(':');
+                    const end = cita.hora_final.split(':');
+                    const startMin = parseInt(start[0]) * 60 + parseInt(start[1]);
+                    const endMin = parseInt(end[0]) * 60 + parseInt(end[1]);
+                    const height = ((endMin - startMin) / 60) * 62;
 
-                      return (
-                        <div
-                          className="appointment"
-                          key={index}
-                          style={{ top: `${offsetTop}px`, height: `${height}px`, position: 'absolute', left: 0, right: 0 }}
-                          onClick={() => setCitaSeleccionada(cita)}
-                        >
-                          <strong>{cita.nombre_cliente}</strong>
-                          <div>{cita.titulo}</div>
-                          <small>{cita.hora_inicio} - {cita.hora_final}</small>
-                        </div>
-                      );
-                    })}
+                    return (
+                      <div
+                        className="appointment"
+                        key={index}
+                        style={{ height: `${height}px` }}
+                        onClick={() => setCitaSeleccionada(cita)}
+                      >
+                        <strong>{cita.nombre_cliente}</strong>
+                        <div>{cita.titulo}</div>
+                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
