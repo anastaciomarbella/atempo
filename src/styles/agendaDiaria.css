@@ -102,28 +102,12 @@
 
 .time-cell {
   position: relative;
-  border-right: 2px solid #e5e7eb;
-  border-bottom: 2px solid #e5e7eb;
-  background-color: #ffffff;
-  min-height: 62px;
 }
 
 .appointment {
   position: absolute;
-  left: 4px;
-  right: 4px;
-  background-color: #e0f2fe;
-  border-left: 4px solid #0284c7;
+  box-sizing: border-box;
   padding: 0.3rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  transition: transform 0.15s, box-shadow 0.15s;
-  overflow: hidden;
 }
 
 .appointment:hover {
