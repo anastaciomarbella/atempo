@@ -15,6 +15,7 @@ const AgendaDiaria = () => {
   const [error, setError] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+  const alturaHora = 62; // altura de cada hora en px
 
   // Cargar personas
   useEffect(() => {
@@ -59,20 +60,17 @@ const AgendaDiaria = () => {
     setFechaSeleccionada(nuevaFecha);
   };
 
-  // Filtrado de empleados a mostrar
   const empleadosAMostrar = useMemo(() => {
     return personaSeleccionada === 'todos'
       ? personas
       : [personas.find(p => p.id === Number(personaSeleccionada))].filter(Boolean);
   }, [personaSeleccionada, personas]);
 
-  // Convierte hora "HH:MM" a minutos
   const horaAMinutos = (hora) => {
     const [h, m] = hora.split(':').map(Number);
     return h * 60 + m;
   };
 
-  // Actualiza o agrega cita sin duplicar
   const actualizarCita = (citaEditada) => {
     setCitas(prev => {
       const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
@@ -142,7 +140,7 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp.id);
 
               return (
-                <div className="time-cell" key={`${emp.id}-${hour}`} style={{ position: 'relative' }}>
+                <div className="time-cell" key={`${emp.id}-${hour}`} style={{ position: 'relative', height: `${alturaHora}px` }}>
                   {empCitas.map(cita => {
                     const startMin = horaAMinutos(cita.hora_inicio);
                     const endMin = horaAMinutos(cita.hora_final);
@@ -151,20 +149,25 @@ const AgendaDiaria = () => {
 
                     if (endMin <= hourStart || startMin >= hourEnd) return null;
 
-                    const top = Math.max(startMin - hourStart, 0);
-                    const height = Math.min(endMin, hourEnd) - Math.max(startMin, hourStart);
+                    const pxPorMinuto = alturaHora / 60;
+                    const top = Math.max(startMin - hourStart, 0) * pxPorMinuto;
+                    const height = (Math.min(endMin, hourEnd) - Math.max(startMin, hourStart)) * pxPorMinuto;
 
                     return (
                       <div
                         className="appointment"
                         key={cita.id_cita}
                         style={{
+                          position: 'absolute',
                           top: `${top}px`,
                           height: `${height}px`,
-                          width: '100%',
-                          left: 0,
-                          position: 'absolute',
-                          backgroundColor: cita.color || '#4CAF50'
+                          width: '90%',
+                          left: '5%',
+                          backgroundColor: cita.color || '#4CAF50',
+                          borderRadius: '6px',
+                          padding: '2px',
+                          fontSize: '12px',
+                          overflow: 'hidden'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
@@ -186,7 +189,7 @@ const AgendaDiaria = () => {
           modo="editar"
           cita={citaSeleccionada}
           onClose={() => setCitaSeleccionada(null)}
-          onSave={actualizarCita} // ✅ Evita duplicados y actualiza en tiempo real
+          onSave={actualizarCita}
         />
       )}
     </main>
