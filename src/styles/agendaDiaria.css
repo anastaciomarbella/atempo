@@ -129,12 +129,14 @@
 .appointment strong {
   font-size: 0.85rem;
   font-weight: 600;
+  color: #1c1c1c;
 }
 
 .appointment .titulo-cita {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: black;
 }
 
 .appointment .small {
