@@ -9,7 +9,7 @@ const AgendaDiaria = () => {
   const [personas, setPersonas] = useState([]);
   const [personaSeleccionada, setPersonaSeleccionada] = useState('todos');
   const [citas, setCitas] = useState([]);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date('2025-07-18'));
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
