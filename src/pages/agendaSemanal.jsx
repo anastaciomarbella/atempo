@@ -133,8 +133,11 @@ const AgendaSemanal = () => {
         </select>
       </div>
 
-      {/* Cabecera de la agenda */}
-      <div className="agenda-grid-header" style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}>
+      <div
+        className="agenda-grid"
+        style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}
+      >
+        {/* Cabecera: espacio para columna de horas */}
         <div className="weekly-clock-header">
           <button className="weekly-clock-btn">
             <FaClock />
@@ -154,10 +157,8 @@ const AgendaSemanal = () => {
             </div>
           </div>
         ))}
-      </div>
 
-      {/* Cuerpo de la agenda */}
-      <div className="agenda-grid-body" style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}>
+        {/* Filas de horas */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
