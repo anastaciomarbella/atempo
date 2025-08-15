@@ -16,6 +16,7 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
+  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -30,6 +31,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
+  // Cargar citas según persona y fecha
   useEffect(() => {
     const fetchCitas = async () => {
       setLoading(true);
@@ -57,24 +59,42 @@ const AgendaDiaria = () => {
     setFechaSeleccionada(nuevaFecha);
   };
 
+  // Filtrado de empleados a mostrar
   const empleadosAMostrar = useMemo(() => {
     return personaSeleccionada === 'todos'
       ? personas
       : [personas.find(p => p.id === Number(personaSeleccionada))].filter(Boolean);
   }, [personaSeleccionada, personas]);
 
-  // Función para convertir hora a minutos
+  // Convierte hora "HH:MM" a minutos
   const horaAMinutos = (hora) => {
     const [h, m] = hora.split(':').map(Number);
     return h * 60 + m;
+  };
+
+  // Actualiza o agrega cita sin duplicar
+  const actualizarCita = (citaEditada) => {
+    setCitas(prev => {
+      const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
+      if (existe) {
+        return prev.map(c => c.id_cita === citaEditada.id_cita ? citaEditada : c);
+      } else {
+        return [...prev, citaEditada];
+      }
+    });
+    setCitaSeleccionada(null);
   };
 
   return (
     <main className="daily-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
-          <button aria-label="Anterior" className="date-nav-btn" onClick={() => cambiarFecha(-1)}><FiChevronLeft /></button>
-          <button aria-label="Siguiente" className="date-nav-btn" onClick={() => cambiarFecha(1)}><FiChevronRight /></button>
+          <button aria-label="Anterior" className="date-nav-btn" onClick={() => cambiarFecha(-1)}>
+            <FiChevronLeft />
+          </button>
+          <button aria-label="Siguiente" className="date-nav-btn" onClick={() => cambiarFecha(1)}>
+            <FiChevronRight />
+          </button>
           <span className="fecha-display">
             {fechaSeleccionada.toLocaleDateString('es-MX', {
               weekday: 'long',
@@ -100,10 +120,7 @@ const AgendaDiaria = () => {
       {loading && <div className="loading">Cargando citas...</div>}
       {error && <div className="error">{error}</div>}
 
-      <div
-        className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${empleadosAMostrar.length}, 1fr)` }}
-      >
+      <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${empleadosAMostrar.length}, 1fr)` }}>
         <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
@@ -136,7 +153,6 @@ const AgendaDiaria = () => {
                     const top = Math.max(startMin - hourStart, 0);
                     const height = Math.min(endMin, hourEnd) - Math.max(startMin, hourStart);
 
-                    // Calcular solapamientos
                     const overlapping = array.filter(c =>
                       horaAMinutos(c.hora_inicio) < endMin &&
                       horaAMinutos(c.hora_final) > startMin
@@ -154,7 +170,7 @@ const AgendaDiaria = () => {
                           height: `${height}px`,
                           left: `${left}%`,
                           width: `${width}%`,
-                          backgroundColor: cita.color || '#4CAF50' // Color de la BD o verde por defecto
+                          backgroundColor: cita.color || '#4CAF50'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
@@ -176,6 +192,7 @@ const AgendaDiaria = () => {
           modo="editar"
           cita={citaSeleccionada}
           onClose={() => setCitaSeleccionada(null)}
+          onSave={actualizarCita} // ✅ Evita duplicados
         />
       )}
     </main>
