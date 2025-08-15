@@ -2,18 +2,25 @@ import React, { useState, useEffect } from 'react';
 import '../styles/agendaSemanal.css';
 import avatar from '../assets/avatar.png';
 import { FaClock } from 'react-icons/fa';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ModalCita from '../components/modalCita/modalCita';
 
 const AgendaSemanal = () => {
   const [personas, setPersonas] = useState([]);
   const [citas, setCitas] = useState([]);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
   const alturaHora = 62; // altura de cada hora en px
-  const pxPorMinuto = alturaHora / 60;
+
+  // Función para cambiar semana
+  const cambiarSemana = dias => {
+    const nuevaFecha = new Date(fechaSeleccionada);
+    nuevaFecha.setDate(nuevaFecha.getDate() + dias);
+    setFechaSeleccionada(nuevaFecha);
+  };
 
   // Cargar primeros 4 empleados
   useEffect(() => {
@@ -35,13 +42,24 @@ const AgendaSemanal = () => {
       try {
         const res = await fetch(`${API_URL}/api/citas`);
         const data = await res.json();
-        setCitas(data);
+        // Filtrar solo las citas de la semana seleccionada
+        const inicioSemana = new Date(fechaSeleccionada);
+        inicioSemana.setDate(fechaSeleccionada.getDate() - fechaSeleccionada.getDay() + 1); // lunes
+        const finSemana = new Date(inicioSemana);
+        finSemana.setDate(inicioSemana.getDate() + 6); // domingo
+
+        const citasSemana = data.filter(cita => {
+          const citaFecha = new Date(cita.fecha);
+          return citaFecha >= inicioSemana && citaFecha <= finSemana;
+        });
+
+        setCitas(citasSemana);
       } catch (error) {
         console.error('Error cargando citas:', error);
       }
     };
     fetchCitas();
-  }, [API_URL]);
+  }, [API_URL, fechaSeleccionada]);
 
   const actualizarCita = citaEditada => {
     setCitas(prev => {
@@ -61,13 +79,21 @@ const AgendaSemanal = () => {
     setCitaSeleccionada(null);
   };
 
-  const horaAMinutos = hora => {
-    const [h, m] = hora.split(':').map(Number);
-    return h * 60 + m;
-  };
-
   return (
     <main className="weekly-agenda-main">
+      {/* Header con flechas de navegación */}
+      <div className="agenda-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <button className="date-nav-btn" onClick={() => cambiarSemana(-7)}>
+          <FiChevronLeft size={20} />
+        </button>
+        <span style={{ fontWeight: 'bold' }}>
+          Semana del {fechaSeleccionada.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+        </span>
+        <button className="date-nav-btn" onClick={() => cambiarSemana(7)}>
+          <FiChevronRight size={20} />
+        </button>
+      </div>
+
       <div
         className="agenda-grid"
         style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}
@@ -98,8 +124,7 @@ const AgendaSemanal = () => {
               const citasPersona = citas.filter(
                 cita =>
                   cita.id_persona === persona.id &&
-                  horaAMinutos(cita.hora_inicio) < horaAMinutos(hour) + 60 &&
-                  horaAMinutos(cita.hora_final) > horaAMinutos(hour)
+                  cita.hora_inicio.slice(0, 2) === hour.slice(0, 2)
               );
 
               return (
@@ -108,44 +133,37 @@ const AgendaSemanal = () => {
                   key={`${persona.id}-${hour}`}
                   style={{ position: 'relative', height: `${alturaHora}px`, padding: '2px' }}
                 >
-                  {citasPersona.map(cita => {
-                    const startMin = Math.max(horaAMinutos(cita.hora_inicio), horaAMinutos(hour));
-                    const endMin = Math.min(horaAMinutos(cita.hora_final), horaAMinutos(hour) + 60);
-                    const offset = startMin - horaAMinutos(hour);
-                    const height = endMin - startMin;
-
-                    return (
-                      <div
-                        key={cita.id_cita}
-                        className="appointment"
-                        style={{
-                          position: 'absolute',
-                          top: `${offset * pxPorMinuto}px`,
-                          height: `${height * pxPorMinuto}px`,
-                          backgroundColor: cita.color || '#a0c4ff',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden',
-                          width: '90%',
-                          left: '5%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          textAlign: 'center'
-                        }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente || cita.client}</strong>
-                        <div>{cita.titulo || cita.service}</div>
-                        <small>
-                          {cita.hora_inicio} - {cita.hora_final}
-                        </small>
-                      </div>
-                    );
-                  })}
+                  {citasPersona.map(cita => (
+                    <div
+                      key={cita.id_cita}
+                      className="appointment"
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        height: `${alturaHora - 8}px`,
+                        backgroundColor: cita.color || '#a0c4ff',
+                        borderRadius: '6px',
+                        padding: '4px',
+                        cursor: 'pointer',
+                        color: '#000',
+                        fontSize: '12px',
+                        overflow: 'hidden',
+                        width: '90%',
+                        left: '5%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        textAlign: 'center'
+                      }}
+                      onClick={() => setCitaSeleccionada(cita)}
+                    >
+                      <strong>{cita.nombre_cliente || cita.client}</strong>
+                      <div>{cita.titulo || cita.service}</div>
+                      <small>
+                        {cita.hora_inicio} - {cita.hora_final}
+                      </small>
+                    </div>
+                  ))}
                 </div>
               );
             })}
