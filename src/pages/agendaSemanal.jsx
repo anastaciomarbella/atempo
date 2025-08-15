@@ -36,7 +36,6 @@ const AgendaSemanal = () => {
 
   const hours = Array.from({ length: 8 }, (_, i) => `${String(9 + i).padStart(2, '0')}:00`);
 
-  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -50,7 +49,6 @@ const AgendaSemanal = () => {
     fetchPersonas();
   }, [API_URL]);
 
-  // Cargar citas según persona y semana
   useEffect(() => {
     const fetchCitas = async () => {
       try {
@@ -135,13 +133,8 @@ const AgendaSemanal = () => {
         </select>
       </div>
 
-      <div
-        className="agenda-grid"
-        style={{
-          gridTemplateColumns: `80px repeat(${personas.length}, 1fr)`,
-        }}
-      >
-        {/* Cabecera de avatares y nombres */}
+      {/* Cabecera de la agenda */}
+      <div className="agenda-grid-header" style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}>
         <div className="weekly-clock-header">
           <button className="weekly-clock-btn">
             <FaClock />
@@ -152,34 +145,32 @@ const AgendaSemanal = () => {
           <div className="employee-header" key={p.id}>
             <img src={avatar} alt={p.nombre} className="person-avatar" />
             <span className="person-name">{p.nombre}</span>
+            <div className="day-labels">
+              {diasSemana.map(d => (
+                <div key={d.id}>
+                  {d.label} {d.date.getDate()}/{d.date.getMonth() + 1}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
+      </div>
 
-        {/* Fila con días de la semana debajo de los avatares */}
-        <div></div> {/* esquina vacía */}
-        {diasSemana.map(d => (
-          <div key={d.id} className="day-label">
-            {d.label} {d.date.getDate()}/{d.date.getMonth() + 1}
-          </div>
-        ))}
-
-        {/* Filas de horas */}
+      {/* Cuerpo de la agenda */}
+      <div className="agenda-grid-body" style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}>
         {hours.map(hour => (
           <React.Fragment key={hour}>
-            {/* Celda de hora al inicio */}
             <div className="hour-cell">{hour}</div>
-            {/* Celdas de cada persona */}
             {personas.map(persona => {
-              const citasDiaHora = citas.filter(cita => {
+              const citasPersona = citas.filter(cita => {
                 const citaDateStr = new Date(cita.fecha).toISOString().slice(0, 10);
-                const citaPersona = cita.id_persona === persona.id;
                 const citaHora = parseInt(cita.hora_inicio.split(':')[0], 10) === parseInt(hour.split(':')[0], 10);
-                return citaDateStr && citaPersona && citaHora;
+                return cita.id_persona === persona.id && citaHora;
               });
 
               return (
                 <div className="time-cell" key={`${persona.id}-${hour}`} style={{ position: 'relative' }}>
-                  {citasDiaHora.map(cita => {
+                  {citasPersona.map(cita => {
                     const [startH, startM] = cita.hora_inicio.split(':').map(Number);
                     const [endH, endM] = cita.hora_final.split(':').map(Number);
                     const startTotal = startH * 60 + startM;
