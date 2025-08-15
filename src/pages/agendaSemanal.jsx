@@ -43,12 +43,17 @@ const AgendaSemanal = () => {
 
   const actualizarCita = citaEditada => {
     setCitas(prev => {
+      // Si se elimina la cita
       if (citaEditada.eliminar) {
         return prev.filter(c => c.id_cita !== citaEditada.id_cita);
       }
-      const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
-      if (existe) {
-        return prev.map(c => (c.id_cita === citaEditada.id_cita ? citaEditada : c));
+
+      // Reemplazar si ya existe, sino agregar
+      const index = prev.findIndex(c => c.id_cita === citaEditada.id_cita);
+      if (index >= 0) {
+        const updated = [...prev];
+        updated[index] = citaEditada;
+        return updated;
       } else {
         return [...prev, citaEditada];
       }
@@ -58,7 +63,6 @@ const AgendaSemanal = () => {
 
   return (
     <main className="weekly-agenda-main">
-      {/* Grid: columna de horas + empleados */}
       <div
         className="agenda-grid"
         style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}
@@ -81,11 +85,11 @@ const AgendaSemanal = () => {
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
             {personas.map(persona => {
+              // Todas las citas de esta persona que coincidan con esta hora o se solapen
               const citasPersona = citas.filter(
                 cita =>
                   cita.id_persona === persona.id &&
-                  cita.hora_inicio <= hour &&
-                  cita.hora_final > hour
+                  (cita.hora_inicio < `${parseInt(hour) + 1}:00` && cita.hora_final > hour)
               );
 
               return (
@@ -100,9 +104,9 @@ const AgendaSemanal = () => {
                     const startTotal = startH * 60 + startM;
                     const endTotal = endH * 60 + endM;
                     const cellStart = parseInt(hour.split(':')[0], 10) * 60;
-                    const offset = startTotal - cellStart;
-                    const height = ((endTotal - startTotal) / 60) * 62;
-                    const top = (offset / 60) * 62;
+                    const cellEnd = cellStart + 60;
+                    const offset = Math.max(startTotal - cellStart, 0);
+                    const height = Math.min(endTotal, cellEnd) - Math.max(startTotal, cellStart);
 
                     return (
                       <div
@@ -110,8 +114,8 @@ const AgendaSemanal = () => {
                         key={cita.id_cita}
                         style={{
                           position: 'absolute',
-                          top: `${top}px`,
-                          height: `${height}px`,
+                          top: `${(offset / 60) * 62}px`,
+                          height: `${(height / 60) * 62}px`,
                           backgroundColor: cita.color || '#a0c4ff',
                           borderRadius: '6px',
                           padding: '4px',
