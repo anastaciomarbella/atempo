@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import '../styles/agendaSemanal.css';
+import '../styles/agendaDiaria.css';
 import avatar from '../assets/avatar.png';
 import { FaClock, FaChevronDown } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
