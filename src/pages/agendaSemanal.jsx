@@ -135,25 +135,25 @@ const AgendaSemanal = () => {
         </select>
       </div>
 
-      <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${diasSemana.length}, 1fr)` }}>
+      <div className="agenda-grid" style={{ gridTemplateColumns: `repeat(${diasSemana.length}, 1fr) 80px` }}>
         {/* Cabecera con avatares y nombres */}
-        <div className="employee-header weekly-clock-header">
-          <button className="weekly-clock-btn">
-            <FaClock />
-            <FaChevronDown className="dropdown-arrow" />
-          </button>
-        </div>
         {personas.map(p => (
           <div className="employee-header" key={p.id}>
             <img src={avatar} alt={p.nombre} className="person-avatar" />
             <span className="person-name">{p.nombre}</span>
           </div>
         ))}
+        {/* Celda vacía para la esquina superior derecha */}
+        <div className="weekly-clock-header">
+          <button className="weekly-clock-btn">
+            <FaClock />
+            <FaChevronDown className="dropdown-arrow" />
+          </button>
+        </div>
 
         {/* Filas de horas */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
-            <div className="hour-cell">{hour}</div>
             {diasSemana.map(day => {
               const citasDiaHora = citas.filter(cita => {
                 const citaDateStr = new Date(cita.fecha).toISOString().slice(0, 10);
@@ -206,6 +206,8 @@ const AgendaSemanal = () => {
                 </div>
               );
             })}
+            {/* Celda de hora al final */}
+            <div className="hour-cell">{hour}</div>
           </React.Fragment>
         ))}
       </div>
