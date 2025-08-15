@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import '../styles/agendaSemanal.css';
+import '../styles/agendaDiaria.css';
 import avatar from '../assets/avatar.png';
 import { FaClock } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
@@ -13,8 +13,10 @@ const AgendaSemanal = () => {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
+  // Calcular inicio y fin de semana (lunes a domingo)
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);
     const day = d.getDay();
@@ -35,6 +37,7 @@ const AgendaSemanal = () => {
     });
   }, [fechaInicioSemana]);
 
+  // Cargar empleados
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -48,6 +51,7 @@ const AgendaSemanal = () => {
     fetchPersonas();
   }, [API_URL]);
 
+  // Cargar citas de la semana
   useEffect(() => {
     const fetchCitas = async () => {
       try {
@@ -57,12 +61,15 @@ const AgendaSemanal = () => {
         }
         const res = await fetch(url);
         const data = await res.json();
+
         const inicio = diasSemana[0].date;
         const fin = diasSemana[6].date;
+
         const citasFiltradas = data.filter(cita => {
           const citaFecha = new Date(cita.fecha);
           return citaFecha >= inicio && citaFecha <= fin;
         });
+
         setCitas(citasFiltradas);
       } catch (error) {
         console.error('Error cargando citas:', error);
@@ -94,7 +101,7 @@ const AgendaSemanal = () => {
 
   return (
     <main className="weekly-agenda-main">
-      {/* Header de semana */}
+      {/* Header con flechas en extremos */}
       <div className="agenda-header" style={{ justifyContent: 'space-between' }}>
         <button className="date-nav-btn" onClick={() => cambiarSemana(-7)}>
           <FiChevronLeft />
@@ -124,26 +131,24 @@ const AgendaSemanal = () => {
         </select>
       </div>
 
-      {/* Grid de agenda */}
+      {/* Grid: columna de horas + (días × empleados) */}
       <div
         className="agenda-grid"
-        style={{
-          gridTemplateColumns: `80px repeat(${diasSemana.length * personas.length}, 1fr)`,
-        }}
+        style={{ gridTemplateColumns: `80px repeat(${diasSemana.length * personas.length}, 1fr)` }}
       >
-        {/* Columna de reloj */}
+        {/* Columna de horas */}
         <div className="weekly-clock-header">
           <FaClock />
         </div>
 
-        {/* Header: días × empleados */}
+        {/* Header días × empleados */}
         {diasSemana.map(day =>
           personas.map(p => (
-            <div className="employee-header" key={`${day.dateStr}-${p.id}`} style={{ minHeight: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="employee-header" key={`${day.dateStr}-${p.id}`}>
               <div style={{ fontWeight: 'bold', fontSize: '12px' }}>
                 {day.label} {day.date.getDate()}/{day.date.getMonth() + 1}
               </div>
-              <img src={avatar} alt={p.nombre} className="person-avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', margin: '4px 0' }} />
+              <img src={avatar} alt={p.nombre} className="person-avatar" />
               <span className="person-name">{p.nombre}</span>
             </div>
           ))
@@ -152,18 +157,19 @@ const AgendaSemanal = () => {
         {/* Filas por hora */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
-            <div className="hour-cell" style={{ height: '62px', lineHeight: '62px' }}>{hour}</div>
+            <div className="hour-cell">{hour}</div>
             {diasSemana.map(day =>
               personas.map(persona => {
-                const citasPersona = citas.filter(
-                  cita => cita.id_persona === persona.id && cita.fecha.slice(0, 10) === day.dateStr
+                const citasPersona = citas.filter(cita =>
+                  cita.id_persona === persona.id &&
+                  cita.fecha.slice(0, 10) === day.dateStr
                 );
 
                 return (
                   <div
                     className="time-cell"
                     key={`${day.dateStr}-${persona.id}-${hour}`}
-                    style={{ position: 'relative', height: '62px' }}
+                    style={{ position: 'relative' }}
                   >
                     {citasPersona.map(cita => {
                       const [startH, startM] = cita.hora_inicio.split(':').map(Number);
@@ -186,13 +192,13 @@ const AgendaSemanal = () => {
                             backgroundColor: cita.color || '#a0c4ff',
                             borderRadius: '6px',
                             padding: '4px',
+                            marginBottom: '2px',
                             cursor: 'pointer',
                             color: '#000',
                             fontSize: '12px',
                             overflow: 'hidden',
                             width: '90%',
-                            left: '5%',
-                            boxSizing: 'border-box'
+                            left: '5%'
                           }}
                           onClick={() => setCitaSeleccionada(cita)}
                         >
