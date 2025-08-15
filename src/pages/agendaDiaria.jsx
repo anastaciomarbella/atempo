@@ -125,45 +125,44 @@ const AgendaDiaria = () => {
               const empCitas = citas.filter(c => c.id_persona === emp.id);
               return (
                 <div className="time-cell" key={`${emp.id}-${hour}`}>
-                {empCitas.map((cita, index, array) => {
-                   const startMin = horaAMinutos(cita.hora_inicio);
-                   const endMin = horaAMinutos(cita.hora_final);
-
+                  {empCitas.map((cita, index, array) => {
+                    const startMin = horaAMinutos(cita.hora_inicio);
+                    const endMin = horaAMinutos(cita.hora_final);
                     const hourStart = horaAMinutos(hour);
                     const hourEnd = hourStart + 60;
 
                     if (endMin <= hourStart || startMin >= hourEnd) return null;
 
-                     const top = Math.max(startMin - hourStart, 0);
-                     const height = Math.min(endMin, hourEnd) - Math.max(startMin, hourStart);
+                    const top = Math.max(startMin - hourStart, 0);
+                    const height = Math.min(endMin, hourEnd) - Math.max(startMin, hourStart);
 
-                      // Calcular solapamientos
-                      const overlapping = array.filter(c =>
-                       horaAMinutos(c.hora_inicio) < endMin &&
-                       horaAMinutos(c.hora_final) > startMin
-                          );
-                        const idx = overlapping.findIndex(c => c.id_cita === cita.id_cita);
-                          const width = 100 / overlapping.length;
-                         const left = idx * width;
+                    // Calcular solapamientos
+                    const overlapping = array.filter(c =>
+                      horaAMinutos(c.hora_inicio) < endMin &&
+                      horaAMinutos(c.hora_final) > startMin
+                    );
+                    const idx = overlapping.findIndex(c => c.id_cita === cita.id_cita);
+                    const width = 100 / overlapping.length;
+                    const left = idx * width;
 
-                             return (
-                                    <div
-                                    className="appointment"
-                                     key={cita.id_cita}
-                                    style={{
-                                     top: `${top}px`,
-                                     height: `${height}px`,
-                                     left: `${left}%`,
-                                    width: `${width}%`
-                                                }}
-                                         onClick={() => setCitaSeleccionada(cita)}
-                                                       >
-                                               <strong>{cita.nombre_cliente}</strong>
-                                              <div className="titulo-cita">{cita.titulo}</div>
-                                               <small>{cita.hora_inicio.slice(0,5)} - {cita.hora_final.slice(0,5)}</small>
-                                               </div>
-                                  );
-                      })}
+                    return (
+                      <div
+                        className="appointment"
+                        key={cita.id_cita}
+                        style={{
+                          top: `${top}px`,
+                          height: `${height}px`,
+                          left: `${left}%`,
+                          width: `${width}%`
+                        }}
+                        onClick={() => setCitaSeleccionada(cita)}
+                      >
+                        <strong>{cita.nombre_cliente}</strong>
+                        <div className="titulo-cita">{cita.titulo}</div>
+                        <small>{cita.hora_inicio.slice(0,5)} - {cita.hora_final.slice(0,5)}</small>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
