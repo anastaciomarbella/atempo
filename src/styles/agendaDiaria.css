@@ -101,14 +101,24 @@
 }
 
 .time-cell {
-  position: relative;
+  position: relative;  /* necesario para que las citas usen top, left */
+  border: 1px solid #e0e0e0;
+  height: 60px; /* altura de cada hora, ajustable */
+  overflow: hidden; /* opcional, evita que se salgan */
 }
 
 .appointment {
-  position: absolute;
-  box-sizing: border-box;
-  padding: 0.3rem 0.5rem;
+  position: absolute;  /* clave para usar top, left, width, height */
+  background-color: #4CAF50; /* ejemplo de color */
+  color: white;
+  padding: 2px 4px;
+  box-sizing: border-box; /* importante para que width incluya padding */
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 0.8rem;
 }
+
 
 .appointment:hover {
   transform: translateY(-2px);
