@@ -140,9 +140,10 @@ const AgendaDiaria = () => {
             <div className="hour-cell">{hour}</div>
             {empleadosAMostrar.map(emp => {
               const empCitas = citas.filter(c => c.id_persona === emp.id);
+
               return (
-                <div className="time-cell" key={`${emp.id}-${hour}`}>
-                  {empCitas.map((cita, index, array) => {
+                <div className="time-cell" key={`${emp.id}-${hour}`} style={{ position: 'relative' }}>
+                  {empCitas.map(cita => {
                     const startMin = horaAMinutos(cita.hora_inicio);
                     const endMin = horaAMinutos(cita.hora_final);
                     const hourStart = horaAMinutos(hour);
@@ -153,14 +154,6 @@ const AgendaDiaria = () => {
                     const top = Math.max(startMin - hourStart, 0);
                     const height = Math.min(endMin, hourEnd) - Math.max(startMin, hourStart);
 
-                    const overlapping = array.filter(c =>
-                      horaAMinutos(c.hora_inicio) < endMin &&
-                      horaAMinutos(c.hora_final) > startMin
-                    );
-                    const idx = overlapping.findIndex(c => c.id_cita === cita.id_cita);
-                    const width = 100 / overlapping.length;
-                    const left = idx * width;
-
                     return (
                       <div
                         className="appointment"
@@ -168,8 +161,9 @@ const AgendaDiaria = () => {
                         style={{
                           top: `${top}px`,
                           height: `${height}px`,
-                          left: `${left}%`,
-                          width: `${width}%`,
+                          width: '100%',
+                          left: 0,
+                          position: 'absolute',
                           backgroundColor: cita.color || '#4CAF50'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
@@ -192,11 +186,11 @@ const AgendaDiaria = () => {
           modo="editar"
           cita={citaSeleccionada}
           onClose={() => setCitaSeleccionada(null)}
-          onSave={actualizarCita} // ✅ Evita duplicados
+          onSave={actualizarCita} // ✅ Evita duplicados y actualiza en tiempo real
         />
       )}
     </main>
   );
 };
 
-export default AgendaDiaria; 
+export default AgendaDiaria;
