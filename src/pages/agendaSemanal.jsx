@@ -79,9 +79,15 @@ const AgendaSemanal = () => {
     setCitaSeleccionada(null);
   };
 
+  // Calcular inicio y fin de semana para mostrar en header
+  const inicioSemana = new Date(fechaSeleccionada);
+  inicioSemana.setDate(fechaSeleccionada.getDate() - fechaSeleccionada.getDay() + 1); // lunes
+  const finSemana = new Date(inicioSemana);
+  finSemana.setDate(inicioSemana.getDate() + 6); // domingo
+
   return (
     <main className="weekly-agenda-main">
-      {/* Header con flechas de semana */}
+      {/* Header con flechas y rango de semana */}
       <div
         className="agenda-header"
         style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}
@@ -89,9 +95,12 @@ const AgendaSemanal = () => {
         <button className="date-nav-btn" onClick={() => cambiarSemana(-7)}>
           <FiChevronLeft size={20} />
         </button>
+
         <span style={{ fontWeight: 'bold' }}>
-          Semana del {fechaSeleccionada.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
+          Semana del {inicioSemana.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}  
+          al {finSemana.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
         </span>
+
         <button className="date-nav-btn" onClick={() => cambiarSemana(7)}>
           <FiChevronRight size={20} />
         </button>
