@@ -16,6 +16,8 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
   const alturaHora = 62; // altura de cada hora en px
+  const primerHoraMin = 8 * 60; // 08:00 en minutos
+  const pxPorMinuto = alturaHora / 60;
 
   // Cargar personas
   useEffect(() => {
@@ -118,7 +120,14 @@ const AgendaDiaria = () => {
       {loading && <div className="loading">Cargando citas...</div>}
       {error && <div className="error">{error}</div>}
 
-      <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${empleadosAMostrar.length}, 1fr)` }}>
+      <div
+        className="agenda-grid"
+        style={{
+          gridTemplateColumns: `80px repeat(${empleadosAMostrar.length}, 1fr)`,
+          position: 'relative'
+        }}
+      >
+        {/* Columna de horas */}
         <div className="employee-header clock-header">
           <button className="clock-btn">
             <FaClock />
@@ -126,6 +135,7 @@ const AgendaDiaria = () => {
           </button>
         </div>
 
+        {/* Encabezado empleados */}
         {empleadosAMostrar.map(emp => (
           <div className="employee-header" key={emp.id}>
             <img src={avatar} alt={`Avatar de ${emp.nombre}`} />
@@ -133,55 +143,56 @@ const AgendaDiaria = () => {
           </div>
         ))}
 
+        {/* Celdas de horas (fondo) */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {empleadosAMostrar.map(emp => {
-              const empCitas = citas.filter(c => c.id_persona === emp.id);
-
-              return (
-                <div className="time-cell" key={`${emp.id}-${hour}`} style={{ position: 'relative', height: `${alturaHora}px` }}>
-                  {empCitas.map(cita => {
-                    const startMin = horaAMinutos(cita.hora_inicio);
-                    const endMin = horaAMinutos(cita.hora_final);
-                    const hourStart = horaAMinutos(hour);
-                    const hourEnd = hourStart + 60;
-
-                    if (endMin <= hourStart || startMin >= hourEnd) return null;
-
-                    const pxPorMinuto = alturaHora / 60;
-                    const top = Math.max(startMin - hourStart, 0) * pxPorMinuto;
-                    const height = (Math.min(endMin, hourEnd) - Math.max(startMin, hourStart)) * pxPorMinuto;
-
-                    return (
-                      <div
-                        className="appointment"
-                        key={cita.id_cita}
-                        style={{
-                          position: 'absolute',
-                          top: `${top}px`,
-                          height: `${height}px`,
-                          width: '90%',
-                          left: '5%',
-                          backgroundColor: cita.color || '#4CAF50',
-                          borderRadius: '6px',
-                          padding: '2px',
-                          fontSize: '12px',
-                          overflow: 'hidden'
-                        }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente}</strong>
-                        <div className="titulo-cita">{cita.titulo}</div>
-                        <small>{cita.hora_inicio.slice(0,5)} - {cita.hora_final.slice(0,5)}</small>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
+            {empleadosAMostrar.map(emp => (
+              <div
+                key={`${emp.id}-${hour}`}
+                className="time-cell"
+                style={{ height: `${alturaHora}px` }}
+              ></div>
+            ))}
           </React.Fragment>
         ))}
+
+        {/* Citas completas */}
+        {empleadosAMostrar.map((emp, empIndex) => {
+          const empCitas = citas.filter(c => c.id_persona === emp.id);
+          return empCitas.map(cita => {
+            const startMin = horaAMinutos(cita.hora_inicio);
+            const endMin = horaAMinutos(cita.hora_final);
+            const top = (startMin - primerHoraMin) * pxPorMinuto;
+            const height = (endMin - startMin) * pxPorMinuto;
+
+            return (
+              <div
+                key={cita.id_cita}
+                className="appointment"
+                style={{
+                  position: 'absolute',
+                  top: `${top + alturaHora}px`, // +alturaHora para saltar el header
+                  left: `${80 + empIndex * (100 / empleadosAMostrar.length)}%`, // ajusta posición
+                  transform: `translateX(-${(100 / empleadosAMostrar.length) * (empleadosAMostrar.length - 1)}%)`,
+                  height: `${height}px`,
+                  width: `calc(${100 / empleadosAMostrar.length}% - 10px)`,
+                  backgroundColor: cita.color || '#4CAF50',
+                  borderRadius: '6px',
+                  padding: '4px',
+                  fontSize: '12px',
+                  overflow: 'hidden',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setCitaSeleccionada(cita)}
+              >
+                <strong>{cita.nombre_cliente}</strong>
+                <div className="titulo-cita">{cita.titulo}</div>
+                <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+              </div>
+            );
+          });
+        })}
       </div>
 
       {citaSeleccionada && (
