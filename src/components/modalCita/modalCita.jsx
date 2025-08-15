@@ -8,13 +8,12 @@ const coloresDisponibles = [
 ];
 
 function convertirA24h(hora) {
-  // Se asegura que siempre sea HH:MM
   if (!hora) return '';
   const [h, m] = hora.split(':');
   return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
 }
 
-const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
+const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
@@ -125,6 +124,14 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         throw new Error(errorText || 'Error al guardar la cita');
       }
 
+      // ✅ Enviamos el objeto actualizado para que se vea inmediatamente en la agenda
+      if (onSave) {
+        onSave({
+          id_cita: cita?.id || Date.now(), // id temporal si es nueva
+          ...dataParaEnviar
+        });
+      }
+
       setMensaje('Tu cita ha sido guardada exitosamente.');
       setTimeout(() => onClose(), 1500);
     } catch (error) {
@@ -145,6 +152,10 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
         const errorText = await res.text();
         throw new Error(errorText || 'Error al eliminar la cita');
       }
+
+      // ✅ También eliminamos de la agenda inmediatamente
+      if (onSave) onSave({ id_cita: cita.id, eliminar: true });
+
       setMensaje('Cita eliminada correctamente.');
       setTimeout(() => onClose(), 1000);
     } catch (error) {
