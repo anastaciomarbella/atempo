@@ -14,7 +14,6 @@ const AgendaSemanal = () => {
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-  // Calcular inicio de semana (lunes)
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);
     const day = d.getDay();
@@ -22,7 +21,6 @@ const AgendaSemanal = () => {
     return new Date(d.setDate(diff));
   }, [fechaSeleccionada]);
 
-  // Array de días de la semana
   const diasSemana = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(fechaInicioSemana);
@@ -68,7 +66,6 @@ const AgendaSemanal = () => {
           return citaFecha >= diasSemana[0].date && citaFecha <= diasSemana[6].date;
         });
 
-        // Evitar duplicados y actualizar citas existentes
         setCitas(prev => {
           const citasUnicas = [...prev];
           citasFiltradas.forEach(nuevaCita => {
@@ -94,7 +91,6 @@ const AgendaSemanal = () => {
     setFechaSeleccionada(nuevaFecha);
   };
 
-  // Actualizar o eliminar cita sin duplicados
   const actualizarCita = citaEditada => {
     setCitas(prev => {
       if (citaEditada.eliminar) {
@@ -147,8 +143,8 @@ const AgendaSemanal = () => {
             <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
-        {personas.map((p, index) => (
-          <div className={`employee-header ${index === personas.length - 1 ? 'last' : ''}`} key={p.id}>
+        {personas.map(p => (
+          <div className="employee-header" key={p.id}>
             <img src={avatar} alt={p.nombre} className="person-avatar" />
             <span className="person-name">{p.nombre}</span>
           </div>
@@ -158,17 +154,16 @@ const AgendaSemanal = () => {
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {diasSemana.map((day, index) => {
+            {diasSemana.map(day => {
               const citasDiaHora = citas.filter(cita => {
                 const citaDateStr = new Date(cita.fecha).toISOString().slice(0, 10);
                 if (citaDateStr !== day.dateStr) return false;
-
                 const [startHour] = cita.hora_inicio.split(':');
                 return parseInt(startHour, 10) === parseInt(hour.split(':')[0], 10);
               });
 
               return (
-                <div className={`time-cell ${index === diasSemana.length - 1 ? 'last' : ''}`} key={`${day.id}-${hour}`}>
+                <div className="time-cell" key={`${day.id}-${hour}`} style={{ position: 'relative' }}>
                   {citasDiaHora.map(cita => {
                     const [startH, startM] = cita.hora_inicio.split(':').map(Number);
                     const [endH, endM] = cita.hora_final.split(':').map(Number);
@@ -187,15 +182,16 @@ const AgendaSemanal = () => {
                           position: 'absolute',
                           top: `${top}px`,
                           height: `${height}px`,
-                          backgroundColor: cita.color || '#e0e0e0',
+                          backgroundColor: cita.color || '#a0c4ff',
                           borderRadius: '6px',
                           padding: '4px',
-                          marginBottom: '4px',
+                          marginBottom: '2px',
                           cursor: 'pointer',
                           color: '#000',
                           fontSize: '12px',
                           overflow: 'hidden',
                           width: '90%',
+                          left: '5%',
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
