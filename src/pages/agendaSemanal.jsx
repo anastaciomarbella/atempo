@@ -27,7 +27,7 @@ const AgendaSemanal = () => {
       date.setDate(fechaInicioSemana.getDate() + i);
       return {
         id: i + 1,
-        label: date.toLocaleDateString('es-MX', { weekday: 'long' }),
+        label: date.toLocaleDateString('es-MX', { weekday: 'short' }),
         date,
         dateStr: date.toISOString().slice(0, 10),
       };
@@ -135,35 +135,50 @@ const AgendaSemanal = () => {
         </select>
       </div>
 
-      <div className="agenda-grid" style={{ gridTemplateColumns: `repeat(${diasSemana.length}, 1fr) 80px` }}>
-        {/* Cabecera con avatares y nombres */}
-        {personas.map(p => (
-          <div className="employee-header" key={p.id}>
-            <img src={avatar} alt={p.nombre} className="person-avatar" />
-            <span className="person-name">{p.nombre}</span>
-          </div>
-        ))}
-        {/* Celda vacía para la esquina superior derecha */}
+      <div
+        className="agenda-grid"
+        style={{
+          gridTemplateColumns: `80px repeat(${personas.length}, 1fr)`,
+        }}
+      >
+        {/* Cabecera de avatares y nombres */}
         <div className="weekly-clock-header">
           <button className="weekly-clock-btn">
             <FaClock />
             <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
+        {personas.map(p => (
+          <div className="employee-header" key={p.id}>
+            <img src={avatar} alt={p.nombre} className="person-avatar" />
+            <span className="person-name">{p.nombre}</span>
+          </div>
+        ))}
+
+        {/* Fila con días de la semana debajo de los avatares */}
+        <div></div> {/* esquina vacía */}
+        {diasSemana.map(d => (
+          <div key={d.id} className="day-label">
+            {d.label} {d.date.getDate()}/{d.date.getMonth() + 1}
+          </div>
+        ))}
 
         {/* Filas de horas */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
-            {diasSemana.map(day => {
+            {/* Celda de hora al inicio */}
+            <div className="hour-cell">{hour}</div>
+            {/* Celdas de cada persona */}
+            {personas.map(persona => {
               const citasDiaHora = citas.filter(cita => {
                 const citaDateStr = new Date(cita.fecha).toISOString().slice(0, 10);
-                if (citaDateStr !== day.dateStr) return false;
-                const [startHour] = cita.hora_inicio.split(':');
-                return parseInt(startHour, 10) === parseInt(hour.split(':')[0], 10);
+                const citaPersona = cita.id_persona === persona.id;
+                const citaHora = parseInt(cita.hora_inicio.split(':')[0], 10) === parseInt(hour.split(':')[0], 10);
+                return citaDateStr && citaPersona && citaHora;
               });
 
               return (
-                <div className="time-cell" key={`${day.id}-${hour}`} style={{ position: 'relative' }}>
+                <div className="time-cell" key={`${persona.id}-${hour}`} style={{ position: 'relative' }}>
                   {citasDiaHora.map(cita => {
                     const [startH, startM] = cita.hora_inicio.split(':').map(Number);
                     const [endH, endM] = cita.hora_final.split(':').map(Number);
@@ -206,8 +221,6 @@ const AgendaSemanal = () => {
                 </div>
               );
             })}
-            {/* Celda de hora al final */}
-            <div className="hour-cell">{hour}</div>
           </React.Fragment>
         ))}
       </div>
