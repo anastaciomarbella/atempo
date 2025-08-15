@@ -9,10 +9,11 @@ const AgendaDiaria = () => {
   const [personas, setPersonas] = useState([]);
   const [personaSeleccionada, setPersonaSeleccionada] = useState('todos');
   const [citas, setCitas] = useState([]);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date('2025-07-18'));
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+  const cellHeight = 62; // Coincide con grid-auto-rows en CSS
 
   // Cargar personas
   useEffect(() => {
@@ -62,8 +63,8 @@ const AgendaDiaria = () => {
   const getPersonaById = (id) => personas.find(p => p.id === id);
 
   // Lista de empleados a mostrar
-  const empleados = personaSeleccionada === 'todos' 
-    ? personas 
+  const empleados = personaSeleccionada === 'todos'
+    ? personas
     : [getPersonaById(Number(personaSeleccionada))].filter(Boolean);
 
   return (
@@ -120,24 +121,34 @@ const AgendaDiaria = () => {
               return (
                 <div className="time-cell" key={`${emp.id}-${hour}`}>
                   {empCitas
-                    .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
-                    .map((cita, index) => {
-                      const start = cita.hora_inicio.split(':');
-                      const end = cita.hora_final.split(':');
-                      const startMin = parseInt(start[0]) * 60 + parseInt(start[1]);
-                      const endMin = parseInt(end[0]) * 60 + parseInt(end[1]);
-                      const height = ((endMin - startMin) / 60) * 62;
+                    .filter(c => parseInt(c.hora_inicio.slice(0, 2)) === parseInt(hour.slice(0, 2)))
+                    .map(cita => {
+                      const [startH, startM] = cita.hora_inicio.split(':').map(Number);
+                      const [endH, endM] = cita.hora_final.split(':').map(Number);
+
+                      const startMin = startH * 60 + startM;
+                      const endMin = endH * 60 + endM;
+                      const height = ((endMin - startMin) / 60) * cellHeight;
+                      const offsetTop = (startM / 60) * cellHeight;
 
                       return (
                         <div
                           className="appointment"
-                          key={index}
-                          style={{ height: `${height}px` }}
+                          key={cita.id || `${cita.hora_inicio}-${cita.nombre_cliente}`}
+                          style={{
+                            height: `${height}px`,
+                            top: `${offsetTop}px`,
+                            position: 'absolute',
+                            left: '0',
+                            right: '0'
+                          }}
                           onClick={() => setCitaSeleccionada(cita)}
                         >
                           <strong>{cita.nombre_cliente}</strong>
                           <div>{cita.titulo}</div>
-                          <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                          <small>
+                            {cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}
+                          </small>
                         </div>
                       );
                     })}
