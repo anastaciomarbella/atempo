@@ -15,6 +15,7 @@ const AgendaSemanal = () => {
   // Base URL desde variable de entorno
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
+  // Calcular inicio de semana (lunes)
   const fechaInicioSemana = useMemo(() => {
     const d = new Date(fechaSeleccionada);
     const day = d.getDay();
@@ -22,6 +23,7 @@ const AgendaSemanal = () => {
     return new Date(d.setDate(diff));
   }, [fechaSeleccionada]);
 
+  // Array de días de la semana
   const diasSemana = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const date = new Date(fechaInicioSemana);
@@ -37,6 +39,7 @@ const AgendaSemanal = () => {
 
   const hours = Array.from({ length: 8 }, (_, i) => `${String(9 + i).padStart(2, '0')}:00`);
 
+  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -50,6 +53,7 @@ const AgendaSemanal = () => {
     fetchPersonas();
   }, [API_URL]);
 
+  // Cargar citas según persona y semana
   useEffect(() => {
     const fetchCitas = async () => {
       try {
@@ -77,6 +81,22 @@ const AgendaSemanal = () => {
     const nuevaFecha = new Date(fechaSeleccionada);
     nuevaFecha.setDate(nuevaFecha.getDate() + dias);
     setFechaSeleccionada(nuevaFecha);
+  };
+
+  // ✅ Función para actualizar o agregar cita sin duplicados
+  const actualizarCita = (citaEditada) => {
+    setCitas(prev => {
+      if (citaEditada.eliminar) {
+        return prev.filter(c => c.id_cita !== citaEditada.id_cita);
+      }
+      const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
+      if (existe) {
+        return prev.map(c => c.id_cita === citaEditada.id_cita ? citaEditada : c);
+      } else {
+        return [...prev, citaEditada];
+      }
+    });
+    setCitaSeleccionada(null);
   };
 
   return (
@@ -142,7 +162,7 @@ const AgendaSemanal = () => {
                     return (
                       <div
                         className="appointment"
-                        key={index}
+                        key={cita.id_cita}
                         style={{
                           height: '60px',
                           backgroundColor: cita.color || '#e0e0e0',
@@ -174,6 +194,7 @@ const AgendaSemanal = () => {
           modo="editar"
           cita={citaSeleccionada}
           onClose={() => setCitaSeleccionada(null)}
+          onSave={actualizarCita} // ✅ Refleja cambios en la agenda semanal
         />
       )}
     </main>
