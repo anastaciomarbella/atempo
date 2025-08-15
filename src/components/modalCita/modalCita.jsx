@@ -7,18 +7,14 @@ const coloresDisponibles = [
   '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3'
 ];
 
-function convertir24hAAmPm(hora24) {
-  if (!hora24) return '';
-  const [horaStr, minStr] = hora24.split(':');
-  let hora = parseInt(horaStr, 10);
-  const minutos = minStr;
-  const ampm = hora >= 12 ? 'PM' : 'AM';
-  hora = hora % 12;
-  if (hora === 0) hora = 12;
-  return `${hora}:${minutos} ${ampm}`;
+function convertirA24h(hora) {
+  // Se asegura que siempre sea HH:MM
+  if (!hora) return '';
+  const [h, m] = hora.split(':');
+  return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
 }
 
-const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
+const ModalCita = ({ modo = 'crear', cita = {}, onClose }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
@@ -98,8 +94,8 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
     setGuardando(true);
     setMensaje('');
 
-    const hora_inicio = convertir24hAAmPm(formulario.start);
-    const hora_final = convertir24hAAmPm(formulario.end);
+    const hora_inicio = convertirA24h(formulario.start);
+    const hora_final = convertirA24h(formulario.end);
 
     const dataParaEnviar = {
       id_persona: formulario.id_persona,
@@ -114,15 +110,22 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
     };
 
     try {
-      const res = await fetch('https://mi-api-atempo.onrender.com/api/citas', {
+      const url = modo === 'editar'
+        ? `https://mi-api-atempo.onrender.com/api/citas/${cita.id}`
+        : 'https://mi-api-atempo.onrender.com/api/citas';
+
+      const res = await fetch(url, {
         method: modo === 'editar' ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataParaEnviar)
       });
-      if (!res.ok) throw new Error('Error al guardar la cita');
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Error al guardar la cita');
+      }
 
       setMensaje('Tu cita ha sido guardada exitosamente.');
-
       setTimeout(() => onClose(), 1500);
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
@@ -134,9 +137,19 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
 
   const handleEliminar = async () => {
     if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
-    if (onDelete) {
-      await onDelete(cita.id);
-      onClose();
+    try {
+      const res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Error al eliminar la cita');
+      }
+      setMensaje('Cita eliminada correctamente.');
+      setTimeout(() => onClose(), 1000);
+    } catch (error) {
+      setMensaje('Error al eliminar la cita: ' + error.message);
+      console.error(error);
     }
   };
 
@@ -152,7 +165,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onDelete }) => {
         </h2>
 
         <div className="agendar-formulario">
-          {/* Formulario de campos */}
           <div className="agendar-fila">
             <div>
               <label>Título *</label>
