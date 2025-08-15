@@ -12,6 +12,8 @@ const AgendaSemanal = () => {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+  const alturaHora = 62; // altura de cada hora en px
+  const pxPorMinuto = alturaHora / 60;
 
   // Cargar primeros 4 empleados
   useEffect(() => {
@@ -43,12 +45,10 @@ const AgendaSemanal = () => {
 
   const actualizarCita = citaEditada => {
     setCitas(prev => {
-      // Si se elimina la cita
       if (citaEditada.eliminar) {
         return prev.filter(c => c.id_cita !== citaEditada.id_cita);
       }
 
-      // Reemplazar si ya existe, sino agregar
       const index = prev.findIndex(c => c.id_cita === citaEditada.id_cita);
       if (index >= 0) {
         const updated = [...prev];
@@ -59,6 +59,11 @@ const AgendaSemanal = () => {
       }
     });
     setCitaSeleccionada(null);
+  };
+
+  const horaAMinutos = hora => {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
   };
 
   return (
@@ -75,7 +80,12 @@ const AgendaSemanal = () => {
         {/* Header: avatares y nombres */}
         {personas.map(p => (
           <div className="employee-header" key={p.id}>
-            <img src={avatar} alt={p.nombre} className="person-avatar" />
+            <img
+              src={avatar}
+              alt={p.nombre}
+              className="person-avatar"
+              style={{ width: '40px', height: '40px', borderRadius: '50%', marginBottom: '4px' }}
+            />
             <span className="person-name">{p.nombre}</span>
           </div>
         ))}
@@ -85,37 +95,33 @@ const AgendaSemanal = () => {
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
             {personas.map(persona => {
-              // Todas las citas de esta persona que coincidan con esta hora o se solapen
               const citasPersona = citas.filter(
                 cita =>
                   cita.id_persona === persona.id &&
-                  (cita.hora_inicio < `${parseInt(hour) + 1}:00` && cita.hora_final > hour)
+                  horaAMinutos(cita.hora_inicio) < horaAMinutos(hour) + 60 &&
+                  horaAMinutos(cita.hora_final) > horaAMinutos(hour)
               );
 
               return (
                 <div
                   className="time-cell"
                   key={`${persona.id}-${hour}`}
-                  style={{ position: 'relative' }}
+                  style={{ position: 'relative', height: `${alturaHora}px`, padding: '2px' }}
                 >
                   {citasPersona.map(cita => {
-                    const [startH, startM] = cita.hora_inicio.split(':').map(Number);
-                    const [endH, endM] = cita.hora_final.split(':').map(Number);
-                    const startTotal = startH * 60 + startM;
-                    const endTotal = endH * 60 + endM;
-                    const cellStart = parseInt(hour.split(':')[0], 10) * 60;
-                    const cellEnd = cellStart + 60;
-                    const offset = Math.max(startTotal - cellStart, 0);
-                    const height = Math.min(endTotal, cellEnd) - Math.max(startTotal, cellStart);
+                    const startMin = Math.max(horaAMinutos(cita.hora_inicio), horaAMinutos(hour));
+                    const endMin = Math.min(horaAMinutos(cita.hora_final), horaAMinutos(hour) + 60);
+                    const offset = startMin - horaAMinutos(hour);
+                    const height = endMin - startMin;
 
                     return (
                       <div
-                        className="appointment"
                         key={cita.id_cita}
+                        className="appointment"
                         style={{
                           position: 'absolute',
-                          top: `${(offset / 60) * 62}px`,
-                          height: `${(height / 60) * 62}px`,
+                          top: `${offset * pxPorMinuto}px`,
+                          height: `${height * pxPorMinuto}px`,
                           backgroundColor: cita.color || '#a0c4ff',
                           borderRadius: '6px',
                           padding: '4px',
@@ -124,7 +130,11 @@ const AgendaSemanal = () => {
                           fontSize: '12px',
                           overflow: 'hidden',
                           width: '90%',
-                          left: '5%'
+                          left: '5%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          textAlign: 'center'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
