@@ -3,7 +3,6 @@ import '../styles/agendaDiaria.css';
 import avatar from '../assets/avatar.png';
 import { FaClock, FaChevronDown } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-
 import ModalCita from '../components/modalCita/modalCita';
 
 const AgendaDiaria = () => {
@@ -15,6 +14,7 @@ const AgendaDiaria = () => {
 
   const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
+  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -28,6 +28,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
+  // Cargar citas
   useEffect(() => {
     const fetchCitas = async () => {
       try {
@@ -37,8 +38,11 @@ const AgendaDiaria = () => {
         }
         const res = await fetch(url);
         let data = await res.json();
+
+        // Filtrar por fecha
         const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
         data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+
         setCitas(data);
       } catch (error) {
         console.error('Error al cargar citas:', error);
@@ -47,15 +51,20 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [personaSeleccionada, fechaSeleccionada]);
 
+  // Cambiar fecha
   const cambiarFecha = (delta) => {
     const nuevaFecha = new Date(fechaSeleccionada);
     nuevaFecha.setDate(nuevaFecha.getDate() + delta);
     setFechaSeleccionada(nuevaFecha);
   };
 
-  const getPersonaById = (id) => {
-    return personas.find(p => p.id === id);
-  };
+  // Obtener persona por id
+  const getPersonaById = (id) => personas.find(p => p.id === id);
+
+  // Lista de empleados a mostrar
+  const empleados = personaSeleccionada === 'todos' 
+    ? personas 
+    : [getPersonaById(Number(personaSeleccionada))].filter(Boolean);
 
   return (
     <main className="daily-agenda-main">
@@ -87,7 +96,7 @@ const AgendaDiaria = () => {
 
       <div
         className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${personaSeleccionada === 'todos' ? personas.length : 1}, 1fr)` }}
+        style={{ gridTemplateColumns: `80px repeat(${empleados.length}, 1fr)` }}
       >
         <div className="employee-header clock-header">
           <button className="clock-btn">
@@ -96,40 +105,42 @@ const AgendaDiaria = () => {
           </button>
         </div>
 
-        {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => (
-          <div className="employee-header" key={emp?.id}>
-            <img src={avatar} alt={emp?.nombre} />
-            <span>{emp?.nombre}</span>
+        {empleados.map(emp => (
+          <div className="employee-header" key={emp.id}>
+            <img src={avatar} alt={emp.nombre} />
+            <span>{emp.nombre}</span>
           </div>
         ))}
 
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {(personaSeleccionada === 'todos' ? personas : [getPersonaById(Number(personaSeleccionada))]).map(emp => {
-              const empCitas = citas.filter(c => c.id_persona === emp?.id);
+            {empleados.map(emp => {
+              const empCitas = citas.filter(c => c.id_persona === emp.id);
               return (
-                <div className="time-cell" key={`${emp?.id}-${hour}`}>
-                  {empCitas.filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2)).map((cita, index) => {
-                    const start = cita.hora_inicio.split(':');
-                    const end = cita.hora_final.split(':');
-                    const startMin = parseInt(start[0]) * 60 + parseInt(start[1]);
-                    const endMin = parseInt(end[0]) * 60 + parseInt(end[1]);
-                    const height = ((endMin - startMin) / 60) * 62;
+                <div className="time-cell" key={`${emp.id}-${hour}`}>
+                  {empCitas
+                    .filter(c => c.hora_inicio.slice(0, 2) === hour.slice(0, 2))
+                    .map((cita, index) => {
+                      const start = cita.hora_inicio.split(':');
+                      const end = cita.hora_final.split(':');
+                      const startMin = parseInt(start[0]) * 60 + parseInt(start[1]);
+                      const endMin = parseInt(end[0]) * 60 + parseInt(end[1]);
+                      const height = ((endMin - startMin) / 60) * 62;
 
-                    return (
-                      <div
-                        className="appointment"
-                        key={index}
-                        style={{ height: `${height}px` }}
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        <strong>{cita.nombre_cliente}</strong>
-                        <div>{cita.titulo}</div>
-                        <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
-                      </div>
-                    );
-                  })}
+                      return (
+                        <div
+                          className="appointment"
+                          key={index}
+                          style={{ height: `${height}px` }}
+                          onClick={() => setCitaSeleccionada(cita)}
+                        >
+                          <strong>{cita.nombre_cliente}</strong>
+                          <div>{cita.titulo}</div>
+                          <small>{cita.hora_inicio.slice(0, 5)} - {cita.hora_final.slice(0, 5)}</small>
+                        </div>
+                      );
+                    })}
                 </div>
               );
             })}
