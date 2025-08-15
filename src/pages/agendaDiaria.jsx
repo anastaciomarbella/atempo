@@ -66,11 +66,6 @@ const AgendaDiaria = () => {
       : [personas.find(p => p.id === Number(personaSeleccionada))].filter(Boolean);
   }, [personaSeleccionada, personas]);
 
-  const horaAMinutos = (hora) => {
-    const [h, m] = hora.split(':').map(Number);
-    return h * 60 + m;
-  };
-
   const actualizarCita = (citaEditada) => {
     setCitas(prev => {
       const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
@@ -139,9 +134,13 @@ const AgendaDiaria = () => {
           <div
             className="employee-header"
             key={emp.id}
-            style={{ minHeight: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+            style={{ minHeight: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
           >
-            <img src={avatar} alt={`Avatar de ${emp.nombre}`} style={{ width: '40px', height: '40px', borderRadius: '50%', marginBottom: '4px' }} />
+            <img
+              src={avatar}
+              alt={`Avatar de ${emp.nombre}`}
+              style={{ width: '40px', height: '40px', borderRadius: '50%', marginBottom: '4px' }}
+            />
             <span>{emp.nombre}</span>
           </div>
         ))}
