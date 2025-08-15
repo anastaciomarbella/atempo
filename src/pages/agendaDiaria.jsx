@@ -1,108 +1,83 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import '../styles/agendaSemanal.css';
+import '../styles/agendaDiaria.css';
 import avatar from '../assets/avatar.png';
 import { FaClock, FaChevronDown } from 'react-icons/fa';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import ModalCita from '../components/modalCita/modalCita';
 
-const AgendaSemanal = () => {
+const AgendaDiaria = () => {
   const [personas, setPersonas] = useState([]);
   const [personaSeleccionada, setPersonaSeleccionada] = useState('todos');
   const [citas, setCitas] = useState([]);
-  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-
-  // Calcular inicio de semana (lunes)
-  const fechaInicioSemana = useMemo(() => {
-    const d = new Date(fechaSeleccionada);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.setDate(diff));
-  }, [fechaSeleccionada]);
-
-  // Array de días de la semana
-  const diasSemana = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(fechaInicioSemana);
-      date.setDate(fechaInicioSemana.getDate() + i);
-      return {
-        id: i + 1,
-        label: date.toLocaleDateString('es-MX', { weekday: 'long' }),
-        date,
-        dateStr: date.toISOString().slice(0, 10),
-      };
-    });
-  }, [fechaInicioSemana]);
-
-  const hours = Array.from({ length: 8 }, (_, i) => `${String(9 + i).padStart(2, '0')}:00`);
+  const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
 
   // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/personas`);
+        const res = await fetch('https://mi-api-atempo.onrender.com/api/personas');
         const data = await res.json();
         setPersonas(data);
-      } catch (error) {
-        console.error('Error cargando personas:', error);
+      } catch (err) {
+        console.error(err);
+        setError('No se pudieron cargar las personas.');
       }
     };
     fetchPersonas();
-  }, [API_URL]);
+  }, []);
 
-  // Cargar citas según persona y semana
+  // Cargar citas según persona y fecha
   useEffect(() => {
     const fetchCitas = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        let url = `${API_URL}/api/citas`;
-        if (personaSeleccionada !== 'todos') {
-          url = `${API_URL}/api/citas/persona/${personaSeleccionada}`;
-        }
+        let url = 'https://mi-api-atempo.onrender.com/api/citas';
+        if (personaSeleccionada !== 'todos') url += `?id_persona=${personaSeleccionada}`;
         const res = await fetch(url);
-        const data = await res.json();
-
-        const citasFiltradas = data.filter(cita => {
-          const citaFecha = new Date(cita.fecha);
-          return citaFecha >= diasSemana[0].date && citaFecha <= diasSemana[6].date;
-        });
-
-        // Evitar duplicados y actualizar citas existentes
-        setCitas(prev => {
-          const citasUnicas = [...prev];
-          citasFiltradas.forEach(nuevaCita => {
-            const index = citasUnicas.findIndex(c => c.id_cita === nuevaCita.id_cita);
-            if (index !== -1) {
-              citasUnicas[index] = nuevaCita;
-            } else {
-              citasUnicas.push(nuevaCita);
-            }
-          });
-          return citasUnicas;
-        });
-      } catch (error) {
-        console.error('Error cargando citas:', error);
+        let data = await res.json();
+        const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
+        data = data.filter(cita => cita.fecha.slice(0, 10) === fechaStr);
+        setCitas(data);
+      } catch (err) {
+        console.error(err);
+        setError('No se pudieron cargar las citas.');
       }
+      setLoading(false);
     };
     fetchCitas();
-  }, [personaSeleccionada, diasSemana, API_URL]);
+  }, [personaSeleccionada, fechaSeleccionada]);
 
-  const cambiarFecha = dias => {
+  const cambiarFecha = (delta) => {
     const nuevaFecha = new Date(fechaSeleccionada);
-    nuevaFecha.setDate(nuevaFecha.getDate() + dias);
+    nuevaFecha.setDate(nuevaFecha.getDate() + delta);
     setFechaSeleccionada(nuevaFecha);
   };
 
-  // Actualizar o eliminar cita sin duplicados
-  const actualizarCita = citaEditada => {
+  // Filtrado de empleados a mostrar
+  const empleadosAMostrar = useMemo(() => {
+    return personaSeleccionada === 'todos'
+      ? personas
+      : [personas.find(p => p.id === Number(personaSeleccionada))].filter(Boolean);
+  }, [personaSeleccionada, personas]);
+
+  // Convierte hora "HH:MM" a minutos
+  const horaAMinutos = (hora) => {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  // Actualiza o agrega cita sin duplicar
+  const actualizarCita = (citaEditada) => {
     setCitas(prev => {
-      if (citaEditada.eliminar) {
-        return prev.filter(c => c.id_cita !== citaEditada.id_cita);
-      }
       const existe = prev.some(c => c.id_cita === citaEditada.id_cita);
       if (existe) {
-        return prev.map(c => (c.id_cita === citaEditada.id_cita ? citaEditada : c));
+        return prev.map(c => c.id_cita === citaEditada.id_cita ? citaEditada : c);
       } else {
         return [...prev, citaEditada];
       }
@@ -111,20 +86,25 @@ const AgendaSemanal = () => {
   };
 
   return (
-    <main className="weekly-agenda-main">
+    <main className="daily-agenda-main">
       <div className="agenda-header">
         <div className="nav-date">
-          <button className="date-nav-btn" onClick={() => cambiarFecha(-7)}>
+          <button aria-label="Anterior" className="date-nav-btn" onClick={() => cambiarFecha(-1)}>
             <FiChevronLeft />
           </button>
-          <button className="date-nav-btn" onClick={() => cambiarFecha(7)}>
+          <button aria-label="Siguiente" className="date-nav-btn" onClick={() => cambiarFecha(1)}>
             <FiChevronRight />
           </button>
-          <span>
-            Del {diasSemana[0].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })} al{' '}
-            {diasSemana[6].date.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
+          <span className="fecha-display">
+            {fechaSeleccionada.toLocaleDateString('es-MX', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
           </span>
         </div>
+
         <select
           className="filter-select"
           value={personaSeleccionada}
@@ -132,78 +112,71 @@ const AgendaSemanal = () => {
         >
           <option value="todos">Todos</option>
           {personas.map(p => (
-            <option key={p.id} value={p.id}>
-              {p.nombre}
-            </option>
+            <option key={p.id} value={p.id}>{p.nombre}</option>
           ))}
         </select>
       </div>
 
-      <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${diasSemana.length}, 1fr)` }}>
-        {/* Cabecera con avatares y nombres */}
-        <div className="employee-header weekly-clock-header">
-          <button className="weekly-clock-btn">
+      {loading && <div className="loading">Cargando citas...</div>}
+      {error && <div className="error">{error}</div>}
+
+      <div className="agenda-grid" style={{ gridTemplateColumns: `80px repeat(${empleadosAMostrar.length}, 1fr)` }}>
+        <div className="employee-header clock-header">
+          <button className="clock-btn">
             <FaClock />
             <FaChevronDown className="dropdown-arrow" />
           </button>
         </div>
-        {personas.map((p, index) => (
-          <div className={`employee-header ${index === personas.length - 1 ? 'last' : ''}`} key={p.id}>
-            <img src={avatar} alt={p.nombre} className="person-avatar" />
-            <span className="person-name">{p.nombre}</span>
+
+        {empleadosAMostrar.map(emp => (
+          <div className="employee-header" key={emp.id}>
+            <img src={avatar} alt={`Avatar de ${emp.nombre}`} />
+            <span>{emp.nombre}</span>
           </div>
         ))}
 
-        {/* Filas de horas */}
         {hours.map(hour => (
           <React.Fragment key={hour}>
             <div className="hour-cell">{hour}</div>
-            {diasSemana.map((day, index) => {
-              const citasDiaHora = citas.filter(cita => {
-                const citaDateStr = new Date(cita.fecha).toISOString().slice(0, 10);
-                if (citaDateStr !== day.dateStr) return false;
-
-                const [startHour] = cita.hora_inicio.split(':');
-                return parseInt(startHour, 10) === parseInt(hour.split(':')[0], 10);
-              });
-
+            {empleadosAMostrar.map(emp => {
+              const empCitas = citas.filter(c => c.id_persona === emp.id);
               return (
-                <div className={`time-cell ${index === diasSemana.length - 1 ? 'last' : ''}`} key={`${day.id}-${hour}`}>
-                  {citasDiaHora.map(cita => {
-                    const [startH, startM] = cita.hora_inicio.split(':').map(Number);
-                    const [endH, endM] = cita.hora_final.split(':').map(Number);
-                    const startTotal = startH * 60 + startM;
-                    const endTotal = endH * 60 + endM;
-                    const cellStart = parseInt(hour.split(':')[0], 10) * 60;
-                    const offset = startTotal - cellStart;
-                    const height = ((endTotal - startTotal) / 60) * 62;
-                    const top = (offset / 60) * 62;
+                <div className="time-cell" key={`${emp.id}-${hour}`}>
+                  {empCitas.map((cita, index, array) => {
+                    const startMin = horaAMinutos(cita.hora_inicio);
+                    const endMin = horaAMinutos(cita.hora_final);
+                    const hourStart = horaAMinutos(hour);
+                    const hourEnd = hourStart + 60;
+
+                    if (endMin <= hourStart || startMin >= hourEnd) return null;
+
+                    const top = Math.max(startMin - hourStart, 0);
+                    const height = Math.min(endMin, hourEnd) - Math.max(startMin, hourStart);
+
+                    const overlapping = array.filter(c =>
+                      horaAMinutos(c.hora_inicio) < endMin &&
+                      horaAMinutos(c.hora_final) > startMin
+                    );
+                    const idx = overlapping.findIndex(c => c.id_cita === cita.id_cita);
+                    const width = 100 / overlapping.length;
+                    const left = idx * width;
 
                     return (
                       <div
                         className="appointment"
                         key={cita.id_cita}
                         style={{
-                          position: 'absolute',
                           top: `${top}px`,
                           height: `${height}px`,
-                          backgroundColor: cita.color || '#e0e0e0',
-                          borderRadius: '6px',
-                          padding: '4px',
-                          marginBottom: '4px',
-                          cursor: 'pointer',
-                          color: '#000',
-                          fontSize: '12px',
-                          overflow: 'hidden',
-                          width: '90%',
+                          left: `${left}%`,
+                          width: `${width}%`,
+                          backgroundColor: cita.color || '#4CAF50'
                         }}
                         onClick={() => setCitaSeleccionada(cita)}
                       >
-                        <strong>{cita.nombre_cliente || cita.client}</strong>
-                        <div>{cita.titulo || cita.service}</div>
-                        <small>
-                          {cita.hora_inicio} - {cita.hora_final}
-                        </small>
+                        <strong>{cita.nombre_cliente}</strong>
+                        <div className="titulo-cita">{cita.titulo}</div>
+                        <small>{cita.hora_inicio.slice(0,5)} - {cita.hora_final.slice(0,5)}</small>
                       </div>
                     );
                   })}
@@ -215,10 +188,15 @@ const AgendaSemanal = () => {
       </div>
 
       {citaSeleccionada && (
-        <ModalCita modo="editar" cita={citaSeleccionada} onClose={() => setCitaSeleccionada(null)} onSave={actualizarCita} />
+        <ModalCita
+          modo="editar"
+          cita={citaSeleccionada}
+          onClose={() => setCitaSeleccionada(null)}
+          onSave={actualizarCita} // ✅ Evita duplicados
+        />
       )}
     </main>
   );
 };
 
-export default AgendaSemanal;
+export default AgendaDiaria; 
