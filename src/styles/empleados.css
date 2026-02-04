@@ -1,0 +1,94 @@
+.empleados-container {
+    padding: 25px 25px 25px 40px; /* derecha, abajo, izquierda */
+}
+
+.header-empleados {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 15px;
+    margin-bottom: 25px;
+}
+
+.titulo-empleados {
+    font-size: 27px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.nuevo-empleado-btn {
+    background-color: white;
+    color: #1d1d1d;
+    border: 1.5px solid #1d1d1d;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.nuevo-empleado-btn:hover {
+    background-color: #f2f2f2;
+}
+
+.tabla-empleados {    
+    margin-left: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    font-size: 17px;
+    border-spacing: 0;
+}
+
+.tabla-empleados th,
+.tabla-empleados td {
+    padding: 12px 10px;
+    text-align: center;
+}
+
+.tabla-empleados thead th {
+    font-weight: 700;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.tabla-empleados tbody td {
+    border-bottom: 1px solid #d1d5db;
+}
+
+.avatar-empleado {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.tabla-empleados th:not(:first-child),
+.tabla-empleados td:not(:first-child) {
+    border-left: 1px solid #d1d5db;
+}
+
+.tabla-empleados tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.header-empleados,
+.tabla-empleados {
+  margin-left: 0;
+}
+
+.icono-editar {
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 200px;
+}
+
+.icono-borrar {
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 200px;
+    margin-left: 30px;
+}

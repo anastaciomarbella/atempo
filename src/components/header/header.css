@@ -1,0 +1,17 @@
+.top-header {
+  position: sticky;
+  top: 0;
+  margin-left: 240px;
+  z-index: 50;
+  background-color: #fff;
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.business-name {
+  font-size: 26px;
+  font-weight: 600;
+  color: #000;
+}

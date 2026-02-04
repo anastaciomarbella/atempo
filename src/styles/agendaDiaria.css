@@ -1,0 +1,183 @@
+.daily-agenda-main {
+  padding: 1rem;
+  font-family: 'Segoe UI', sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  background-color: #f9fafb;
+}
+
+.agenda-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.nav-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-nav-btn {
+  background: #e5e7eb;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.date-nav-btn:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.filter-select {
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+}
+
+/* === GRID REAL DE CUADRÍCULAS === */
+.agenda-grid {
+  display: grid;
+  width: 100%;
+  overflow-x: auto;
+  border: 2px solid #e5e7eb;
+  background: white;
+}
+
+/* CABECERAS */
+.employee-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-right: 2px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f3f4f6;
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  height: 80px;
+}
+
+.employee-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e5e7eb;
+}
+
+/* RELOJ */
+.clock-header {
+  justify-content: center;
+}
+
+.clock-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* CELDAS DE HORA (LADO IZQUIERDO) */
+.hour-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  font-size: 0.9rem;
+  border-right: 2px solid #e5e7eb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* CUADRITOS DEL CALENDARIO */
+.time-cell {
+  position: relative;
+  border: 1px solid #e0e0e0;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+.time-cell:hover {
+  background-color: #f2e6ff;
+}
+
+/* CITAS */
+.appointment {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
+  color: white;
+  padding: 4px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.appointment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.appointment strong {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+.appointment .titulo-cita {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: black;
+}
+
+/* MENSAJES */
+.loading,
+.error-banner {
+  margin: 0.5rem 0;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+  .agenda-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .agenda-grid {
+    grid-template-columns: 60px repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .employee-header img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .appointment {
+    font-size: 0.75rem;
+    padding: 3px;
+  }
+}

@@ -1,0 +1,80 @@
+.clientes-container {
+    padding: 25px 25px 25px 40px;
+}
+
+.header-clientes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.titulo-clientes {
+    font-size: 27px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.nuevo-cliente-btn {
+    background-color: white;
+    color: #1d1d1d;
+    border: 1.5px solid #1d1d1d;
+    padding: 8px 14px;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.nuevo-cliente-btn:hover {
+    background-color: #f2f2f2;
+}
+
+.tabla-clientes {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    font-size: 17px;
+    border-spacing: 0;
+}
+
+.tabla-clientes th,
+.tabla-clientes td {
+    padding: 23px 10px;
+    text-align: center;
+}
+
+.tabla-clientes thead th {
+    font-weight: 700;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.tabla-clientes tbody td {
+    border-bottom: 1px solid #d1d5db;
+}
+
+.tabla-clientes th:not(:first-child),
+.tabla-clientes td:not(:first-child) {
+    border-left: 1px solid #d1d5db;
+}
+
+.tabla-clientes tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.icono-editar {
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.icono-borrar {
+    color: #dc2626;
+    cursor: pointer;
+    font-size: 18px;
+}

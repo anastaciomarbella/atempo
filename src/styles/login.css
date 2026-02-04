@@ -1,0 +1,268 @@
+/* =========================
+   CONTENEDOR PRINCIPAL
+========================= */
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f2f2f2;
+}
+
+/* =========================
+   TARJETA DE LOGIN
+========================= */
+
+.login-card {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 450px;
+}
+
+/* =========================
+   HEADER (LOGO + TÍTULO)
+========================= */
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+/* LOGO CIRCULAR A LA IZQUIERDA */
+.login-logo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* CONTENIDO CENTRADO DEBAJO */
+.login-body {
+  text-align: center;
+}
+
+/* =========================
+   TÍTULOS
+========================= */
+
+.login-title {
+  font-size: 34px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.login-subtitle {
+  font-size: 28px;
+  margin-top: 0.2rem;
+  margin-bottom: 1.2rem;
+}
+
+/* =========================
+   INPUTS (FLOATING LABEL)
+========================= */
+
+.input-group {
+  position: relative;
+  width: 88%;
+  margin: 0.2rem auto;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: transparent;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Etiqueta flotante */
+.floating-label-text {
+  position: absolute;
+  top: 25%;
+  left: 10px;
+  transform: translateY(1%);
+  color: #888;
+  font-size: 16px;
+  background-color: white;
+  padding: 0 4px;
+  transition: 0.2s ease all;
+  pointer-events: none;
+}
+
+/* Animación del label cuando hay texto */
+.login-input[type="text"]:not(:placeholder-shown) + .floating-label-text,
+.login-input[type="email"]:not(:placeholder-shown) + .floating-label-text,
+.login-input[type="password"]:valid + .floating-label-text,
+.login-input[type="tel"]:valid + .floating-label-text {
+  top: -8px;
+  left: 12px;
+  font-size: 13px;
+  color: #1976d2;
+}
+
+/* Borde azul al enfocar */
+.login-input:focus {
+  border-color: #1976d2;
+}
+
+/* =========================
+   BOTÓN
+========================= */
+
+.login-button {
+  width: 88%;
+  height: 50px;
+  margin-top: 0.8rem;
+  background: linear-gradient(to right, #1976d2, #1e88e5);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background: linear-gradient(to right, #1565c0, #1976d2);
+}
+
+/* =========================
+   FOOTER Y LEGAL
+========================= */
+
+.login-footer {
+  text-align: center;
+  font-size: 15px;
+  margin-top: 10px;
+}
+
+.login-link {
+  color: #0825b5;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-legal {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* =========================
+   OJO PARA CONTRASEÑA
+========================= */
+
+.password-group {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 40%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1976d2;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  z-index: 2;
+}
+
+/* =========================
+   RESPONSIVO - MÓVIL
+========================= */
+
+@media (max-width: 480px) {
+
+  .login-card {
+    padding: 1.5rem 1.2rem;
+    border-radius: 12px;
+  }
+
+  .login-header {
+    gap: 8px;
+  }
+
+  .login-logo {
+    width: 75px;
+    height: 75px;
+  }
+
+  .login-title {
+    font-size: 28px;
+  }
+
+  .login-subtitle {
+    font-size: 22px;
+  }
+
+  .login-input {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .login-button {
+    font-size: 14px;
+    height: 46px;
+  }
+
+  .login-footer {
+    font-size: 13.5px;
+  }
+
+  .login-legal {
+    font-size: 12px;
+  }
+}
+
+/* =========================
+   RESPONSIVO - TABLET/LAPTOP
+========================= */
+
+@media (min-width: 481px) and (max-width: 1024px) {
+
+  .login-card {
+    padding: 2rem;
+  }
+
+  .login-logo {
+    width: 85px;
+    height: 85px;
+  }
+
+  .login-title {
+    font-size: 32px;
+  }
+
+  .login-subtitle {
+    font-size: 26px;
+  }
+
+  .login-input {
+    font-size: 15px;
+    padding: 11px;
+  }
+
+  .login-button {
+    font-size: 15px;
+    height: 48px;
+  }
+
+  .login-footer {
+    font-size: 14px;
+  }
+}
