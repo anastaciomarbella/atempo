@@ -1,92 +1,81 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../styles/login.css';
-import logo from '../assets/logo.png';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+export default function Login() {
   const navigate = useNavigate();
 
-  const [correo, setCorreo] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setError('');
+  const handleLogin = async (e) => {
+    e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("https://mi-api-atempo.onrender.com/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, password })
-      });
+      const res = await fetch(
+        "https://mi-api-atempo.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ correo, password }),
+        }
+      );
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Credenciales incorrectas");
+        alert(data.message || "Error en login");
         setLoading(false);
         return;
       }
 
-      // 🔹 Guardamos los datos importantes del usuario
-      const userData = {
-        token: data.token,
-        empresaNombre: data.empresaNombre,
-        empresaLogo: data.empresaLogo
-      };
+      // Guardar datos útiles en localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("empresaNombre", data.empresaNombre);
+      if (data.empresaLogo) {
+        localStorage.setItem("empresaLogo", data.empresaLogo);
+      }
 
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // ✅ Ahora sí redirigimos a la agenda diaria
-      navigate("/agenda-diaria");
-
+      // Redirigir a tu dashboard/agenda
+      navigate("/dashboard");
     } catch (err) {
-      setError("Error de conexión con el servidor");
+      console.error(err);
+      alert("Error de conexión con el servidor");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <img src={logo} alt="log" className="login-logo" />
-        <h1 className="login-title">Citalia</h1>
-        <h2 className="login-subtitle">Iniciar sesión</h2>
+    <div style={{ maxWidth: 400, margin: "50px auto" }}>
+      <h2>Iniciar sesión</h2>
 
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          className="login-input"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
-        />
+      <form onSubmit={handleLogin}>
+        <div>
+          <label>Correo</label>
+          <input
+            type="email"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
+            required
+          />
+        </div>
 
-        <input
-          type="password"
-          placeholder="Contraseña"
-          className="login-input"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div>
+          <label>Contraseña</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-        {error && <p className="login-error">{error}</p>}
-
-        <button className="login-button" onClick={handleLogin} disabled={loading}>
-          {loading ? "Entrando..." : "Iniciar sesión"}
+        <button type="submit" disabled={loading}>
+          {loading ? "Ingresando..." : "Entrar"}
         </button>
-
-        <p className="login-footer">
-          ¿No tienes cuenta?{' '}
-          <Link to="/register" className="login-link">
-            Regístrate aquí
-          </Link>
-        </p>
-      </div>
+      </form>
     </div>
   );
-};
-
-export default Login;
+}

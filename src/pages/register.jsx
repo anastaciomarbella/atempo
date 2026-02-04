@@ -1,172 +1,106 @@
-// pages/Register.js
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../styles/login.css';
-import { FaUpload } from 'react-icons/fa';
-import logo from '../assets/logo.png';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Register = () => {
+export default function Register() {
   const navigate = useNavigate();
 
-  const [negocio, setNegocio] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [foto, setFoto] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [form, setForm] = useState({
+    nombre: "",
+    correo: "",
+    telefono: "",
+    password: "",
+    nombreEmpresa: "",
+  });
 
-  const validarCorreo = (email) => /\S+@\S+\.\S+/.test(email);
-  const validarTelefono = (tel) => /^\d{7,15}$/.test(tel);
+  const [loading, setLoading] = useState(false);
 
-  const handleFotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFoto(file);
-      setPreview(URL.createObjectURL(file));
-    }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = () => {
-    setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-    if (!negocio.trim() || !nombre.trim() || !correo.trim() || !telefono.trim() || !password) {
-      setError('Por favor, completa todos los campos');
-      return;
+    try {
+      const res = await fetch(
+        "https://mi-api-atempo.onrender.com/api/auth/registro",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Error en registro");
+        setLoading(false);
+        return;
+      }
+
+      alert("Registro exitoso");
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+      alert("Error de conexión con el servidor");
+    } finally {
+      setLoading(false);
     }
-
-    if (!validarCorreo(correo)) {
-      setError('Ingresa un correo válido');
-      return;
-    }
-
-    if (!validarTelefono(telefono)) {
-      setError('Ingresa un teléfono válido (solo números)');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-
-    navigate('/');
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div style={{ maxWidth: 500, margin: "40px auto" }}>
+      <h2>Registro</h2>
 
-        {/* 🔹 NUEVO ENCABEZADO: LOGO A LA IZQUIERDA */}
-        <div className="login-header">
-          <img src={logo} alt="Citalia logo" className="login-logo" />
-          <h1 className="login-title">Citalia</h1>
-        </div>
+      <form onSubmit={handleSubmit}>
+        <input
+          name="nombre"
+          placeholder="Nombre completo"
+          value={form.nombre}
+          onChange={handleChange}
+          required
+        />
 
-        <div className="login-body">
-          <h2 className="login-subtitle">Registrar cuenta</h2>
+        <input
+          name="correo"
+          type="email"
+          placeholder="Correo"
+          value={form.correo}
+          onChange={handleChange}
+          required
+        />
 
-          {/* Vista previa de la foto */}
-          {preview && (
-            <img
-              src={preview}
-              alt="Vista previa"
-              className="preview-logo"
-              style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                marginBottom: '10px',
-              }}
-            />
-          )}
+        <input
+          name="telefono"
+          placeholder="Teléfono"
+          value={form.telefono}
+          onChange={handleChange}
+          required
+        />
 
-          {/* Botón para subir foto */}
-          <label className="btn-cargar-logo">
-            <FaUpload className="icono-upload" />
-            Cargar Logo
-            <input
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleFotoChange}
-            />
-          </label>
+        <input
+          name="password"
+          type="password"
+          placeholder="Contraseña"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
 
-          <input
-            type="text"
-            placeholder="Nombre del negocio"
-            className="login-input"
-            value={negocio}
-            onChange={(e) => setNegocio(e.target.value)}
-          />
+        <input
+          name="nombreEmpresa"
+          placeholder="Nombre de la empresa"
+          value={form.nombreEmpresa}
+          onChange={handleChange}
+          required
+        />
 
-          <input
-            type="text"
-            placeholder="Nombre completo"
-            className="login-input"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-
-          <input
-            type="tel"
-            placeholder="Número de teléfono"
-            className="login-input"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-          />
-
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            className="login-input"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Contraseña"
-            className="login-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Confirmar contraseña"
-            className="login-input"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-
-          {error && <p className="login-error">{error}</p>}
-
-          <p className="login-legal">
-            Protegemos tu información conforme a nuestro{" "}
-            <Link to="/aviso-privacidad" className="login-link">
-              Aviso de Privacidad
-            </Link>.
-          </p>
-
-          <button className="login-button" onClick={handleRegister}>
-            Registrar cuenta
-          </button>
-
-          <p className="login-footer">
-            ¿Ya tienes cuenta?{" "}
-            <Link to="/" className="login-link">
-              Inicia sesión
-            </Link>
-          </p>
-        </div>
-      </div>
+        <button type="submit" disabled={loading}>
+          {loading ? "Registrando..." : "Crear cuenta"}
+        </button>
+      </form>
     </div>
   );
-};
-
-export default Register;
+}
