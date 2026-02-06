@@ -1,197 +1,129 @@
-import React, { useState, useEffect } from 'react';
-import '../styles/agendaSemanal.css';
-import avatar from '../assets/avatar.png';
-import { FaClock } from 'react-icons/fa';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import ModalCita from '../components/modalCita/modalCita';
+import React, { useState, useEffect } from "react";
+import "../styles/agendaSemanal.css";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+
+
+const diasSemana = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
 
 const AgendaSemanal = () => {
-  const [personas, setPersonas] = useState([]);
   const [citas, setCitas] = useState([]);
-  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
+  const [fechaBase, setFechaBase] = useState(new Date()); // semana actual
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  const hours = Array.from({ length: 10 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
-  const alturaHora = 62; // altura de cada celda de hora
-  const alturaCita = 50; // altura uniforme de cada cita dentro de la celda
-
-  // Cambiar semana
-  const cambiarSemana = dias => {
-    const nuevaFecha = new Date(fechaSeleccionada);
-    nuevaFecha.setDate(nuevaFecha.getDate() + dias);
-    setFechaSeleccionada(nuevaFecha);
+  // Obtener inicio de semana (lunes)
+  const getInicioSemana = (fecha) => {
+    const f = new Date(fecha);
+    const dia = f.getDay(); // 0=domingo, 1=lunes...
+    const diff = dia === 0 ? -6 : 1 - dia;
+    f.setDate(f.getDate() + diff);
+    return f;
   };
 
-  // Cargar primeros 4 empleados
-  useEffect(() => {
-    const fetchPersonas = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/personas`);
-        const data = await res.json();
-        setPersonas(data.slice(0, 4));
-      } catch (error) {
-        console.error('Error cargando personas:', error);
-      }
-    };
-    fetchPersonas();
-  }, [API_URL]);
+  const inicioSemana = getInicioSemana(fechaBase);
 
-  // Cargar citas de la semana
+  // Generar 35 días (5 filas x 7 columnas)
+  const generarDiasCalendario = () => {
+    const dias = [];
+    const actual = new Date(inicioSemana);
+
+    for (let i = 0; i < 35; i++) {
+      dias.push(new Date(actual));
+      actual.setDate(actual.getDate() + 1);
+    }
+    return dias;
+  };
+
+  const diasCalendario = generarDiasCalendario();
+
+  // Cargar citas
   useEffect(() => {
     const fetchCitas = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/citas`);
+        const res = await fetch(
+          "https://mi-api-atempo.onrender.com/api/citas"
+        );
         const data = await res.json();
-
-        const inicioSemana = new Date(fechaSeleccionada);
-        inicioSemana.setDate(fechaSeleccionada.getDate() - fechaSeleccionada.getDay() + 1); // lunes
-        const finSemana = new Date(inicioSemana);
-        finSemana.setDate(inicioSemana.getDate() + 6); // domingo
-
-        const citasSemana = data.filter(cita => {
-          const citaFecha = new Date(cita.fecha);
-          return citaFecha >= inicioSemana && citaFecha <= finSemana;
-        });
-
-        setCitas(citasSemana);
-      } catch (error) {
-        console.error('Error cargando citas:', error);
+        setCitas(data);
+      } catch (err) {
+        console.error("Error cargando citas", err);
       }
     };
-    fetchCitas();
-  }, [API_URL, fechaSeleccionada]);
 
-  const actualizarCita = citaEditada => {
-    setCitas(prev => {
-      if (citaEditada.eliminar) {
-        return prev.filter(c => c.id_cita !== citaEditada.id_cita);
-      }
-      const index = prev.findIndex(c => c.id_cita === citaEditada.id_cita);
-      if (index >= 0) {
-        const updated = [...prev];
-        updated[index] = citaEditada;
-        return updated;
-      } else {
-        return [...prev, citaEditada];
-      }
-    });
-    setCitaSeleccionada(null);
+    fetchCitas();
+  }, []);
+
+  const cambiarSemana = (delta) => {
+    const nueva = new Date(fechaBase);
+    nueva.setDate(nueva.getDate() + delta * 7);
+    setFechaBase(nueva);
   };
 
-  // Calcular inicio y fin de semana para mostrar en header
-  const inicioSemana = new Date(fechaSeleccionada);
-  inicioSemana.setDate(fechaSeleccionada.getDate() - fechaSeleccionada.getDay() + 1); // lunes
-  const finSemana = new Date(inicioSemana);
-  finSemana.setDate(inicioSemana.getDate() + 6); // domingo
+  const citasPorDia = (fecha) => {
+    const fechaStr = fecha.toISOString().slice(0, 10);
+
+    return citas.filter(
+      (c) => c.fecha.slice(0, 10) === fechaStr
+    );
+  };
 
   return (
-    <main className="weekly-agenda-main">
-      {/* Header con flechas y rango de semana */}
-      <div
-        className="agenda-header"
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}
-      >
-        <button className="date-nav-btn" onClick={() => cambiarSemana(-7)}>
-          <FiChevronLeft size={20} />
+    <main className="semanal-main">
+      <header className="semanal-header">
+        <button onClick={() => cambiarSemana(-1)}>
+          <FiChevronLeft />
         </button>
 
-        <span style={{ fontWeight: 'bold' }}>
-          Semana del {inicioSemana.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}  
-          al {finSemana.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </span>
+        <h2>
+          Semana del{" "}
+          {inicioSemana.toLocaleDateString("es-MX", {
+            day: "numeric",
+            month: "long",
+          })}
+        </h2>
 
-        <button className="date-nav-btn" onClick={() => cambiarSemana(7)}>
-          <FiChevronRight size={20} />
+        <button onClick={() => cambiarSemana(1)}>
+          <FiChevronRight />
         </button>
-      </div>
+      </header>
 
-      <div
-        className="agenda-grid"
-        style={{ gridTemplateColumns: `80px repeat(${personas.length}, 1fr)` }}
-      >
-        {/* Columna de horas */}
-        <div className="weekly-clock-header">
-          <FaClock />
-        </div>
-
-        {/* Header: avatares y nombres */}
-        {personas.map(p => (
-          <div className="employee-header" key={p.id}>
-            <img
-              src={avatar}
-              alt={p.nombre}
-              className="person-avatar"
-              style={{ width: '40px', height: '40px', borderRadius: '50%', marginBottom: '4px' }}
-            />
-            <span className="person-name">{p.nombre}</span>
+      <div className="calendar-grid">
+        {/* Encabezado de días */}
+        {diasSemana.map((d) => (
+          <div key={d} className="day-header">
+            {d}
           </div>
         ))}
 
-        {/* Filas por hora */}
-        {hours.map(hour => (
-          <React.Fragment key={hour}>
-            <div className="hour-cell">{hour}</div>
-            {personas.map(persona => {
-              // Filtrar solo citas que inicien en esta hora
-              const citasPersona = citas.filter(
-                cita =>
-                  cita.id_persona === persona.id &&
-                  cita.hora_inicio.slice(0, 2) === hour.slice(0, 2)
-              );
+        {/* 5 filas de calendario */}
+        {diasCalendario.map((fecha, i) => {
+          const citasHoy = citasPorDia(fecha);
 
-              return (
+          return (
+            <div key={i} className="day-cell">
+              <div className="day-number">
+                {fecha.getDate()}
+              </div>
+
+              {citasHoy.map((cita) => (
                 <div
-                  className="time-cell"
-                  key={`${persona.id}-${hour}`}
-                  style={{ position: 'relative', height: `${alturaHora}px`, padding: '2px' }}
+                  key={cita.id_cita}
+                  className="calendar-appointment"
+                  style={{ backgroundColor: cita.color || "#6FA8DC" }}
                 >
-                  {citasPersona.map(cita => (
-                    <div
-                      key={cita.id_cita}
-                      className="appointment"
-                      style={{
-                        position: 'absolute',
-                        top: '6px',
-                        height: `${alturaCita}px`,
-                        backgroundColor: cita.color || '#a0c4ff',
-                        borderRadius: '6px',
-                        padding: '4px',
-                        cursor: 'pointer',
-                        color: '#000',
-                        fontSize: '12px',
-                        overflow: 'hidden',
-                        width: '90%',
-                        left: '5%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        textAlign: 'center'
-                      }}
-                      onClick={() => setCitaSeleccionada(cita)}
-                    >
-                      <strong>{cita.nombre_cliente || cita.client}</strong>
-                      <div>{cita.titulo || cita.service}</div>
-                      <small>
-                        {cita.hora_inicio} - {cita.hora_final}
-                      </small>
-                    </div>
-                  ))}
+                  {cita.titulo}
                 </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
+              ))}
+            </div>
+          );
+        })}
       </div>
-
-      {citaSeleccionada && (
-        <ModalCita
-          modo="editar"
-          cita={citaSeleccionada}
-          onClose={() => setCitaSeleccionada(null)}
-          onSave={actualizarCita}
-        />
-      )}
     </main>
   );
 };

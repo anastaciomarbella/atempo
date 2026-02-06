@@ -4,7 +4,7 @@ import './modalCita.css';
 
 const coloresDisponibles = [
   '#ffe4e6', '#ffedd5', '#fef9c3', '#bbf7d0',
-  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3'
+  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3','#f1aed4'
 ];
 
 function convertirA24h(hora) {
@@ -17,9 +17,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona: null,
+    id_persona: null,          // 👈 puede quedar null
     titulo: '',
-    encargado: '',
+    encargado: '',             // solo para mostrar en UI
     fecha: '',
     start: '',
     end: '',
@@ -31,16 +31,19 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
+  // === CARGAR PERSONAS ===
   useEffect(() => {
     fetch('https://mi-api-atempo.onrender.com/api/personas')
       .then(res => res.json())
-      .then(data => setPersonas(data))
+      .then(data => setPersonas(Array.isArray(data) ? data : []))
       .catch(err => console.error('Error cargando personas:', err));
   }, []);
 
+  // === CARGAR DATOS AL EDITAR ===
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
       const encargadoEncontrado = personas.find(p => p.id === cita.id_persona);
+
       setFormulario({
         id_persona: cita.id_persona || null,
         titulo: cita.titulo || '',
@@ -70,23 +73,31 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     setFormulario(prev => ({ ...prev, color }));
   };
 
+  // === SELECCIONAR ENCARGADO (opcional) ===
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id,
+      id_persona: persona.id,   // si elige uno, se guarda
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
     setMensaje('');
   };
 
+  // === LIMPIAR ENCARGADO (NUEVO) ===
+  const quitarEncargado = () => {
+    setFormulario(prev => ({
+      ...prev,
+      id_persona: null,
+      encargado: ''
+    }));
+    setMostrarListaEncargados(false);
+  };
+
   const handleGuardar = async () => {
-    if (!formulario.id_persona) {
-      setMensaje('Por favor selecciona un encargado válido.');
-      return;
-    }
+    // ❌ YA NO EXIGIMOS ENCARGADO
     if (!formulario.titulo || !formulario.fecha || !formulario.start || !formulario.end) {
-      setMensaje('Por favor completa todos los campos obligatorios.');
+      setMensaje('Por favor completa los campos obligatorios.');
       return;
     }
 
@@ -97,7 +108,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     const hora_final = convertirA24h(formulario.end);
 
     const dataParaEnviar = {
-      id_persona: formulario.id_persona,
+      id_persona: formulario.id_persona || null, // 👈 CLAVE: puede ir vacío
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio,
@@ -124,10 +135,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
         throw new Error(errorText || 'Error al guardar la cita');
       }
 
-      // ✅ Enviamos el objeto actualizado para que se vea inmediatamente en la agenda
       if (onSave) {
         onSave({
-          id_cita: cita?.id || Date.now(), // id temporal si es nueva
+          id_cita: cita?.id || Date.now(),
           ...dataParaEnviar
         });
       }
@@ -144,16 +154,18 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
   const handleEliminar = async () => {
     if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
+
     try {
-      const res = await fetch(`https://mi-api-atempo.onrender.com/api/citas/${cita.id}`, {
-        method: 'DELETE'
-      });
+      const res = await fetch(
+        `https://mi-api-atempo.onrender.com/api/citas/${cita.id}`,
+        { method: 'DELETE' }
+      );
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(errorText || 'Error al eliminar la cita');
       }
 
-      // ✅ También eliminamos de la agenda inmediatamente
       if (onSave) onSave({ id_cita: cita.id, eliminar: true });
 
       setMensaje('Cita eliminada correctamente.');
@@ -171,6 +183,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
         <button className="agendar-cerrar-modal" onClick={onClose} disabled={guardando}>
           <FaTimes />
         </button>
+
         <h2 className="agendar-titulo-modal">
           {modo === 'editar' ? 'Detalles de la cita' : 'Agendar citas'}
         </h2>
@@ -188,8 +201,10 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
                 disabled={guardando}
               />
             </div>
+
             <div>
-              <label>Encargado *</label>
+              <label>Encargado (opcional)</label>
+
               <div className="dropdown-encargado">
                 <button
                   type="button"
@@ -197,10 +212,17 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
                   onClick={() => setMostrarListaEncargados(!mostrarListaEncargados)}
                   disabled={guardando}
                 >
-                  {formulario.encargado || 'Selecciona un encargado'}
+                  {formulario.encargado || 'Sin encargado'}
                 </button>
+
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
+
+                    {/* OPCIÓN PARA QUITAR ENCARGADO */}
+                    <li style={{ fontWeight: 'bold' }} onClick={quitarEncargado}>
+                      ➖ Sin encargado
+                    </li>
+
                     {personas.map(p => (
                       <li key={p.id} onClick={() => handleEncargadoSelect(p)}>
                         {p.nombre}
@@ -223,6 +245,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
                 disabled={guardando}
               />
             </div>
+
             <div>
               <label>Hora *</label>
               <div className="agendar-horario">
@@ -257,6 +280,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
                 disabled={guardando}
               />
             </div>
+
             <div>
               <label>Número celular</label>
               <input
@@ -310,6 +334,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
           )}
 
           <p className="agendar-obligatorio">* Campos obligatorios</p>
+
           <div className="agendar-botones">
             <button
               className="agendar-btn-guardar"
@@ -317,7 +342,11 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
               disabled={guardando}
             >
               <FaSave className="icono-guardar" />
-              {guardando ? 'Guardando...' : modo === 'editar' ? 'Guardar cambios' : 'Guardar cita'}
+              {guardando
+                ? 'Guardando...'
+                : modo === 'editar'
+                ? 'Guardar cambios'
+                : 'Guardar cita'}
             </button>
 
             {modo === 'editar' && (

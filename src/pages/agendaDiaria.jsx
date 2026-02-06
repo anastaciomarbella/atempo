@@ -1,238 +1,171 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import '../styles/agendaDiaria.css';
-import avatar from '../assets/avatar.png';
-import { FaClock, FaChevronDown } from 'react-icons/fa';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import ModalCita from '../components/modalCita/modalCita';
+import React, { useState, useEffect } from "react";
+import "../styles/agendaDiaria.css";
+import ModalCita from "../components/modalCita/modalCita"; // <-- IMPORTANTE
+
+const DIAS_SEMANA = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
 
 const AgendaDiaria = () => {
-  const [personas, setPersonas] = useState([]);
-  const [personaSeleccionada, setPersonaSeleccionada] = useState('todos');
+  const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
-  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [personas, setPersonas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false); // <-- estado del modal
 
-  // Altura REAL de cada cuadrito
-  const alturaHora = 80;
-
-  const hours = Array.from({ length: 10 }, (_, i) =>
-    `${String(8 + i).padStart(2, '0')}:00`
-  );
-
-  // Cargar personas
+  // === CARGAR PERSONAS ===
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
         const res = await fetch(
-          'https://mi-api-atempo.onrender.com/api/personas'
+          "https://mi-api-atempo.onrender.com/api/personas"
         );
         const data = await res.json();
-        setPersonas(data);
+        setPersonas(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error(err);
-        setError('No se pudieron cargar las personas.');
+        console.error("Error personas:", err);
+        setPersonas([]);
       }
     };
     fetchPersonas();
   }, []);
 
-  // Cargar citas por persona y fecha
-  useEffect(() => {
-    const fetchCitas = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let url = 'https://mi-api-atempo.onrender.com/api/citas';
-        if (personaSeleccionada !== 'todos')
-          url += `?id_persona=${personaSeleccionada}`;
+  // === CARGAR CITAS ===
+  const fetchCitas = async () => {
+    setLoading(true);
+    setError(null);
 
-        const res = await fetch(url);
-        let data = await res.json();
+    try {
+      const res = await fetch(
+        "https://mi-api-atempo.onrender.com/api/citas"
+      );
+      let data = await res.json();
 
-        const fechaStr = fechaSeleccionada.toISOString().slice(0, 10);
+      if (!Array.isArray(data)) data = [];
 
-        data = data.filter(
-          (cita) => cita.fecha.slice(0, 10) === fechaStr
-        );
+      const mes = fechaActual.getMonth();
+      const año = fechaActual.getFullYear();
 
-        setCitas(data);
-      } catch (err) {
-        console.error(err);
-        setError('Lo sentimos, no cargaron correctamente las citas.');
-      }
-      setLoading(false);
-    };
-    fetchCitas();
-  }, [personaSeleccionada, fechaSeleccionada]);
+      data = data.filter((c) => {
+        const f = new Date(c.fecha);
+        return f.getMonth() === mes && f.getFullYear() === año;
+      });
 
-  const cambiarFecha = (delta) => {
-    const nuevaFecha = new Date(fechaSeleccionada);
-    nuevaFecha.setDate(nuevaFecha.getDate() + delta);
-    setFechaSeleccionada(nuevaFecha);
+      setCitas(data);
+    } catch (err) {
+      console.error("Error citas:", err);
+      setCitas([]);
+      setError("No se pudieron cargar las citas, pero puedes ver el calendario.");
+    }
+
+    setLoading(false);
   };
 
-  const empleadosAMostrar = useMemo(() => {
-    return personaSeleccionada === 'todos'
-      ? personas
-      : [personas.find((p) => p.id === Number(personaSeleccionada))].filter(
-          Boolean
-        );
-  }, [personaSeleccionada, personas]);
+  useEffect(() => {
+    fetchCitas();
+  }, [fechaActual]);
 
-  const actualizarCita = (citaEditada) => {
-    setCitas((prev) => {
-      const existe = prev.some(
-        (c) => c.id_cita === citaEditada.id_cita
-      );
+  // === GENERAR DÍAS DEL MES ===
+  const generarDiasDelMes = () => {
+    const fin = new Date(
+      fechaActual.getFullYear(),
+      fechaActual.getMonth() + 1,
+      0
+    );
 
-      if (existe) {
-        return prev.map((c) =>
-          c.id_cita === citaEditada.id_cita ? citaEditada : c
-        );
-      } else {
-        return [...prev, citaEditada];
-      }
-    });
+    const dias = [];
+    for (let d = 1; d <= fin.getDate(); d++) {
+      dias.push(d);
+    }
+    return dias;
+  };
 
-    setCitaSeleccionada(null);
+  const diasDelMes = generarDiasDelMes();
+
+  const cambiarMes = (delta) => {
+    const nueva = new Date(fechaActual);
+    nueva.setMonth(nueva.getMonth() + delta);
+    setFechaActual(nueva);
   };
 
   return (
-    <main className="daily-agenda-main">
-      <div className="agenda-header">
-        <div className="nav-date">
-          <button
-            className="date-nav-btn"
-            onClick={() => cambiarFecha(-1)}
-          >
-            <FiChevronLeft />
-          </button>
-
-          <button
-            className="date-nav-btn"
-            onClick={() => cambiarFecha(1)}
-          >
-            <FiChevronRight />
-          </button>
-
-          <span className="fecha-display">
-            {fechaSeleccionada.toLocaleDateString('es-MX', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
+    <main className="calendar-container">
+      <div className="top-bar">
+        <div className="month-nav">
+          <button onClick={() => cambiarMes(-1)}>◀</button>
+          <span className="month-title">
+            {fechaActual.toLocaleDateString("es-MX", {
+              month: "long",
+              year: "numeric",
             })}
           </span>
+          <button onClick={() => cambiarMes()}>▶</button>
         </div>
 
-        <select
-          className="filter-select"
-          value={personaSeleccionada}
-          onChange={(e) => setPersonaSeleccionada(e.target.value)}
+        <button
+          className="new-btn"
+          onClick={() => setMostrarModal(true)}
         >
-          <option value="todos">Todos</option>
-          {personas.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nombre}
-            </option>
-          ))}
-        </select>
+          + Nueva cita
+        </button>
       </div>
 
       {loading && <div className="loading">Cargando citas...</div>}
+      {error && <div className="error-banner">{error}</div>}
 
-      <div
-        className="agenda-grid"
-        style={{
-          gridTemplateColumns: `80px repeat(${empleadosAMostrar.length}, 1fr)`,
-          gridAutoRows: `${alturaHora}px`,
-        }}
-      >
-        {/* ESQUINA DEL RELOJ */}
-        <div className="employee-header clock-header">
-          <button className="clock-btn">
-            <FaClock />
-            <FaChevronDown className="dropdown-arrow" />
-          </button>
-        </div>
-
-        {/* CABECERAS DE EMPLEADOS */}
-        {empleadosAMostrar.map((emp) => (
-          <div className="employee-header" key={emp.id}>
-            <img src={avatar} alt={`Avatar de ${emp.nombre}`} />
-            <span className="person-name">{emp.nombre}</span>
+      <div className="calendar-grid headers">
+        {DIAS_SEMANA.map((d) => (
+          <div key={d} className="day-header">
+            {d}
           </div>
-        ))}
-
-        {/* ERROR SIN ROMPER GRID */}
-        {error && (
-          <div
-            className="error-banner"
-            style={{
-              gridColumn: `1 / span ${empleadosAMostrar.length + 1}`,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* FILAS DE HORAS + CUADRÍCULAS */}
-        {hours.map((hour) => (
-          <React.Fragment key={hour}>
-            <div
-              className="hour-cell"
-              style={{ height: `${alturaHora}px` }}
-            >
-              {hour}
-            </div>
-
-            {empleadosAMostrar.map((emp) => {
-              const empCitas = citas.filter(
-                (c) =>
-                  c.id_persona === emp.id &&
-                  c.hora_inicio.slice(0, 2) === hour.slice(0, 2)
-              );
-
-              return (
-                <div
-                  key={`${emp.id}-${hour}`}
-                  className="time-cell"
-                  style={{ height: `${alturaHora}px` }}
-                >
-                  {empCitas.map((cita) => (
-                    <div
-                      key={cita.id_cita}
-                      className="appointment"
-                      style={{
-                        height: '90%',
-                        margin: 'auto',
-                        backgroundColor: cita.color || '#4CAF50',
-                      }}
-                      onClick={() => setCitaSeleccionada(cita)}
-                    >
-                      <strong>{cita.nombre_cliente}</strong>
-                      <div className="titulo-cita">{cita.titulo}</div>
-                      <small>
-                        {cita.hora_inicio.slice(0, 5)} -{' '}
-                        {cita.hora_final.slice(0, 5)}
-                      </small>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </React.Fragment>
         ))}
       </div>
 
-      {citaSeleccionada && (
+      <div className="calendar-grid body">
+        {diasDelMes.map((day) => {
+          const citasDelDia = citas.filter(
+            (c) => new Date(c.fecha).getDate() === day
+          );
+
+          return (
+            <div key={day} className="day-cell">
+              <span className="day-number">{day}</span>
+
+              {citasDelDia.map((c) => (
+                <div
+                  key={c.id_cita}
+                  className="event-card"
+                  style={{ backgroundColor: c.color || "#cfe2ff" }}
+                >
+                  <strong>{c.nombre_cliente}</strong>
+                  <div className="titulo-cita">{c.titulo}</div>
+                  <small>
+                    {c.hora_inicio?.slice(0, 5)} -{" "}
+                    {c.hora_final?.slice(0, 5)}
+                  </small>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ====== MODAL FLOTANTE ====== */}
+      {mostrarModal && (
         <ModalCita
-          modo="editar"
-          cita={citaSeleccionada}
-          onClose={() => setCitaSeleccionada(null)}
-          onSave={actualizarCita}
+          personas={personas}
+          onClose={() => setMostrarModal(false)}
+          onSave={() => {
+            setMostrarModal(false);
+            fetchCitas(); // refresca calendario al guardar
+          }}
         />
       )}
     </main>
