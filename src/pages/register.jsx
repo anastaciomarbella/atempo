@@ -11,6 +11,8 @@ export default function Register() {
   const [previewFoto, setPreviewFoto] = useState(null);
   const [fotoFile, setFotoFile] = useState(null);
 
+  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+
   const [form, setForm] = useState({
     nombre: "",
     correo: "",
@@ -23,12 +25,18 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ MUESTRA IMAGEN Y VALIDA TAMAÑO
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setFotoFile(file);
-      setPreviewFoto(URL.createObjectURL(file));
+    if (!file) return;
+
+    if (file.size > MAX_SIZE) {
+      alert("Tu foto es muy pesada. Usa una menor a 2MB.");
+      return;
     }
+
+    setFotoFile(file);
+    setPreviewFoto(URL.createObjectURL(file)); // <-- PREVIEW VISIBLE
   };
 
   const handleSubmit = async (e) => {
@@ -55,16 +63,16 @@ export default function Register() {
         }
       );
 
-      const data = await res.json();
-
       if (!res.ok) {
+        const data = await res.json();
         alert(data.message || "Error en registro");
         setLoading(false);
         return;
       }
 
-      alert("Registro exitoso 🎉");
+      // ✅ REDIRIGE INMEDIATAMENTE
       navigate("/login");
+
     } catch (err) {
       console.error(err);
       alert("Error de conexión con el servidor");
@@ -77,10 +85,10 @@ export default function Register() {
     <div className="login-container">
       <div className="login-card show" style={{ position: "relative" }}>
 
-        {/* LOGO CIRCULAR */}
+        {/* LOGO / FOTO DE PERFIL */}
         <img
           src={previewFoto || logo}
-          alt="Logo"
+          alt="Foto de perfil"
           style={{
             width: "70px",
             height: "70px",
@@ -197,7 +205,7 @@ export default function Register() {
           </div>
 
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? "Registrando..." : "Crear cuenta"}
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
 
