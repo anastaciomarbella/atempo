@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -24,7 +23,6 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Seleccionar foto y mostrar preview
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -33,89 +31,43 @@ export default function Register() {
     }
   };
 
-  const subirFotoASupabase = async (idUsuario) => {
-    if (!fotoFile) return null;
-
-    const nombreArchivo = `perfil_${idUsuario}_${Date.now()}.jpg`;
-
-    const { error } = await supabase.storage
-      .from("fotos-usuarios")
-      .upload(nombreArchivo, fotoFile, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      console.error("Error al subir foto:", error);
-      return null;
-    }
-
-    const { data } = supabase.storage
-      .from("fotos-usuarios")
-      .getPublicUrl(nombreArchivo);
-
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 1️⃣ Crear empresa
-      const { data: empresaData, error: empresaError } = await supabase
-        .from("empresas")
-        .insert([{ nombre_empresa: form.nombreEmpresa }])
-        .select()
-        .single();
+      const formData = new FormData();
+      formData.append("nombre", form.nombre);
+      formData.append("correo", form.correo);
+      formData.append("telefono", form.telefono);
+      formData.append("password", form.password);
+      formData.append("nombreEmpresa", form.nombreEmpresa);
 
-      if (empresaError) {
-        alert("Error al crear empresa: " + empresaError.message);
+      if (fotoFile) {
+        formData.append("foto", fotoFile);
+      }
+
+      const res = await fetch(
+        "https://mi-api-atempo.onrender.com/api/auth/",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Error en registro");
         setLoading(false);
         return;
       }
 
-      const idEmpresa = empresaData.id_empresa;
-
-      // 2️⃣ Crear usuario SIN foto aún
-      const { data: usuarioData, error: usuarioError } = await supabase
-        .from("usuarios")
-        .insert([
-          {
-            nombre: form.nombre,
-            correo: form.correo,
-            telefono: form.telefono,
-            contraseña: form.password,
-            id_empresa: idEmpresa,
-          },
-        ])
-        .select()
-        .single();
-
-      if (usuarioError) {
-        alert("Error al registrar usuario: " + usuarioError.message);
-        setLoading(false);
-        return;
-      }
-
-      const idUsuario = usuarioData.id_usuario;
-
-      // 3️⃣ Subir foto y obtener URL
-      const fotoUrl = await subirFotoASupabase(idUsuario);
-
-      if (fotoUrl) {
-        // 4️⃣ Guardar URL en la tabla usuarios
-        await supabase
-          .from("usuarios")
-          .update({ "URL de la foto": fotoUrl })
-          .eq("id_usuario", idUsuario);
-      }
-
-      alert("Registro exitoso con foto 🎉");
+      alert("Registro exitoso 🎉");
       navigate("/login");
     } catch (err) {
       console.error(err);
-      alert("Error de conexión con Supabase");
+      alert("Error de conexión con el servidor");
     } finally {
       setLoading(false);
     }
@@ -125,7 +77,7 @@ export default function Register() {
     <div className="login-container">
       <div className="login-card show" style={{ position: "relative" }}>
 
-        {/* LOGO CIRCULAR TIPO BURBUJA */}
+        {/* LOGO CIRCULAR */}
         <img
           src={previewFoto || logo}
           alt="Logo"
@@ -147,7 +99,6 @@ export default function Register() {
           <h2 className="login-subtitle">Crear cuenta</h2>
         </div>
 
-        {/* BOTÓN PARA SUBIR FOTO */}
         <div style={{ textAlign: "center", marginBottom: "10px" }}>
           <label
             style={{
