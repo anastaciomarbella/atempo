@@ -36,7 +36,7 @@ export default function Register() {
     }
 
     setFotoFile(file);
-    setPreviewFoto(URL.createObjectURL(file)); // <-- PREVIEW VISIBLE
+    setPreviewFoto(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e) => {
@@ -55,8 +55,9 @@ export default function Register() {
         formData.append("foto", fotoFile);
       }
 
+      // ✅ URL CORRECTA SEGÚN TU RUTA: /registro
       const res = await fetch(
-        "https://mi-api-atempo.onrender.com/api/auth/",
+        "https://mi-api-atempo.onrender.com/api/auth/registro",
         {
           method: "POST",
           body: formData,
@@ -70,7 +71,7 @@ export default function Register() {
         return;
       }
 
-      // ✅ REDIRIGE INMEDIATAMENTE
+      // ✅ REDIRIGE RÁPIDO A LOGIN
       navigate("/login");
 
     } catch (err) {
