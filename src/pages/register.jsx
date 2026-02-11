@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
+import logo from "../assets/logo.png";   // ← IMPORTANTE
 import "../styles/login.css";
 
 export default function Register() {
@@ -25,28 +27,45 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://mi-api-atempo.onrender.com/api/auth/",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
+      // 1️⃣ Crear empresa
+      const { data: empresaData, error: empresaError } = await supabase
+        .from("empresas")
+        .insert([{ nombre_empresa: form.nombreEmpresa }])
+        .select()
+        .single();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Error en registro");
+      if (empresaError) {
+        alert("Error al crear empresa: " + empresaError.message);
         setLoading(false);
         return;
       }
 
-      alert("Registro exitoso");
+      const idEmpresa = empresaData.id_empresa;
+
+      // 2️⃣ Crear usuario
+      const { error: usuarioError } = await supabase
+        .from("usuarios")
+        .insert([
+          {
+            nombre: form.nombre,
+            correo: form.correo,
+            telefono: form.telefono,
+            contraseña: form.password,
+            id_empresa: idEmpresa,
+          },
+        ]);
+
+      if (usuarioError) {
+        alert("Error al registrar usuario: " + usuarioError.message);
+        setLoading(false);
+        return;
+      }
+
+      alert("Registro exitoso 🎉");
       navigate("/login");
     } catch (err) {
       console.error(err);
-      alert("Error de conexión con el servidor");
+      alert("Error de conexión con Supabase");
     } finally {
       setLoading(false);
     }
@@ -54,17 +73,28 @@ export default function Register() {
 
   return (
     <div className="login-container">
-
-      {/* ======= TARJETA DE REGISTRO (siempre visible) ======= */}
       <div className="login-card show">
+        <div
+          className="login-body"
+          style={{ textAlign: "center" }}
+        >
+          <img
+            src={logo}
+            alt="Citalia Logo"
+            style={{
+              width: "110px",
+              marginBottom: "8px",
+              display: "block",
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          />
 
-        <div className="login-body">
           <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Crear cuenta</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
-
           <div className="input-group">
             <input
               type="text"
@@ -116,7 +146,9 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Contraseña</label>
+            <label className="floating-label-text">
+              Contraseña
+            </label>
 
             <button
               type="button"
