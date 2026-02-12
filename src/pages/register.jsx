@@ -9,9 +9,6 @@ export default function Register() {
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewFoto, setPreviewFoto] = useState(null);
-  const [fotoFile, setFotoFile] = useState(null);
-
-  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
   const [form, setForm] = useState({
     nombre: "",
@@ -25,17 +22,16 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ✅ MUESTRA IMAGEN Y VALIDA TAMAÑO
+  // Solo para preview visual (NO se envía al backend ahora)
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > MAX_SIZE) {
+    if (file.size > 2 * 1024 * 1024) {
       alert("Tu foto es muy pesada. Usa una menor a 2MB.");
       return;
     }
 
-    setFotoFile(file);
     setPreviewFoto(URL.createObjectURL(file));
   };
 
@@ -44,34 +40,31 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("nombre", form.nombre);
-      formData.append("correo", form.correo);
-      formData.append("telefono", form.telefono);
-      formData.append("password", form.password);
-      formData.append("nombreEmpresa", form.nombreEmpresa);
-
-      if (fotoFile) {
-        formData.append("foto", fotoFile);
-      }
-
-      // ✅ URL CORRECTA SEGÚN TU RUTA: /registro
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/registro",
         {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre: form.nombre,
+            correo: form.correo,
+            telefono: form.telefono,
+            password: form.password,
+            nombreEmpresa: form.nombreEmpresa,
+          }),
         }
       );
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         alert(data.message || "Error en registro");
-        setLoading(false);
         return;
       }
 
-      // ✅ REDIRIGE RÁPIDO A LOGIN
+      alert("Cuenta creada correctamente");
       navigate("/login");
 
     } catch (err) {
@@ -85,8 +78,7 @@ export default function Register() {
   return (
     <div className="login-container">
       <div className="login-card show" style={{ position: "relative" }}>
-
-        {/* LOGO / FOTO DE PERFIL */}
+        
         <img
           src={previewFoto || logo}
           alt="Foto de perfil"
@@ -131,7 +123,6 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit}>
-
           <div className="input-group">
             <input
               type="text"
