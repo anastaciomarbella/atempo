@@ -1,17 +1,31 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import "../styles/login.css";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import "../styles/login.css";
 
 export default function Login() {
   const navigate = useNavigate();
-
-  const [correo, setCorreo] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [verPassword, setVerPassword] = useState(false);
 
-  const handleLogin = async (e) => {
+  const initialForm = {
+    correo: "",
+    telefono: "",
+  };
+
+  const [form, setForm] = useState(initialForm);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const limpiarFormulario = () => {
+    setForm(initialForm);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -20,30 +34,32 @@ export default function Login() {
         "https://mi-api-atempo.onrender.com/api/auth/login",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ correo, password }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
         }
       );
 
       const data = await res.json();
+      console.log("Respuesta backend:", data);
 
       if (!res.ok) {
         alert(data.message || "Error en login");
-        setLoading(false);
         return;
       }
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("empresaNombre", data.empresaNombre);
+      alert("Login exitoso");
 
-      if (data.empresaLogo) {
-        localStorage.setItem("empresaLogo", data.empresaLogo);
-      }
+      // Guardar usuario en localStorage
+      localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
+      limpiarFormulario();
       navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      alert("Error de conexión con el servidor");
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
     }
@@ -51,52 +67,62 @@ export default function Login() {
 
   return (
     <div className="login-container">
-
-      {/* ======= TARJETA DE LOGIN (siempre visible) ======= */}
       <div className="login-card show">
 
-        <div className="login-header">
-          <img src={logo} alt="Logo Atempo" className="login-logo" />
-        </div>
-
-        <div className="login-body">
+        {/* LOGO + TITULOS */}
+        <div
+          className="login-body"
+          style={{ textAlign: "center", marginTop: "20px" }}
+        >
+          <img
+            src={logo}
+            alt="Logo"
+            style={{
+              width: "90px",
+              height: "90px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: "10px",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            }}
+          />
           <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Iniciar sesión</h2>
         </div>
 
-        <form onSubmit={handleLogin}>
+        {/* FORMULARIO */}
+        <form onSubmit={handleSubmit} autoComplete="off">
 
           <div className="input-group">
             <input
               type="email"
+              name="correo"
               className="login-input"
               placeholder=" "
-              value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
+              value={form.correo}
+              onChange={handleChange}
               required
+              autoComplete="off"
             />
-            <label className="floating-label-text">Correo</label>
+            <label className="floating-label-text">
+              Correo
+            </label>
           </div>
 
-          <div className="input-group password-group">
+          <div className="input-group">
             <input
-              type={verPassword ? "text" : "password"}
+              type="tel"
+              name="telefono"
               className="login-input"
               placeholder=" "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={form.telefono}
+              onChange={handleChange}
               required
+              autoComplete="off"
             />
-
-            <label className="floating-label-text">Contraseña</label>
-
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setVerPassword(!verPassword)}
-            >
-              {verPassword ? "Ocultar" : "Ver"}
-            </button>
+            <label className="floating-label-text">
+              Teléfono
+            </label>
           </div>
 
           <button
@@ -104,20 +130,19 @@ export default function Login() {
             className="login-button"
             disabled={loading}
           >
-            {loading ? "Ingresando..." : "Entrar"}
+            {loading ? "Ingresando..." : "Ingresar"}
           </button>
+
         </form>
 
+        {/* FOOTER */}
         <div className="login-footer">
           ¿No tienes cuenta?{" "}
-          <Link to="/register" className="login-link">
-            Regístrate
-          </Link>
+          <a href="/register" className="login-link">
+            Crear cuenta
+          </a>
         </div>
 
-        <p className="login-legal">
-          Al continuar, aceptas nuestros Términos y Política de privacidad.
-        </p>
       </div>
     </div>
   );
