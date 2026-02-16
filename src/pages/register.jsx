@@ -9,6 +9,7 @@ export default function Register() {
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewFoto, setPreviewFoto] = useState(null);
+  const [fotoFile, setFotoFile] = useState(null);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -22,16 +23,16 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Solo para preview visual (NO se envía al backend ahora)
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("Tu foto es muy pesada. Usa una menor a 2MB.");
+      alert("La imagen debe ser menor a 2MB");
       return;
     }
 
+    setFotoFile(file); // 👈 importante
     setPreviewFoto(URL.createObjectURL(file));
   };
 
@@ -40,24 +41,34 @@ export default function Register() {
     setLoading(true);
 
     try {
+      const formData = new FormData();
+
+      // Campos de texto
+      formData.append("nombre", form.nombre);
+      formData.append("correo", form.correo);
+      formData.append("telefono", form.telefono);
+      formData.append("password", form.password);
+      formData.append("nombreEmpresa", form.nombreEmpresa);
+
+      // Foto (debe llamarse EXACTAMENTE igual que en upload.single('foto'))
+      if (fotoFile) {
+        formData.append("foto", fotoFile);
+      }
+
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/registro",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nombre: form.nombre,
-            correo: form.correo,
-            telefono: form.telefono,
-            password: form.password,
-            nombreEmpresa: form.nombreEmpresa,
-          }),
+          body: formData, // 🚨 NO poner Content-Type
         }
       );
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { message: "Error inesperado del servidor" };
+      }
 
       if (!res.ok) {
         alert(data.message || "Error en registro");
@@ -67,9 +78,9 @@ export default function Register() {
       alert("Cuenta creada correctamente");
       navigate("/login");
 
-    } catch (err) {
-      console.error(err);
-      alert("Error de conexión con el servidor");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
     }
@@ -207,10 +218,6 @@ export default function Register() {
             Inicia sesión
           </a>
         </div>
-
-        <p className="login-legal">
-          Al crear tu cuenta aceptas nuestros Términos y Política de privacidad.
-        </p>
       </div>
     </div>
   );
