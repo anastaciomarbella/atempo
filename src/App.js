@@ -17,13 +17,13 @@ function App() {
       <Routes>
 
         {/* 🔓 Rutas públicas */}
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/register" />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
-        {/* 🔒 Rutas privadas con layout */}
+        {/* 🔒 Rutas privadas */}
         <Route
           path="/agenda-diaria"
           element={
@@ -60,8 +60,8 @@ function App() {
           }
         />
 
-        {/* Ruta fallback opcional */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/register" />} />
 
       </Routes>
     </Router>
@@ -69,4 +69,3 @@ function App() {
 }
 
 export default App;
-s

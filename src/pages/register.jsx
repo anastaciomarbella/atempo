@@ -9,19 +9,26 @@ export default function Register() {
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
+  const initialForm = {
     nombre: "",
     correo: "",
     telefono: "",
     password: "",
     nombreEmpresa: "",
-  });
+  };
+
+  const [form, setForm] = useState(initialForm);
 
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const limpiarFormulario = () => {
+    setForm(initialForm);
+    setVerPassword(false);
   };
 
   const handleSubmit = async (e) => {
@@ -48,6 +55,10 @@ export default function Register() {
       }
 
       alert("Cuenta creada correctamente");
+
+      // Limpiar formulario antes de redirigir
+      limpiarFormulario();
+
       navigate("/login");
 
     } catch (error) {
@@ -62,7 +73,10 @@ export default function Register() {
     <div className="login-container">
       <div className="login-card show">
 
-        <div className="login-body" style={{ textAlign: "center", marginTop: "20px" }}>
+        <div
+          className="login-body"
+          style={{ textAlign: "center", marginTop: "20px" }}
+        >
           <img
             src={logo}
             alt="Logo"
@@ -78,7 +92,7 @@ export default function Register() {
           <h2 className="login-subtitle">Crear cuenta</h2>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
 
           <div className="input-group">
             <input
@@ -89,6 +103,7 @@ export default function Register() {
               value={form.nombre}
               onChange={handleChange}
               required
+              autoComplete="off"
             />
             <label className="floating-label-text">
               Nombre completo
@@ -104,6 +119,7 @@ export default function Register() {
               value={form.correo}
               onChange={handleChange}
               required
+              autoComplete="off"
             />
             <label className="floating-label-text">
               Correo
@@ -119,6 +135,7 @@ export default function Register() {
               value={form.telefono}
               onChange={handleChange}
               required
+              autoComplete="off"
             />
             <label className="floating-label-text">
               Teléfono
@@ -134,6 +151,7 @@ export default function Register() {
               value={form.password}
               onChange={handleChange}
               required
+              autoComplete="new-password"
             />
             <label className="floating-label-text">
               Contraseña
@@ -157,6 +175,7 @@ export default function Register() {
               value={form.nombreEmpresa}
               onChange={handleChange}
               required
+              autoComplete="off"
             />
             <label className="floating-label-text">
               Nombre de la empresa
