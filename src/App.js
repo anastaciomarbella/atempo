@@ -1,6 +1,7 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from "./pages/login"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+import Login from "./pages/login";
 import Register from "./pages/register";
 import RegisterEmployees from "./pages/registerEmployees";
 import AppLayout from "./components/layouts/appLayout";
@@ -14,13 +15,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Páginas públicas sin sidebar */}
-        <Route path="/" element={<Login />} />
+
+        {/* 🔓 Rutas públicas */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
-        {/* Páginas privadas con sidebar */}
+        {/* 🔒 Rutas privadas con layout */}
         <Route
           path="/agenda-diaria"
           element={
@@ -56,9 +59,14 @@ function App() {
             </AppLayout>
           }
         />
+
+        {/* Ruta fallback opcional */}
+        <Route path="*" element={<Navigate to="/login" />} />
+
       </Routes>
     </Router>
   );
 }
 
 export default App;
+s
