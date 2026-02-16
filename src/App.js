@@ -10,58 +10,79 @@ import AgendaSemanal from "./pages/agendaSemanal";
 import Empleados from "./pages/empleados";
 import ClientesFrecuentes from "./pages/clientesFrecuentes";
 import AvisoDePrivacidad from "./pages/avisoDePrivacidad";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <Router>
       <Routes>
 
-        {/* 🔓 Rutas públicas */}
-        <Route path="/" element={<Navigate to="/register" />} />
+        {/* Ruta inicial */}
+        <Route path="/" element={<Navigate to="/register" replace />} />
+
+        {/* Rutas públicas */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
-        {/* 🔒 Rutas privadas */}
+        {/* Rutas privadas */}
         <Route
           path="/agenda-diaria"
           element={
-            <AppLayout>
-              <AgendaDiaria />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <AgendaDiaria />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/agenda-semanal"
           element={
-            <AppLayout>
-              <AgendaSemanal />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <AgendaSemanal />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/empleados"
           element={
-            <AppLayout>
-              <Empleados />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <Empleados />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/clientes-frecuentes"
           element={
-            <AppLayout>
-              <ClientesFrecuentes />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <ClientesFrecuentes />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/nuevos-empleados"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <RegisterEmployees />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/register" />} />
+        <Route path="*" element={<Navigate to="/register" replace />} />
 
       </Routes>
     </Router>
