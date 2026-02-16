@@ -8,8 +8,6 @@ export default function Register() {
 
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [previewFoto, setPreviewFoto] = useState(null);
-  const [fotoFile, setFotoFile] = useState(null);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -20,20 +18,10 @@ export default function Register() {
   });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleFotoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert("La imagen debe ser menor a 2MB");
-      return;
-    }
-
-    setFotoFile(file); // 👈 importante
-    setPreviewFoto(URL.createObjectURL(file));
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -41,34 +29,18 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const formData = new FormData();
-
-      // Campos de texto
-      formData.append("nombre", form.nombre);
-      formData.append("correo", form.correo);
-      formData.append("telefono", form.telefono);
-      formData.append("password", form.password);
-      formData.append("nombreEmpresa", form.nombreEmpresa);
-
-      // Foto (debe llamarse EXACTAMENTE igual que en upload.single('foto'))
-      if (fotoFile) {
-        formData.append("foto", fotoFile);
-      }
-
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/registro",
         {
           method: "POST",
-          body: formData, // 🚨 NO poner Content-Type
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
         }
       );
 
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = { message: "Error inesperado del servidor" };
-      }
+      const data = await res.json();
 
       if (!res.ok) {
         alert(data.message || "Error en registro");
@@ -88,52 +60,26 @@ export default function Register() {
 
   return (
     <div className="login-container">
-      <div className="login-card show" style={{ position: "relative" }}>
-        
-        <img
-          src={previewFoto || logo}
-          alt="Foto de perfil"
-          style={{
-            width: "70px",
-            height: "70px",
-            borderRadius: "50%",
-            objectFit: "cover",
-            position: "absolute",
-            top: "15px",
-            left: "15px",
-            boxShadow: "0 4px 10px rgba(0,0,0,.15)",
-            border: "2px solid white",
-          }}
-        />
+      <div className="login-card show">
 
-        <div className="login-body" style={{ textAlign: "center", marginTop: "30px" }}>
+        <div className="login-body" style={{ textAlign: "center", marginTop: "20px" }}>
+          <img
+            src={logo}
+            alt="Logo"
+            style={{
+              width: "70px",
+              height: "70px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: "10px",
+            }}
+          />
           <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Crear cuenta</h2>
         </div>
 
-        <div style={{ textAlign: "center", marginBottom: "10px" }}>
-          <label
-            style={{
-              display: "inline-block",
-              padding: "8px 12px",
-              borderRadius: "8px",
-              background: "#f2f2f2",
-              cursor: "pointer",
-              fontSize: "13px",
-              border: "1px solid #ddd",
-            }}
-          >
-            📷 Subir foto de perfil
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handleFotoChange}
-            />
-          </label>
-        </div>
-
         <form onSubmit={handleSubmit}>
+
           <div className="input-group">
             <input
               type="text"
@@ -144,7 +90,9 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Nombre completo</label>
+            <label className="floating-label-text">
+              Nombre completo
+            </label>
           </div>
 
           <div className="input-group">
@@ -157,7 +105,9 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Correo</label>
+            <label className="floating-label-text">
+              Correo
+            </label>
           </div>
 
           <div className="input-group">
@@ -170,7 +120,9 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Teléfono</label>
+            <label className="floating-label-text">
+              Teléfono
+            </label>
           </div>
 
           <div className="input-group password-group">
@@ -183,7 +135,9 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Contraseña</label>
+            <label className="floating-label-text">
+              Contraseña
+            </label>
 
             <button
               type="button"
@@ -204,12 +158,19 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Nombre de la empresa</label>
+            <label className="floating-label-text">
+              Nombre de la empresa
+            </label>
           </div>
 
-          <button type="submit" className="login-button" disabled={loading}>
+          <button
+            type="submit"
+            className="login-button"
+            disabled={loading}
+          >
             {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
+
         </form>
 
         <div className="login-footer">
@@ -218,6 +179,7 @@ export default function Register() {
             Inicia sesión
           </a>
         </div>
+
       </div>
     </div>
   );
