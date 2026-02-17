@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -33,6 +34,8 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (loading) return; // evita doble clic
     setLoading(true);
 
     try {
@@ -50,20 +53,33 @@ export default function Register() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Error en registro");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.message || "Error en registro",
+        });
+        setLoading(false);
         return;
       }
 
-      alert("Cuenta creada correctamente");
-
       limpiarFormulario();
 
-      // 🔥 Redirige automáticamente a login
+      await Swal.fire({
+        icon: "success",
+        title: "Usuario registrado",
+        text: "Tu cuenta fue creada correctamente",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
       navigate("/login");
 
     } catch (error) {
-      console.error("Error:", error);
-      alert("No se pudo conectar con el servidor");
+      Swal.fire({
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar con el servidor",
+      });
     } finally {
       setLoading(false);
     }
@@ -73,10 +89,7 @@ export default function Register() {
     <div className="login-container">
       <div className="login-card show">
 
-        <div
-          className="login-body"
-          style={{ textAlign: "center", marginTop: "20px" }}
-        >
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img
             src={logo}
             alt="Logo"
@@ -182,7 +195,7 @@ export default function Register() {
             className="login-button"
             disabled={loading}
           >
-            {loading ? "Creando cuenta..." : "Crear cuenta"}
+            {loading ? "Registrando..." : "Crear cuenta"}
           </button>
 
         </form>
