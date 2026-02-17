@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -56,9 +56,9 @@ export default function Register() {
 
       alert("Cuenta creada correctamente");
 
-      // Limpiar formulario antes de redirigir
       limpiarFormulario();
 
+      // 🔥 Redirige automáticamente a login
       navigate("/login");
 
     } catch (error) {
@@ -103,7 +103,6 @@ export default function Register() {
               value={form.nombre}
               onChange={handleChange}
               required
-              autoComplete="off"
             />
             <label className="floating-label-text">
               Nombre completo
@@ -119,7 +118,6 @@ export default function Register() {
               value={form.correo}
               onChange={handleChange}
               required
-              autoComplete="off"
             />
             <label className="floating-label-text">
               Correo
@@ -135,7 +133,6 @@ export default function Register() {
               value={form.telefono}
               onChange={handleChange}
               required
-              autoComplete="off"
             />
             <label className="floating-label-text">
               Teléfono
@@ -151,7 +148,6 @@ export default function Register() {
               value={form.password}
               onChange={handleChange}
               required
-              autoComplete="new-password"
             />
             <label className="floating-label-text">
               Contraseña
@@ -175,7 +171,6 @@ export default function Register() {
               value={form.nombreEmpresa}
               onChange={handleChange}
               required
-              autoComplete="off"
             />
             <label className="floating-label-text">
               Nombre de la empresa
@@ -194,9 +189,9 @@ export default function Register() {
 
         <div className="login-footer">
           ¿Ya tienes cuenta?{" "}
-          <a href="/login" className="login-link">
+          <Link to="/login" className="login-link">
             Inicia sesión
-          </a>
+          </Link>
         </div>
 
       </div>
