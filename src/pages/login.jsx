@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -9,7 +9,7 @@ export default function Login() {
 
   const initialForm = {
     correo: "",
-    telefono: "",
+    password: "",
   };
 
   const [form, setForm] = useState(initialForm);
@@ -45,13 +45,14 @@ export default function Login() {
       console.log("Respuesta backend:", data);
 
       if (!res.ok) {
-        alert(data.message || "Error en login");
+        alert(data.message || "Correo o contraseña incorrectos");
+        setLoading(false);
         return;
       }
 
       alert("Login exitoso");
 
-      // Guardar usuario en localStorage
+      // Guardar usuario
       localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
       limpiarFormulario();
@@ -69,11 +70,7 @@ export default function Login() {
     <div className="login-container">
       <div className="login-card show">
 
-        {/* LOGO + TITULOS */}
-        <div
-          className="login-body"
-          style={{ textAlign: "center", marginTop: "20px" }}
-        >
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img
             src={logo}
             alt="Logo"
@@ -90,7 +87,6 @@ export default function Login() {
           <h2 className="login-subtitle">Iniciar sesión</h2>
         </div>
 
-        {/* FORMULARIO */}
         <form onSubmit={handleSubmit} autoComplete="off">
 
           <div className="input-group">
@@ -102,7 +98,6 @@ export default function Login() {
               value={form.correo}
               onChange={handleChange}
               required
-              autoComplete="off"
             />
             <label className="floating-label-text">
               Correo
@@ -111,17 +106,16 @@ export default function Login() {
 
           <div className="input-group">
             <input
-              type="tel"
-              name="telefono"
+              type="password"
+              name="password"
               className="login-input"
               placeholder=" "
-              value={form.telefono}
+              value={form.password}
               onChange={handleChange}
               required
-              autoComplete="off"
             />
             <label className="floating-label-text">
-              Teléfono
+              Contraseña
             </label>
           </div>
 
@@ -135,12 +129,11 @@ export default function Login() {
 
         </form>
 
-        {/* FOOTER */}
         <div className="login-footer">
           ¿No tienes cuenta?{" "}
-          <a href="/register" className="login-link">
+          <Link to="/register" className="login-link">
             Crear cuenta
-          </a>
+          </Link>
         </div>
 
       </div>
