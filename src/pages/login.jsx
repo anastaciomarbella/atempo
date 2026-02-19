@@ -37,12 +37,14 @@ export default function Login() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify({
+            correo: form.correo.trim().toLowerCase(),
+            password: form.password.trim(),
+          }),
         }
       );
 
       const data = await res.json();
-      console.log("Respuesta backend:", data);
 
       if (!res.ok) {
         alert(data.message || "Correo o contraseña incorrectos");
@@ -50,16 +52,14 @@ export default function Login() {
         return;
       }
 
-      alert("Login exitoso");
-
-      // Guardar usuario
+      // Guardar usuario y token
+      localStorage.setItem("token", data.token);
       localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
       limpiarFormulario();
       navigate("/dashboard");
 
     } catch (error) {
-      console.error("Error:", error);
       alert("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
