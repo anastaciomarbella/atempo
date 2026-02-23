@@ -136,13 +136,6 @@ const AgendaDiaria = () => {
           </span>
           <button onClick={() => cambiarMes(1)}>▶</button>
         </div>
-
-        <button
-          className="new-btn"
-          onClick={() => setMostrarModal(true)}
-        >
-          + Nueva cita
-        </button>
       </div>
 
       {loading && <div className="loading">Cargando citas...</div>}

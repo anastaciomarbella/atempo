@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './sidebar.css';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
@@ -9,14 +9,20 @@ import {
   FaSignOutAlt 
 } from 'react-icons/fa';
 
-// 🔹 Leer datos del usuario logueado
-const user = JSON.parse(localStorage.getItem("user") || "{}");
-
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
 
+  const [user, setUser] = useState({});
+
+  // 🔹 Leer usuario dinámicamente
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    setUser(storedUser);
+  }, []);
+
   const handleLogout = () => {
-    localStorage.removeItem("user"); // 👈 IMPORTANTE
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate('/');
   };
 
@@ -26,12 +32,12 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       {/* ✅ LOGO Y NOMBRE DINÁMICOS */}
       <div className="logo-section">
         <img 
-          src={user.empresaLogo || "/default-logo.png"} 
+          src={user?.empresaLogo || "/default-logo.png"} 
           alt="Logo empresa" 
           className="logo" 
         />
         <h2 className="brand-name">
-          {user.empresaNombre || "Mi Empresa"}
+          {user?.empresaNombre || "Mi Empresa"}
         </h2>
       </div>
 
