@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/agendaDiaria.css";
 import ModalCita from "../components/modalCita/modalCita";
 
@@ -14,7 +13,6 @@ const DIAS_SEMANA = [
 ];
 
 const AgendaDiaria = () => {
-  const navigate = useNavigate();
   const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
   const [personas, setPersonas] = useState([]);
@@ -22,16 +20,20 @@ const AgendaDiaria = () => {
   const [error, setError] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  // 🔹 NUEVO: estados para empresa y logo
+  const [empresa, setEmpresa] = useState("");
+  const [logo, setLogo] = useState("");
 
-  // 🔒 Si no hay usuario, redirigir
+  // 🔹 NUEVO: cargar empresa y logo desde localStorage
   useEffect(() => {
-    if (!usuario) {
-      navigate("/");
-    }
-  }, [usuario, navigate]);
+    const empresaGuardada = localStorage.getItem("empresa");
+    const logoGuardado = localStorage.getItem("logo");
 
-  // ===== CARGAR PERSONAS =====
+    if (empresaGuardada) setEmpresa(empresaGuardada);
+    if (logoGuardado) setLogo(logoGuardado);
+  }, []);
+
+  // === CARGAR PERSONAS ===
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -48,7 +50,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
-  // ===== CARGAR CITAS =====
+  // === CARGAR CITAS ===
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -73,7 +75,7 @@ const AgendaDiaria = () => {
     } catch (err) {
       console.error("Error citas:", err);
       setCitas([]);
-      setError("No se pudieron cargar las citas.");
+      setError("No se pudieron cargar las citas, pero puedes ver el calendario.");
     }
 
     setLoading(false);
@@ -83,6 +85,7 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
+  // === GENERAR DÍAS DEL MES ===
   const generarDiasDelMes = () => {
     const fin = new Date(
       fechaActual.getFullYear(),
@@ -105,34 +108,23 @@ const AgendaDiaria = () => {
     setFechaActual(nueva);
   };
 
-  const cerrarSesion = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("usuario");
-    navigate("/");
-  };
-
   return (
     <main className="calendar-container">
 
-      {/* ===== HEADER EMPRESA ===== */}
-      <div className="empresa-header">
-        <div className="empresa-info">
-          <img
-            src={usuario?.logo_url?.replace("http://", "https://")}
-            alt="Logo empresa"
-            className="empresa-logo"
-          />
-          <h2 className="empresa-nombre">
-            {usuario?.nombre_empresa}
-          </h2>
+      {/* 🔹 NUEVO: encabezado empresa (NO afecta tu diseño principal) */}
+      {(empresa || logo) && (
+        <div className="empresa-header">
+          {logo && (
+            <img
+              src={logo}
+              alt="Logo empresa"
+              className="logo-empresa"
+            />
+          )}
+          {empresa && <h2 className="empresa-nombre">{empresa}</h2>}
         </div>
+      )}
 
-        <button className="logout-btn" onClick={cerrarSesion}>
-          Cerrar sesión
-        </button>
-      </div>
-
-      {/* ===== BARRA SUPERIOR ===== */}
       <div className="top-bar">
         <div className="month-nav">
           <button onClick={() => cambiarMes(-1)}>◀</button>
