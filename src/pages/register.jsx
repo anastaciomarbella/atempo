@@ -52,7 +52,6 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (loading) return;
     setLoading(true);
 
@@ -84,7 +83,6 @@ export default function Register() {
           title: "Error",
           text: data.message || "Error en registro",
         });
-        setLoading(false);
         return;
       }
 
@@ -133,35 +131,22 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} autoComplete="off">
 
-          {/* 🔝 SUBIR LOGO ARRIBA */}
+          {/* LOGO como los demás inputs */}
           <div className="input-group">
-            <label style={{ marginBottom: "8px", display: "block" }}>
-              Subir logo
-            </label>
-
             <input
               type="file"
+              name="logo"
+              className="login-input"
               accept="image/*"
               onChange={handleLogoChange}
+              required
             />
-
-            {logoEmpresa && (
-              <div style={{ marginTop: "10px", textAlign: "center" }}>
-                <img
-                  src={URL.createObjectURL(logoEmpresa)}
-                  alt="Preview"
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
-            )}
+            <label className="floating-label-text">
+              Subir logo
+            </label>
           </div>
 
-          {/* 👤 NOMBRE COMPLETO */}
+          {/* NOMBRE COMPLETO */}
           <div className="input-group">
             <input
               type="text"
@@ -177,7 +162,7 @@ export default function Register() {
             </label>
           </div>
 
-          {/* 🏢 NOMBRE EMPRESA debajo del nombre */}
+          {/* NOMBRE EMPRESA */}
           <div className="input-group">
             <input
               type="text"
@@ -193,7 +178,7 @@ export default function Register() {
             </label>
           </div>
 
-          {/* 📧 CORREO */}
+          {/* CORREO */}
           <div className="input-group">
             <input
               type="email"
@@ -209,7 +194,7 @@ export default function Register() {
             </label>
           </div>
 
-          {/* 📱 TELEFONO */}
+          {/* TELEFONO */}
           <div className="input-group">
             <input
               type="tel"
@@ -225,7 +210,7 @@ export default function Register() {
             </label>
           </div>
 
-          {/* 🔒 PASSWORD */}
+          {/* PASSWORD */}
           <div className="input-group password-group">
             <input
               type={verPassword ? "text" : "password"}
