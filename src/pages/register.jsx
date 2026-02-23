@@ -46,11 +46,13 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (loading) return;
     setLoading(true);
 
     try {
       const formData = new FormData();
+
       formData.append("nombre", form.nombre);
       formData.append("correo", form.correo);
       formData.append("telefono", form.telefono);
@@ -58,14 +60,14 @@ export default function Register() {
       formData.append("nombreEmpresa", form.nombreEmpresa);
 
       if (imagen) {
-        formData.append("imagen", imagen);
+        formData.append("imagen", imagen); // 👈 debe coincidir con multer
       }
 
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/register",
         {
           method: "POST",
-          body: formData,
+          body: formData, // 👈 SIN headers
         }
       );
 
@@ -91,6 +93,7 @@ export default function Register() {
       });
 
       navigate("/login");
+
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -108,7 +111,7 @@ export default function Register() {
 
         <div style={{ textAlign: "center", marginTop: "20px" }}>
 
-          {/* 🔵 NUEVO CÍRCULO PARA SUBIR IMAGEN */}
+          {/* 🔵 CÍRCULO SUBIR IMAGEN */}
           <label
             style={{
               cursor: "pointer",
@@ -138,7 +141,7 @@ export default function Register() {
                 }}
               />
             ) : (
-              <span>Subir logo</span>
+              <span>Subir imagen</span>
             )}
 
             <input
@@ -149,7 +152,7 @@ export default function Register() {
             />
           </label>
 
-          {/* 🔹 TU LOGO ORIGINAL (NO SE TOCA) */}
+          {/* 🔹 TU LOGO ORIGINAL */}
           <img
             src={logo}
             alt="Logo"
@@ -167,7 +170,6 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} autoComplete="off">
-          {/* --- TODO TU FORMULARIO IGUAL --- */}
 
           <div className="input-group">
             <input
