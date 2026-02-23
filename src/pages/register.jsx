@@ -9,13 +9,14 @@ export default function Register() {
 
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [logoEmpresa, setLogoEmpresa] = useState(null);
 
   const initialForm = {
     nombre: "",
+    nombreEmpresa: "",
     correo: "",
     telefono: "",
     password: "",
-    nombreEmpresa: "",
   };
 
   const [form, setForm] = useState(initialForm);
@@ -27,26 +28,51 @@ export default function Register() {
     });
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      Swal.fire({
+        icon: "error",
+        title: "Archivo inválido",
+        text: "Solo puedes subir imágenes",
+      });
+      return;
+    }
+
+    setLogoEmpresa(file);
+  };
+
   const limpiarFormulario = () => {
     setForm(initialForm);
+    setLogoEmpresa(null);
     setVerPassword(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (loading) return; // evita doble clic
+    if (loading) return;
     setLoading(true);
 
     try {
+      const formData = new FormData();
+      formData.append("nombre", form.nombre);
+      formData.append("nombreEmpresa", form.nombreEmpresa);
+      formData.append("correo", form.correo);
+      formData.append("telefono", form.telefono);
+      formData.append("password", form.password);
+
+      if (logoEmpresa) {
+        formData.append("logo", logoEmpresa);
+      }
+
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/register",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(form),
+          body: formData,
         }
       );
 
@@ -107,6 +133,35 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} autoComplete="off">
 
+          {/* 🔝 SUBIR LOGO ARRIBA */}
+          <div className="input-group">
+            <label style={{ marginBottom: "8px", display: "block" }}>
+              Subir logo
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleLogoChange}
+            />
+
+            {logoEmpresa && (
+              <div style={{ marginTop: "10px", textAlign: "center" }}>
+                <img
+                  src={URL.createObjectURL(logoEmpresa)}
+                  alt="Preview"
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 👤 NOMBRE COMPLETO */}
           <div className="input-group">
             <input
               type="text"
@@ -122,6 +177,23 @@ export default function Register() {
             </label>
           </div>
 
+          {/* 🏢 NOMBRE EMPRESA debajo del nombre */}
+          <div className="input-group">
+            <input
+              type="text"
+              name="nombreEmpresa"
+              className="login-input"
+              placeholder=" "
+              value={form.nombreEmpresa}
+              onChange={handleChange}
+              required
+            />
+            <label className="floating-label-text">
+              Nombre de la empresa
+            </label>
+          </div>
+
+          {/* 📧 CORREO */}
           <div className="input-group">
             <input
               type="email"
@@ -137,6 +209,7 @@ export default function Register() {
             </label>
           </div>
 
+          {/* 📱 TELEFONO */}
           <div className="input-group">
             <input
               type="tel"
@@ -152,6 +225,7 @@ export default function Register() {
             </label>
           </div>
 
+          {/* 🔒 PASSWORD */}
           <div className="input-group password-group">
             <input
               type={verPassword ? "text" : "password"}
@@ -173,21 +247,6 @@ export default function Register() {
             >
               {verPassword ? "Ocultar" : "Ver"}
             </button>
-          </div>
-
-          <div className="input-group">
-            <input
-              type="text"
-              name="nombreEmpresa"
-              className="login-input"
-              placeholder=" "
-              value={form.nombreEmpresa}
-              onChange={handleChange}
-              required
-            />
-            <label className="floating-label-text">
-              Nombre de la empresa
-            </label>
           </div>
 
           <button
