@@ -40,7 +40,7 @@ export default function Register() {
 
     try {
       const res = await fetch(
-        "https://mi-api-atempo.onrender.com/api/auth/registro",
+        "https://mi-api-atempo.onrender.com/api/auth/register",
         {
           method: "POST",
           headers: {
