@@ -27,6 +27,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!form.correo || !form.password) {
+      alert("Todos los campos son obligatorios");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -47,19 +53,20 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Correo o contraseña incorrectos");
-        setLoading(false);
+        alert(data?.message || "Correo o contraseña incorrectos");
         return;
       }
 
-      // Guardar usuario y token
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuario", JSON.stringify(data.usuario));
 
       limpiarFormulario();
-      navigate("/dashboard");
+
+      // 🔥 Redirige a Agenda Diaria
+      navigate("/agenda-diaria");
 
     } catch (error) {
+      console.error(error);
       alert("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
