@@ -11,15 +11,23 @@ import {
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
-
   const [user, setUser] = useState({});
 
-  // 🔹 Leer usuario dinámicamente
+  // 🔹 Leer usuario dinámicamente desde localStorage
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    setUser(storedUser);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Error leyendo usuario:", error);
+        setUser({});
+      }
+    }
   }, []);
 
+  // 🔹 Cerrar sesión
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -29,18 +37,25 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
   return (
     <aside className="sidebar">
 
-      {/* ✅ LOGO Y NOMBRE DINÁMICOS */}
+      {/* ✅ Logo y nombre de empresa */}
       <div className="logo-section">
-        <img 
-          src={user?.empresaLogo || "/default-logo.png"} 
-          alt="Logo empresa" 
-          className="logo" 
+        <img
+          src={
+            user?.empresaLogo
+              ? user.empresaLogo.startsWith("http")
+                ? user.empresaLogo
+                : `http://localhost:3001/${user.empresaLogo}`
+              : "/default-logo.png"
+          }
+          alt="Logo empresa"
+          className="logo"
         />
         <h2 className="brand-name">
           {user?.empresaNombre || "Mi Empresa"}
         </h2>
       </div>
 
+      {/* ✅ Menú de navegación */}
       <nav className="menu">
         <NavLink 
           to="/agenda-diaria" 
@@ -75,6 +90,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
       </nav>
 
+      {/* ✅ Botón de cerrar sesión */}
       <button className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon logout-icon" />
         Cerrar sesión
