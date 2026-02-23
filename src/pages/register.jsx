@@ -9,8 +9,6 @@ export default function Register() {
 
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [imagen, setImagen] = useState(null);
-  const [preview, setPreview] = useState(null);
 
   const initialForm = {
     nombre: "",
@@ -29,45 +27,26 @@ export default function Register() {
     });
   };
 
-  const handleImagenChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagen(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
   const limpiarFormulario = () => {
     setForm(initialForm);
-    setImagen(null);
-    setPreview(null);
     setVerPassword(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (loading) return;
+    if (loading) return; // evita doble clic
     setLoading(true);
 
     try {
-      const formData = new FormData();
-
-      formData.append("nombre", form.nombre);
-      formData.append("correo", form.correo);
-      formData.append("telefono", form.telefono);
-      formData.append("password", form.password);
-      formData.append("nombreEmpresa", form.nombreEmpresa);
-
-      if (imagen) {
-        formData.append("imagen", imagen); // 👈 debe coincidir con multer
-      }
-
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/register",
         {
           method: "POST",
-          body: formData, // 👈 SIN headers
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
         }
       );
 
@@ -79,6 +58,7 @@ export default function Register() {
           title: "Error",
           text: data.message || "Error en registro",
         });
+        setLoading(false);
         return;
       }
 
@@ -110,49 +90,6 @@ export default function Register() {
       <div className="login-card show">
 
         <div style={{ textAlign: "center", marginTop: "20px" }}>
-
-          {/* 🔵 CÍRCULO SUBIR IMAGEN */}
-          <label
-            style={{
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "110px",
-              height: "110px",
-              borderRadius: "50%",
-              border: "2px dashed #ccc",
-              overflow: "hidden",
-              marginBottom: "15px",
-              backgroundColor: "#f8f8f8",
-              fontSize: "12px",
-              color: "#777",
-              textAlign: "center"
-            }}
-          >
-            {preview ? (
-              <img
-                src={preview}
-                alt="preview"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-              />
-            ) : (
-              <span>Subir imagen</span>
-            )}
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImagenChange}
-              style={{ display: "none" }}
-            />
-          </label>
-
-          {/* 🔹 TU LOGO ORIGINAL */}
           <img
             src={logo}
             alt="Logo"
@@ -164,7 +101,6 @@ export default function Register() {
               marginBottom: "10px",
             }}
           />
-
           <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Crear cuenta</h2>
         </div>
