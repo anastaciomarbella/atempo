@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/agendaDiaria.css";
-import ModalCita from "../components/modalCita/modalCita"; // <-- IMPORTANTE
+import ModalCita from "../components/modalCita/modalCita";
 
 const DIAS_SEMANA = [
   "Lunes",
@@ -13,14 +14,24 @@ const DIAS_SEMANA = [
 ];
 
 const AgendaDiaria = () => {
+  const navigate = useNavigate();
   const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
   const [personas, setPersonas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mostrarModal, setMostrarModal] = useState(false); // <-- estado del modal
+  const [mostrarModal, setMostrarModal] = useState(false);
 
-  // === CARGAR PERSONAS ===
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  // 🔒 Si no hay usuario, redirigir
+  useEffect(() => {
+    if (!usuario) {
+      navigate("/");
+    }
+  }, [usuario, navigate]);
+
+  // ===== CARGAR PERSONAS =====
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -37,7 +48,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
-  // === CARGAR CITAS ===
+  // ===== CARGAR CITAS =====
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -62,7 +73,7 @@ const AgendaDiaria = () => {
     } catch (err) {
       console.error("Error citas:", err);
       setCitas([]);
-      setError("No se pudieron cargar las citas, pero puedes ver el calendario.");
+      setError("No se pudieron cargar las citas.");
     }
 
     setLoading(false);
@@ -72,7 +83,6 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
-  // === GENERAR DÍAS DEL MES ===
   const generarDiasDelMes = () => {
     const fin = new Date(
       fechaActual.getFullYear(),
@@ -95,8 +105,34 @@ const AgendaDiaria = () => {
     setFechaActual(nueva);
   };
 
+  const cerrarSesion = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    navigate("/");
+  };
+
   return (
     <main className="calendar-container">
+
+      {/* ===== HEADER EMPRESA ===== */}
+      <div className="empresa-header">
+        <div className="empresa-info">
+          <img
+            src={usuario?.logo_url?.replace("http://", "https://")}
+            alt="Logo empresa"
+            className="empresa-logo"
+          />
+          <h2 className="empresa-nombre">
+            {usuario?.nombre_empresa}
+          </h2>
+        </div>
+
+        <button className="logout-btn" onClick={cerrarSesion}>
+          Cerrar sesión
+        </button>
+      </div>
+
+      {/* ===== BARRA SUPERIOR ===== */}
       <div className="top-bar">
         <div className="month-nav">
           <button onClick={() => cambiarMes(-1)}>◀</button>
@@ -106,7 +142,7 @@ const AgendaDiaria = () => {
               year: "numeric",
             })}
           </span>
-          <button onClick={() => cambiarMes()}>▶</button>
+          <button onClick={() => cambiarMes(1)}>▶</button>
         </div>
 
         <button
@@ -157,14 +193,13 @@ const AgendaDiaria = () => {
         })}
       </div>
 
-      {/* ====== MODAL FLOTANTE ====== */}
       {mostrarModal && (
         <ModalCita
           personas={personas}
           onClose={() => setMostrarModal(false)}
           onSave={() => {
             setMostrarModal(false);
-            fetchCitas(); // refresca calendario al guardar
+            fetchCitas();
           }}
         />
       )}

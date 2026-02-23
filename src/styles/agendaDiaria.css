@@ -1,91 +1,108 @@
 .calendar-container {
   padding: 20px;
-  background: #f4f6fa;
-  font-family: "Segoe UI", sans-serif;
+  background: #f5f6fa;
+  min-height: 100vh;
 }
 
-/* HEADER */
-.top-bar {
+/* HEADER EMPRESA */
+.empresa-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+}
+
+.empresa-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.empresa-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.empresa-nombre {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  border: none;
+  padding: 8px 14px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* BARRA SUPERIOR */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 15px;
 }
 
-.view-buttons button {
-  border: none;
-  padding: 8px 14px;
-  border-radius: 20px;
-  background: #e6e8f0;
+.month-nav button {
+  padding: 6px 10px;
+  margin: 0 5px;
   cursor: pointer;
-  margin-right: 6px;
 }
 
-.view-buttons .active {
-  background: #2f80ed;
-  color: white;
+.month-title {
+  font-weight: 600;
 }
 
 .new-btn {
-  background: #2f80ed;
+  background: #2e86de;
   color: white;
   border: none;
   padding: 8px 14px;
-  border-radius: 20px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-/* MENSAJES */
-.loading {
-  margin-bottom: 10px;
-  color: #555;
-}
-
-.error-banner {
-  background: #fff3cd;
-  color: #664d03;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-/* GRID CALENDARIO */
+/* CALENDARIO */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
 }
 
-/* Encabezados */
 .day-header {
   text-align: center;
   font-weight: bold;
-  padding: 8px;
 }
 
-/* Celdas del mes */
 .day-cell {
   background: white;
-  border-radius: 10px;
-  min-height: 130px;
-  padding: 8px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  min-height: 120px;
+  padding: 6px;
+  border-radius: 8px;
   position: relative;
 }
 
-/* Número del día */
 .day-number {
   font-size: 14px;
-  color: #555;
-  display: block;
-  margin-bottom: 6px;
+  font-weight: bold;
 }
 
-/* Tarjeta de cita */
 .event-card {
-  padding: 6px;
-  margin-top: 6px;
-  border-radius: 8px;
-  background: rgba(47, 128, 237, 0.15);
+  margin-top: 5px;
+  padding: 5px;
+  border-radius: 6px;
   font-size: 12px;
+}
+
+.loading {
+  margin-bottom: 10px;
+}
+
+.error-banner {
+  color: red;
+  margin-bottom: 10px;
 }
