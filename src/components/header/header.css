@@ -4,10 +4,23 @@
   margin-left: 240px;
   z-index: 50;
   background-color: #fff;
-  padding: 12px 0;
+  padding: 12px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.empresa-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.empresa-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .business-name {

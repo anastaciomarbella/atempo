@@ -57,27 +57,19 @@ export default function Login() {
         return;
       }
 
-      // 🔹 Guardar token y usuario completo en localStorage
+      // ✅ Guardar token
       localStorage.setItem("token", data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: data.usuario.id,
-          nombre: data.usuario.nombre,
-          correo: data.usuario.correo,
-          rol: data.usuario.rol || "usuario",
-          empresaNombre: data.usuario.empresaNombre || "Mi Empresa",
-          empresaLogo: data.usuario.empresaLogo || "/default-logo.png",
-        })
-      );
+
+      // ✅ Guardar TODO el usuario como viene del backend
+      localStorage.setItem("user", JSON.stringify(data.usuario));
 
       limpiarFormulario();
 
-      // 🔥 Redirige a Agenda Diaria
+      // 🔥 Redirigir a Agenda Diaria
       navigate("/agenda-diaria");
 
     } catch (error) {
-      console.error(error);
+      console.error("Error login:", error);
       alert("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
