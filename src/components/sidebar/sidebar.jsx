@@ -1,98 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import './sidebar.css';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  FaCalendarDay, 
-  FaCalendarWeek, 
-  FaPlus, 
-  FaUsers, 
-  FaSignOutAlt 
-} from 'react-icons/fa';
+import React from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  FaCalendarDay,
+  FaCalendarWeek,
+  FaPlus,
+  FaUsers,
+  FaSignOutAlt,
+} from "react-icons/fa";
+import defaultLogo from "../assets/default-logo.png";
+import "./sidebar.css";
 
-const Sidebar = ({ onAbrirModal, modalActivo }) => {
+const Sidebar = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({
-    empresaNombre: "Mi Empresa",
-    empresaLogo: "/default-logo.png"
-  });
 
-  // 🔹 Leer usuario desde localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser({
-          empresaNombre: parsedUser.empresaNombre || "Mi Empresa",
-          empresaLogo: parsedUser.empresaLogo || "/default-logo.png"
-        });
-      } catch (error) {
-        console.error("Error leyendo usuario:", error);
-      }
-    }
-  }, []);
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // 🔹 Cerrar sesión
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    navigate('/');
+  const cerrarSesion = () => {
+    localStorage.clear();
+    navigate("/login");
   };
 
   return (
-    <aside className="sidebar">
+    <div className="sidebar">
 
-      {/* Logo y nombre de empresa */}
-      <div className="logo-section">
+      {/* 🔥 EMPRESA DINÁMICA */}
+      <div className="sidebar-header">
         <img
-          src={user.empresaLogo}
+          src={user.empresaLogo || defaultLogo}
           alt="Logo empresa"
-          className="logo"
+          className="logo-empresa"
         />
-        <h2 className="brand-name">{user.empresaNombre}</h2>
+        <h3 className="nombre-empresa">
+          {user.empresaNombre || "Mi Empresa"}
+        </h3>
       </div>
 
-      {/* Menú de navegación */}
-      <nav className="menu">
-        <NavLink 
-          to="/agenda-diaria" 
-          className={({ isActive }) => (isActive && modalActivo !== 'cita' ? 'active' : '')}
-        >
-          <FaCalendarDay className="icon" />
-          Agenda diaria
+      <nav>
+        <NavLink to="/agenda-diaria">
+          <FaCalendarDay /> Agenda diaria
         </NavLink>
 
-        <NavLink 
-          to="/agenda-semanal" 
-          className={({ isActive }) => (isActive && modalActivo !== 'cita' ? 'active' : '')}
-        >
-          <FaCalendarWeek className="icon" />
-          Agenda semanal
+        <NavLink to="/agenda-semanal">
+          <FaCalendarWeek /> Agenda semanal
         </NavLink>
 
-        <button
-          onClick={() => onAbrirModal('cita')}
-          className={`menu-btn ${modalActivo === 'cita' ? 'active' : ''}`}
-        >
-          <FaPlus className="icon" />
-          Agendar cita
-        </button>
+        <NavLink to="/agendar-cita">
+          <FaPlus /> Agendar cita
+        </NavLink>
 
-        <NavLink 
-          to="/empleados" 
-          className={({ isActive }) => (isActive && modalActivo !== 'cita' ? 'active' : '')}
-        >
-          <FaUsers className="icon" />
-          Empleados
+        <NavLink to="/empleados">
+          <FaUsers /> Empleados
         </NavLink>
       </nav>
 
-      {/* Botón de cerrar sesión */}
-      <button className="logout-btn" onClick={handleLogout}>
-        <FaSignOutAlt className="icon logout-icon" />
-        Cerrar sesión
+      <button className="cerrar-btn" onClick={cerrarSesion}>
+        <FaSignOutAlt /> Cerrar sesión
       </button>
-    </aside>
+
+    </div>
   );
 };
 
