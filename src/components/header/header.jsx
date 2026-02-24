@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./header.css";
+import { API_URL } from "../../config";
 
 const Header = () => {
   const [empresa, setEmpresa] = useState("Mi Empresa");
@@ -12,20 +13,20 @@ const Header = () => {
       try {
         const parsedUser = JSON.parse(storedUser);
 
-        setEmpresa(parsedUser.empresaNombre || "Mi Empresa");
+        // ✅ Usar los nombres reales que manda el backend
+        setEmpresa(parsedUser.nombre_empresa || "Mi Empresa");
 
-        // 🔥 Manejar logo correctamente
-        if (parsedUser.empresaLogo) {
-          // Si viene como ruta relativa (/uploads/logo.png)
-          if (parsedUser.empresaLogo.startsWith("/")) {
+        if (parsedUser.logo_url) {
+          // 🔥 Si viene con http lo convertimos a https
+          if (parsedUser.logo_url.startsWith("http")) {
             setLogo(
-              `https://mi-api-atempo.onrender.com${parsedUser.empresaLogo}`
+              parsedUser.logo_url.replace("http://", "https://")
             );
           } else {
-            // Si ya viene como URL completa
-            setLogo(parsedUser.empresaLogo);
+            setLogo(`${API_URL}/${parsedUser.logo_url}`);
           }
         }
+
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
