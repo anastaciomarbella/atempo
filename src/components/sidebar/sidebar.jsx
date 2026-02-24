@@ -8,6 +8,7 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
+import { API_URL } from "../../config";
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
@@ -24,10 +25,20 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
 
+        let logoFinal = null;
+
+        if (parsedUser.logo_url) {
+          // 🔥 Si viene con http lo convertimos a https
+          if (parsedUser.logo_url.startsWith("http")) {
+            logoFinal = parsedUser.logo_url.replace("http://", "https://");
+          } else {
+            logoFinal = `${API_URL}/${parsedUser.logo_url}`;
+          }
+        }
+
         setUser({
-          // 🔥 AQUÍ ESTÁ LA CORRECCIÓN REAL
           empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
-          empresaLogo: parsedUser.logo_url || null,
+          empresaLogo: logoFinal,
         });
 
       } catch (error) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/agendaDiaria.css";
 import ModalCita from "../components/modalCita/modalCita";
+import { API_URL } from "../config";
 
 const DIAS_SEMANA = [
   "Lunes",
@@ -20,45 +21,50 @@ const AgendaDiaria = () => {
   const [error, setError] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  // 🔹 NUEVO: estados para empresa y logo
   const [empresa, setEmpresa] = useState("");
   const [logo, setLogo] = useState("");
 
-  // 🔹 NUEVO: cargar empresa y logo desde localStorage
   useEffect(() => {
-    const empresaGuardada = localStorage.getItem("empresa");
-    const logoGuardado = localStorage.getItem("logo");
+    const storedUser = localStorage.getItem("user");
 
-    if (empresaGuardada) setEmpresa(empresaGuardada);
-    if (logoGuardado) setLogo(logoGuardado);
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+
+        setEmpresa(parsedUser.nombre_empresa || "");
+
+        if (parsedUser.logo_url) {
+          setLogo(
+            parsedUser.logo_url.startsWith("http")
+              ? parsedUser.logo_url.replace("http://", "https://")
+              : `${API_URL}/${parsedUser.logo_url}`
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }, []);
 
-  // === CARGAR PERSONAS ===
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
-        const res = await fetch(
-          "https://mi-api-atempo.onrender.com/api/personas"
-        );
+        const res = await fetch(`${API_URL}/api/personas`);
         const data = await res.json();
         setPersonas(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error personas:", err);
-        setPersonas([]);
       }
     };
     fetchPersonas();
   }, []);
 
-  // === CARGAR CITAS ===
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(
-        "https://mi-api-atempo.onrender.com/api/citas"
-      );
+      const res = await fetch(`${API_URL}/api/citas`);
       let data = await res.json();
 
       if (!Array.isArray(data)) data = [];
@@ -74,8 +80,7 @@ const AgendaDiaria = () => {
       setCitas(data);
     } catch (err) {
       console.error("Error citas:", err);
-      setCitas([]);
-      setError("No se pudieron cargar las citas, pero puedes ver el calendario.");
+      setError("No se pudieron cargar las citas.");
     }
 
     setLoading(false);
@@ -85,22 +90,15 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
-  // === GENERAR DÍAS DEL MES ===
-  const generarDiasDelMes = () => {
+  const diasDelMes = () => {
     const fin = new Date(
       fechaActual.getFullYear(),
       fechaActual.getMonth() + 1,
       0
     );
 
-    const dias = [];
-    for (let d = 1; d <= fin.getDate(); d++) {
-      dias.push(d);
-    }
-    return dias;
+    return Array.from({ length: fin.getDate() }, (_, i) => i + 1);
   };
-
-  const diasDelMes = generarDiasDelMes();
 
   const cambiarMes = (delta) => {
     const nueva = new Date(fechaActual);
@@ -111,16 +109,9 @@ const AgendaDiaria = () => {
   return (
     <main className="calendar-container">
 
-      {/* 🔹 NUEVO: encabezado empresa (NO afecta tu diseño principal) */}
       {(empresa || logo) && (
         <div className="empresa-header">
-          {logo && (
-            <img
-              src={logo}
-              alt="Logo empresa"
-              className="logo-empresa"
-            />
-          )}
+          {logo && <img src={logo} alt="Logo empresa" className="logo-empresa" />}
           {empresa && <h2 className="empresa-nombre">{empresa}</h2>}
         </div>
       )}
@@ -143,14 +134,12 @@ const AgendaDiaria = () => {
 
       <div className="calendar-grid headers">
         {DIAS_SEMANA.map((d) => (
-          <div key={d} className="day-header">
-            {d}
-          </div>
+          <div key={d} className="day-header">{d}</div>
         ))}
       </div>
 
       <div className="calendar-grid body">
-        {diasDelMes.map((day) => {
+        {diasDelMes().map((day) => {
           const citasDelDia = citas.filter(
             (c) => new Date(c.fecha).getDate() === day
           );
