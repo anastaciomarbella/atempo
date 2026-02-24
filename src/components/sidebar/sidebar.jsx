@@ -9,8 +9,6 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 
-const API_URL = "https://mi-api-atempo.onrender.com";
-
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
 
@@ -26,19 +24,10 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
 
-        let logoFinal = null;
-
-        if (parsedUser.empresaLogo) {
-          if (parsedUser.empresaLogo.startsWith("/")) {
-            logoFinal = `${API_URL}${parsedUser.empresaLogo}`;
-          } else {
-            logoFinal = parsedUser.empresaLogo;
-          }
-        }
-
         setUser({
-          empresaNombre: parsedUser.empresaNombre || "Mi Empresa",
-          empresaLogo: logoFinal,
+          // 🔥 AQUÍ ESTÁ LA CORRECCIÓN REAL
+          empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
+          empresaLogo: parsedUser.logo_url || null,
         });
 
       } catch (error) {
@@ -56,7 +45,6 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
   return (
     <aside className="sidebar">
 
-      {/* 🔥 Logo + Empresa */}
       <div className="logo-section">
         {user.empresaLogo ? (
           <img
