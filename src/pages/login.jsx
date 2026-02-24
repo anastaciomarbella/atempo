@@ -57,8 +57,19 @@ export default function Login() {
         return;
       }
 
+      // 🔹 Guardar token y usuario completo en localStorage
       localStorage.setItem("token", data.token);
-      localStorage.setItem("usuario", JSON.stringify(data.usuario));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.usuario.id,
+          nombre: data.usuario.nombre,
+          correo: data.usuario.correo,
+          rol: data.usuario.rol || "usuario",
+          empresaNombre: data.usuario.empresaNombre || "Mi Empresa",
+          empresaLogo: data.usuario.empresaLogo || "/default-logo.png",
+        })
+      );
 
       limpiarFormulario();
 

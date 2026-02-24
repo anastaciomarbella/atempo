@@ -11,18 +11,23 @@ import {
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({
+    empresaNombre: "Mi Empresa",
+    empresaLogo: "/default-logo.png"
+  });
 
-  // 🔹 Leer usuario dinámicamente desde localStorage
+  // 🔹 Leer usuario desde localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+        setUser({
+          empresaNombre: parsedUser.empresaNombre || "Mi Empresa",
+          empresaLogo: parsedUser.empresaLogo || "/default-logo.png"
+        });
       } catch (error) {
         console.error("Error leyendo usuario:", error);
-        setUser({});
       }
     }
   }, []);
@@ -37,25 +42,17 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
   return (
     <aside className="sidebar">
 
-      {/* ✅ Logo y nombre de empresa */}
+      {/* Logo y nombre de empresa */}
       <div className="logo-section">
         <img
-          src={
-            user?.empresaLogo
-              ? user.empresaLogo.startsWith("http")
-                ? user.empresaLogo
-                : `http://localhost:3001/${user.empresaLogo}`
-              : "/default-logo.png"
-          }
+          src={user.empresaLogo}
           alt="Logo empresa"
           className="logo"
         />
-        <h2 className="brand-name">
-          {user?.empresaNombre || "Mi Empresa"}
-        </h2>
+        <h2 className="brand-name">{user.empresaNombre}</h2>
       </div>
 
-      {/* ✅ Menú de navegación */}
+      {/* Menú de navegación */}
       <nav className="menu">
         <NavLink 
           to="/agenda-diaria" 
@@ -90,7 +87,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
       </nav>
 
-      {/* ✅ Botón de cerrar sesión */}
+      {/* Botón de cerrar sesión */}
       <button className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon logout-icon" />
         Cerrar sesión
