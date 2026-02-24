@@ -57,21 +57,23 @@ export default function Login() {
         return;
       }
 
-      // 🔥 Guardar EXACTAMENTE lo que manda tu backend
+      // 🔹 Guardar token y usuario completo en localStorage
       localStorage.setItem("token", data.token);
-
       localStorage.setItem(
         "user",
         JSON.stringify({
-          id_usuario: data.usuario.id_usuario,
+          id: data.usuario.id,
           nombre: data.usuario.nombre,
           correo: data.usuario.correo,
-          empresaNombre: data.usuario.nombre_empresa,
-          empresaLogo: data.usuario.logo_url,
+          rol: data.usuario.rol || "usuario",
+          empresaNombre: data.usuario.empresaNombre || "Mi Empresa",
+          empresaLogo: data.usuario.empresaLogo || "/default-logo.png",
         })
       );
 
       limpiarFormulario();
+
+      // 🔥 Redirige a Agenda Diaria
       navigate("/agenda-diaria");
 
     } catch (error) {
