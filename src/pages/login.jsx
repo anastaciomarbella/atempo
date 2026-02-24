@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { API_URL } from "../config";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -36,19 +37,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://mi-api-atempo.onrender.com/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            correo: form.correo.trim().toLowerCase(),
-            password: form.password.trim(),
-          }),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          correo: form.correo.trim().toLowerCase(),
+          password: form.password.trim(),
+        }),
+      });
 
       const data = await res.json();
 
@@ -57,15 +55,15 @@ export default function Login() {
         return;
       }
 
-      // ✅ Guardar token
-      localStorage.setItem("token", data.token);
+      if (!data.token) {
+        alert("El servidor no devolvió token");
+        return;
+      }
 
-      // ✅ Guardar TODO el usuario como viene del backend
+      localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.usuario));
 
       limpiarFormulario();
-
-      // 🔥 Redirigir a Agenda Diaria
       navigate("/agenda-diaria");
 
     } catch (error) {
