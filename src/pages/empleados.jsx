@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/empleados.css';
 import { FaUserPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import avatar from '../assets/avatar.png';
 import ModalNuevoEmpleado from '../components/modalNuevoEmpleado/modalNuevoEmpleado';
 import ModalUpdateEmpleado from '../components/modalUpdateEmpleado/modalUpdateEmpleado';
 import ModalConfirmacionEliminar from '../components/modalConfirmar/modalConfirmarDelete';
@@ -15,7 +14,6 @@ const Empleados = () => {
     const [empleadoEditar, setEmpleadoEditar] = useState(null);
     const [empleadoAEliminar, setEmpleadoAEliminar] = useState(null);
 
-    // Usa la variable de entorno o localhost por defecto
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
     const cargarEmpleados = async () => {
@@ -83,7 +81,10 @@ const Empleados = () => {
         <div className="empleados-container">
             <div className="header-empleados">
                 <h2 className="titulo-empleados">Empleados</h2>
-                <button className="nuevo-empleado-btn" onClick={() => setMostrarModal(true)}>
+                <button 
+                    className="nuevo-empleado-btn" 
+                    onClick={() => setMostrarModal(true)}
+                >
                     Nuevo empleado <FaUserPlus className="icono-btn" />
                 </button>
             </div>
@@ -91,7 +92,6 @@ const Empleados = () => {
             <table className="tabla-empleados">
                 <thead>
                     <tr>
-                        <th>Foto</th>
                         <th>Nombre</th>
                         <th>Correo electrónico</th>
                         <th>Teléfono</th>
@@ -101,20 +101,19 @@ const Empleados = () => {
                 <tbody>
                     {empleados.map((emp) => (
                         <tr key={emp.id}>
-                            <td><img src={avatar} alt="avatar" className="avatar-empleado" /></td>
                             <td>{emp.nombre}</td>
                             <td>{emp.email}</td>
                             <td>{emp.telefono}</td>
                             <td>
                                 <FaEdit
-                                  className="icono-editar"
-                                  onClick={() => handleEditarClick(emp.id)}
-                                  style={{ cursor: 'pointer' }}
+                                    className="icono-editar"
+                                    onClick={() => handleEditarClick(emp.id)}
+                                    style={{ cursor: 'pointer' }}
                                 />
                                 <FaTrash
-                                  className="icono-borrar"
-                                  onClick={() => handleEliminarClick(emp)}
-                                  style={{ cursor: 'pointer' }}
+                                    className="icono-borrar"
+                                    onClick={() => handleEliminarClick(emp)}
+                                    style={{ cursor: 'pointer' }}
                                 />
                             </td>
                         </tr>
