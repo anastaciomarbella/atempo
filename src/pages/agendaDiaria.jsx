@@ -4,11 +4,9 @@ import { API_URL } from "../config";
 
 const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7); // 7:00 a 20:00
-
-// Colores para cada día de la semana
 const DIA_COLORS = ["#FFEBEE", "#E3F2FD", "#E8F5E9", "#FFF3E0", "#F3E5F5", "#E0F7FA", "#FBE9E7"];
 
-const AgendaDiaria = () => {
+const AgendaSemanal = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +14,7 @@ const AgendaDiaria = () => {
 
   const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
 
+  // 🔹 Cargar citas del usuario logueado
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -24,7 +23,8 @@ const AgendaDiaria = () => {
       let data = await res.json();
       if (!Array.isArray(data)) data = [];
 
-      data = data.filter((c) => c.id_usuario === usuarioLogueado?.id_usuario);
+      // Filtrar solo citas del usuario logueado (forzando string)
+      data = data.filter((c) => String(c.id_usuario) === String(usuarioLogueado?.id_usuario));
       setCitas(data);
     } catch (err) {
       console.error(err);
@@ -37,20 +37,18 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, []);
 
+  // 🔹 Cambiar mes
   const cambiarMes = (delta) => {
     const nueva = new Date(fechaActual);
     nueva.setMonth(nueva.getMonth() + delta);
     setFechaActual(nueva);
   };
 
-  const year = fechaActual.getFullYear();
-  const month = fechaActual.getMonth();
-
-  // Obtener la fecha del lunes de la semana actual
+  // 🔹 Calcular lunes de la semana
   const obtenerLunes = () => {
     const date = new Date(fechaActual);
-    const day = date.getDay(); // 0=Domingo, 1=Lunes...
-    const diff = day === 0 ? -6 : 1 - day; // ajusta domingo
+    const day = date.getDay(); // 0=Domingo, 1=Lunes
+    const diff = day === 0 ? -6 : 1 - day;
     const lunes = new Date(date);
     lunes.setDate(date.getDate() + diff);
     return lunes;
@@ -63,11 +61,25 @@ const AgendaDiaria = () => {
     return d;
   });
 
-  // Filtrar citas por fecha de la semana
+  // 🔹 Filtrar citas por día
   const citasPorDia = semanaFechas.map((fecha) => {
     const fechaStr = fecha.toISOString().split("T")[0];
-    return citas.filter((c) => c.fecha?.split("T")[0] === fechaStr);
+    return citas.filter(
+      (c) =>
+        String(c.id_usuario) === String(usuarioLogueado?.id_usuario) &&
+        c.fecha?.split("T")[0] === fechaStr
+    );
   });
+
+  // 🔹 Función para calcular posición y altura de la cita según duración
+  const calcularEstiloCita = (cita) => {
+    if (!cita.hora_inicio || !cita.hora_final) return {};
+    const inicio = Number(cita.hora_inicio.split(":")[0]) + Number(cita.hora_inicio.split(":")[1]) / 60;
+    const fin = Number(cita.hora_final.split(":")[0]) + Number(cita.hora_final.split(":")[1]) / 60;
+    const top = (inicio - HORAS_DIA[0]) * 60; // 60px por hora
+    const height = (fin - inicio) * 60;
+    return { top: `${top}px`, height: `${height}px`, position: "absolute", width: "95%", left: "2.5%" };
+  };
 
   return (
     <main className="calendar-container">
@@ -85,29 +97,29 @@ const AgendaDiaria = () => {
       {error && <div className="error-banner">{error}</div>}
 
       <div className="week-grid">
-        {/* Encabezado de días */}
+        {/* Encabezado días */}
         {DIAS_SEMANA.map((dia, idx) => (
           <div key={dia} className="day-header" style={{ backgroundColor: DIA_COLORS[idx] }}>
             {dia} <br /> {semanaFechas[idx].getDate()}/{semanaFechas[idx].getMonth() + 1}
           </div>
         ))}
 
-        {/* Filas de horas */}
+        {/* Celdas de horas */}
         {HORAS_DIA.map((hora) => (
           <React.Fragment key={hora}>
             {semanaFechas.map((fecha, idx) => {
-              const fechaStr = fecha.toISOString().split("T")[0];
-              const citasHora = citasPorDia[idx].filter(
-                (c) => Number(c.hora_inicio?.split(":")[0]) === hora
-              );
+              const citasHora = citasPorDia[idx].filter((cita) => {
+                const inicio = Number(cita.hora_inicio?.split(":")[0]);
+                return inicio === hora;
+              });
 
               return (
-                <div key={idx + "-" + hora} className="hour-cell">
+                <div key={idx + "-" + hora} className="hour-cell" style={{ position: "relative" }}>
                   {citasHora.map((cita) => (
                     <div
                       key={cita.id_cita}
                       className="event-card"
-                      style={{ backgroundColor: cita.color || "rgba(47,128,237,0.3)" }}
+                      style={{ ...calcularEstiloCita(cita), backgroundColor: cita.color || "rgba(47,128,237,0.3)" }}
                     >
                       <strong>{cita.titulo}</strong>
                       <div>
@@ -125,4 +137,4 @@ const AgendaDiaria = () => {
   );
 };
 
-export default AgendaDiaria;
+export default AgendaSemanal;
