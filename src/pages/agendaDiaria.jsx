@@ -3,24 +3,12 @@ import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
 const DIAS_SEMANA = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo"
+  "Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"
 ];
 
-const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7); // 7:00 a 20:00
+const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7);
 const DIA_COLORS = [
-  "#FFEBEE",
-  "#E3F2FD",
-  "#E8F5E9",
-  "#FFF3E0",
-  "#F3E5F5",
-  "#E0F7FA",
-  "#FBE9E7"
+  "#FFEBEE","#E3F2FD","#E8F5E9","#FFF3E0","#F3E5F5","#E0F7FA","#FBE9E7"
 ];
 
 const AgendaSemanal = () => {
@@ -29,17 +17,15 @@ const AgendaSemanal = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔹 Obtener usuario de localStorage
   const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // 🔹 Resolver ID de usuario de forma segura
-  const userId =
-    usuarioLogueado?.id_usuario ??
+  // 🔹 ID real del usuario/persona
+  const personaId =
+    usuarioLogueado?.id_persona ??
     usuarioLogueado?.id ??
     usuarioLogueado?.user_id ??
     null;
 
-  // 🔹 Obtener citas
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -47,19 +33,18 @@ const AgendaSemanal = () => {
     try {
       const res = await fetch(`${API_URL}/api/citas`);
       let data = await res.json();
-
       if (!Array.isArray(data)) data = [];
 
       console.log("Usuario logueado:", usuarioLogueado);
-      console.log("UserID resuelto:", userId);
+      console.log("PersonaID resuelto:", personaId);
       console.log("Citas sin filtrar:", data);
 
-      // 🔥 FILTRO SEGURO
+      // ✅ FILTRO CORRECTO
       let citasFinales = data;
 
-      if (userId !== null) {
+      if (personaId !== null) {
         citasFinales = data.filter(
-          c => String(c.id_usuario) === String(userId)
+          c => String(c.id_persona) === String(personaId)
         );
       }
 
@@ -77,20 +62,18 @@ const AgendaSemanal = () => {
     fetchCitas();
   }, []);
 
-  // 🔹 Cambiar mes
   const cambiarMes = (delta) => {
     const nueva = new Date(fechaActual);
     nueva.setMonth(nueva.getMonth() + delta);
     setFechaActual(nueva);
   };
 
-  // 🔹 Obtener lunes de la semana
   const obtenerLunes = () => {
-    const date = new Date(fechaActual);
-    const day = date.getDay(); // 0 = domingo
+    const d = new Date(fechaActual);
+    const day = d.getDay();
     const diff = day === 0 ? -6 : 1 - day;
-    const lunes = new Date(date);
-    lunes.setDate(date.getDate() + diff);
+    const lunes = new Date(d);
+    lunes.setDate(d.getDate() + diff);
     return lunes;
   };
 
@@ -102,49 +85,41 @@ const AgendaSemanal = () => {
     return d;
   });
 
-  // 🔹 Agrupar citas por día
   const citasPorDia = semanaFechas.map(fecha =>
     citas.filter(c => {
-      if (!c.fecha) return false;
-      const citaDate = new Date(c.fecha);
+      const f = new Date(c.fecha);
       return (
-        citaDate.getFullYear() === fecha.getFullYear() &&
-        citaDate.getMonth() === fecha.getMonth() &&
-        citaDate.getDate() === fecha.getDate()
+        f.getFullYear() === fecha.getFullYear() &&
+        f.getMonth() === fecha.getMonth() &&
+        f.getDate() === fecha.getDate()
       );
     })
   );
 
-  // 🔹 Utilidades hora
   const convertirAHoras = (hora) => {
     const [h, m] = hora.split(":").map(Number);
     return h + m / 60;
   };
 
-  // 🔹 Posición real de la cita
   const calcularEstiloCita = (cita) => {
-    if (!cita.hora_inicio || !cita.hora_final) return {};
-
     const inicio = convertirAHoras(cita.hora_inicio);
     const fin = convertirAHoras(cita.hora_final);
 
     return {
       position: "absolute",
-      top: `${(inicio - HORAS_DIA[0]) * 60}px`,
+      top: `${(inicio - 7) * 60}px`,
       height: `${(fin - inicio) * 60}px`,
       width: "95%",
       left: "2.5%",
       backgroundColor: cita.color || "rgba(47,128,237,0.3)",
       borderRadius: "6px",
       padding: "4px",
-      boxSizing: "border-box",
       cursor: "pointer"
     };
   };
 
   return (
     <main className="calendar-container">
-      {/* Barra superior */}
       <div className="top-bar">
         <div className="day-nav">
           <button onClick={() => cambiarMes(-1)}>◀</button>
@@ -162,7 +137,6 @@ const AgendaSemanal = () => {
       {error && <div className="error-banner">{error}</div>}
 
       <div className="week-grid">
-        {/* Encabezados */}
         {DIAS_SEMANA.map((dia, idx) => (
           <div
             key={dia}
@@ -171,12 +145,10 @@ const AgendaSemanal = () => {
           >
             {dia}
             <br />
-            {semanaFechas[idx].getDate()}/
-            {semanaFechas[idx].getMonth() + 1}
+            {semanaFechas[idx].getDate()}/{semanaFechas[idx].getMonth() + 1}
           </div>
         ))}
 
-        {/* Grid */}
         {HORAS_DIA.map(hora => (
           <React.Fragment key={hora}>
             {semanaFechas.map((_, idx) => (
@@ -188,14 +160,14 @@ const AgendaSemanal = () => {
                 {hora === HORAS_DIA[0] &&
                   citasPorDia[idx].map(cita => (
                     <div
-                      key={cita.id_cita}
+                      key={cita.id}
                       className="event-card"
                       style={calcularEstiloCita(cita)}
                     >
                       <strong>{cita.titulo}</strong>
                       <div>
-                        {cita.hora_inicio?.slice(0, 5)} -{" "}
-                        {cita.hora_final?.slice(0, 5)}
+                        {cita.hora_inicio.slice(0,5)} -{" "}
+                        {cita.hora_final.slice(0,5)}
                       </div>
                     </div>
                   ))}
