@@ -48,7 +48,7 @@ const AgendaDiaria = () => {
       data = data.filter(
         (c) =>
           c.fecha?.split("T")[0] === fechaSeleccionada &&
-          c.id_usuario === usuarioLogueado.id_usuario
+          c.id_usuario === usuarioLogueado?.id_usuario
       );
 
       setCitas(data);
@@ -70,6 +70,9 @@ const AgendaDiaria = () => {
     nueva.setDate(nueva.getDate() + delta);
     setFechaActual(nueva);
   };
+
+  // 🔹 Generar la grilla de horas (puedes ajustar a tu necesidad)
+  const horasDia = Array.from({ length: 24 }, (_, i) => i);
 
   return (
     <main className="calendar-container">
@@ -95,10 +98,19 @@ const AgendaDiaria = () => {
       {error && <div className="error-banner">{error}</div>}
 
       <div className="day-container">
+        {/* 🔹 Cuadrícula de horas siempre visible */}
+        {horasDia.map((hora) => (
+          <div key={hora} className="hour-slot">
+            <span className="hour-label">{hora}:00</span>
+          </div>
+        ))}
+
+        {/* 🔹 Mensaje cuando no hay citas */}
         {citas.length === 0 && !loading && (
-          <div className="no-events">No hay citas para este día</div>
+          <div className="no-events-overlay">No hay citas para este día</div>
         )}
 
+        {/* 🔹 Renderizar citas */}
         {citas.map((c) => (
           <div
             key={c.id_cita}
@@ -129,6 +141,7 @@ const AgendaDiaria = () => {
         ))}
       </div>
 
+      {/* 🔹 Modal para agregar / editar citas */}
       {mostrarModal && (
         <ModalCita
           personas={personas}
