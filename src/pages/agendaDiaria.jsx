@@ -29,29 +29,47 @@ const AgendaSemanal = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // 🔹 Obtener usuario de localStorage
   const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // 🔹 Resolver ID de usuario de forma segura
+  const userId =
+    usuarioLogueado?.id_usuario ??
+    usuarioLogueado?.id ??
+    usuarioLogueado?.user_id ??
+    null;
 
   // 🔹 Obtener citas
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const res = await fetch(`${API_URL}/api/citas`);
       let data = await res.json();
 
       if (!Array.isArray(data)) data = [];
 
-      // Filtrar por usuario
-      const filtradas = data.filter(
-        c => String(c.id_usuario) === String(usuarioLogueado?.id_usuario)
-      );
+      console.log("Usuario logueado:", usuarioLogueado);
+      console.log("UserID resuelto:", userId);
+      console.log("Citas sin filtrar:", data);
 
-      console.log("Citas filtradas:", filtradas);
-      setCitas(filtradas);
+      // 🔥 FILTRO SEGURO
+      let citasFinales = data;
+
+      if (userId !== null) {
+        citasFinales = data.filter(
+          c => String(c.id_usuario) === String(userId)
+        );
+      }
+
+      console.log("Citas finales:", citasFinales);
+      setCitas(citasFinales);
     } catch (err) {
       console.error(err);
       setError("No se pudieron cargar las citas.");
     }
+
     setLoading(false);
   };
 
@@ -97,28 +115,30 @@ const AgendaSemanal = () => {
     })
   );
 
-  // 🔹 Estilo de la cita (posición real)
+  // 🔹 Utilidades hora
+  const convertirAHoras = (hora) => {
+    const [h, m] = hora.split(":").map(Number);
+    return h + m / 60;
+  };
+
+  // 🔹 Posición real de la cita
   const calcularEstiloCita = (cita) => {
     if (!cita.hora_inicio || !cita.hora_final) return {};
 
-    const [hInicio, mInicio] = cita.hora_inicio.split(":").map(Number);
-    const [hFin, mFin] = cita.hora_final.split(":").map(Number);
-
-    const inicio = hInicio + mInicio / 60;
-    const fin = hFin + mFin / 60;
-
-    const top = (inicio - HORAS_DIA[0]) * 60; // 60px por hora
-    const height = (fin - inicio) * 60;
+    const inicio = convertirAHoras(cita.hora_inicio);
+    const fin = convertirAHoras(cita.hora_final);
 
     return {
       position: "absolute",
-      top: `${top}px`,
-      height: `${height}px`,
+      top: `${(inicio - HORAS_DIA[0]) * 60}px`,
+      height: `${(fin - inicio) * 60}px`,
       width: "95%",
       left: "2.5%",
+      backgroundColor: cita.color || "rgba(47,128,237,0.3)",
       borderRadius: "6px",
       padding: "4px",
-      boxSizing: "border-box"
+      boxSizing: "border-box",
+      cursor: "pointer"
     };
   };
 
@@ -156,7 +176,7 @@ const AgendaSemanal = () => {
           </div>
         ))}
 
-        {/* Grid de horas */}
+        {/* Grid */}
         {HORAS_DIA.map(hora => (
           <React.Fragment key={hora}>
             {semanaFechas.map((_, idx) => (
@@ -165,17 +185,12 @@ const AgendaSemanal = () => {
                 className="hour-cell"
                 style={{ position: "relative" }}
               >
-                {/* Renderizar citas SOLO una vez por día */}
                 {hora === HORAS_DIA[0] &&
                   citasPorDia[idx].map(cita => (
                     <div
                       key={cita.id_cita}
                       className="event-card"
-                      style={{
-                        ...calcularEstiloCita(cita),
-                        backgroundColor:
-                          cita.color || "rgba(47,128,237,0.3)"
-                      }}
+                      style={calcularEstiloCita(cita)}
                     >
                       <strong>{cita.titulo}</strong>
                       <div>
