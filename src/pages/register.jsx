@@ -57,7 +57,7 @@ export default function Register() {
       const fileName = `${Date.now()}-${file.name}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("logotipos") // ✅ NOMBRE CORRECTO
+        .from("logo") // ✅ NOMBRE CORRECTO
         .upload(fileName, file);
 
       if (uploadError) {
@@ -66,7 +66,7 @@ export default function Register() {
       }
 
       const { data } = supabase.storage
-        .from("logotipos")
+        .from("logo")
         .getPublicUrl(fileName);
 
       return data.publicUrl;
