@@ -3,8 +3,9 @@ import { FaTimes, FaSave, FaTrash } from 'react-icons/fa';
 import './modalCita.css';
 
 const coloresDisponibles = [
-  '#ffe4e6', '#ffedd5', '#fef9c3', '#bbf7d0',
-  '#dcfce7', '#e0f2fe', '#b3e5fc', '#ede9fe', '#fce7f3','#f1aed4'
+  '#f16b74', '#56fa47', '#f58225', '#bbf7d0','#def31f','#00fca8',
+  '#47f183', '#58b4f1', '#3dc2ff', '#5e3aff', '#e42591','#f3343e',
+  '#14f5bd', '#f9a825', '#4caf50', '#2196f3', '#9c27b0', '#00bcd4'
 ];
 
 function convertirA24h(hora) {
