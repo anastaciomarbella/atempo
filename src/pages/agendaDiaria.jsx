@@ -4,12 +4,18 @@ import ModalCita from "../components/modalCita/modalCita";
 import { API_URL } from "../config";
 
 const AgendaDiaria = () => {
+  // 🔹 Fecha actual
   const [fechaActual, setFechaActual] = useState(new Date());
+
+  // 🔹 Datos
   const [citas, setCitas] = useState([]);
   const [personas, setPersonas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
+
+  // 🔹 Usuario logueado
+  const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
 
   // 🔹 Cargar personas
   useEffect(() => {
@@ -25,7 +31,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
-  // 🔹 Cargar citas del día seleccionado
+  // 🔹 Cargar citas del día y del usuario logueado
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -38,8 +44,11 @@ const AgendaDiaria = () => {
 
       const fechaSeleccionada = fechaActual.toISOString().split("T")[0];
 
+      // 🔹 Filtrar por fecha y usuario
       data = data.filter(
-        (c) => c.fecha?.split("T")[0] === fechaSeleccionada
+        (c) =>
+          c.fecha?.split("T")[0] === fechaSeleccionada &&
+          c.id_usuario === usuarioLogueado.id_usuario
       );
 
       setCitas(data);
@@ -77,6 +86,9 @@ const AgendaDiaria = () => {
           </span>
           <button onClick={() => cambiarDia(1)}>▶</button>
         </div>
+        <button onClick={() => setMostrarModal(true)} className="btn-agregar">
+          Agregar Cita
+        </button>
       </div>
 
       {loading && <div className="loading">Cargando citas...</div>}
@@ -96,19 +108,22 @@ const AgendaDiaria = () => {
             }}
           >
             <h3>{c.titulo}</h3>
-
-            <p><strong>Cliente:</strong> {c.nombre_cliente}</p>
-
-            <p><strong>Horario:</strong> 
-              {c.hora_inicio?.slice(0,5)} - {c.hora_final?.slice(0,5)}
+            <p>
+              <strong>Cliente:</strong> {c.nombre_cliente}
             </p>
-
+            <p>
+              <strong>Horario:</strong> {c.hora_inicio?.slice(0, 5)} -{" "}
+              {c.hora_final?.slice(0, 5)}
+            </p>
             {c.descripcion && (
-              <p><strong>Descripción:</strong> {c.descripcion}</p>
+              <p>
+                <strong>Descripción:</strong> {c.descripcion}
+              </p>
             )}
-
             {c.telefono && (
-              <p><strong>Teléfono:</strong> {c.telefono}</p>
+              <p>
+                <strong>Teléfono:</strong> {c.telefono}
+              </p>
             )}
           </div>
         ))}
