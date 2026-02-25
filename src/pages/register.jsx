@@ -51,35 +51,42 @@ export default function Register() {
     setVerPassword(false);
   };
 
-  // 🔥 SUBIR A SUPABASE
+  // 🔥 SUBIR A SUPABASE (CORREGIDO)
   const subirLogoASupabase = async (file) => {
-    const fileName = `${Date.now()}-${file.name}`;
+    try {
+      const fileName = `${Date.now()}-${file.name}`;
 
-    const { error } = await supabase.storage
-      .from("logos")
-      .upload(fileName, file);
+      const { error: uploadError } = await supabase.storage
+        .from("logotipos") // ✅ NOMBRE CORRECTO
+        .upload(fileName, file);
 
-    if (error) {
-      console.error("Error subiendo logo:", error);
+      if (uploadError) {
+        console.error("Error subiendo logo:", uploadError);
+        return null;
+      }
+
+      const { data } = supabase.storage
+        .from("logotipos")
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+
+    } catch (error) {
+      console.error("Error inesperado:", error);
       return null;
     }
-
-    const { data } = supabase.storage
-      .from("logos")
-      .getPublicUrl(fileName);
-
-    return data.publicUrl;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+
     setLoading(true);
 
     try {
       let logoUrl = null;
 
-      // 👇 Subimos primero a Supabase
+      // 1️⃣ Subir logo primero
       if (logoEmpresa) {
         logoUrl = await subirLogoASupabase(logoEmpresa);
 
@@ -94,7 +101,7 @@ export default function Register() {
         }
       }
 
-      // 👇 Ahora mandamos JSON al backend
+      // 2️⃣ Enviar datos al backend
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/register",
         {
@@ -121,6 +128,7 @@ export default function Register() {
           title: "Error",
           text: data.message || "Error en registro",
         });
+        setLoading(false);
         return;
       }
 
@@ -178,9 +186,6 @@ export default function Register() {
               onChange={handleLogoChange}
               required
             />
-            <label className="floating-label-text">
-              Subir logo
-            </label>
           </div>
 
           <div className="input-group">
