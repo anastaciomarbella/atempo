@@ -8,7 +8,6 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { API_URL } from "../../config";
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
@@ -25,20 +24,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
 
-        let logoFinal = null;
-
-        if (parsedUser.logo_url) {
-          // 🔥 Si viene con http lo convertimos a https
-          if (parsedUser.logo_url.startsWith("http")) {
-            logoFinal = parsedUser.logo_url.replace("http://", "https://");
-          } else {
-            logoFinal = `${API_URL}/${parsedUser.logo_url}`;
-          }
-        }
-
         setUser({
           empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
-          empresaLogo: logoFinal,
+          empresaLogo: parsedUser.logo_url || null,
         });
 
       } catch (error) {
@@ -62,10 +50,14 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
             src={user.empresaLogo}
             alt="Logo empresa"
             className="logo"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = "none";
+            }}
           />
         ) : (
           <div className="logo-placeholder">
-            {user.empresaNombre.charAt(0)}
+            {user.empresaNombre.charAt(0).toUpperCase()}
           </div>
         )}
 
