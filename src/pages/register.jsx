@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { supabase } from "../supabaseClient";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -50,28 +51,65 @@ export default function Register() {
     setVerPassword(false);
   };
 
+  // 🔥 SUBIR A SUPABASE
+  const subirLogoASupabase = async (file) => {
+    const fileName = `${Date.now()}-${file.name}`;
+
+    const { error } = await supabase.storage
+      .from("logos")
+      .upload(fileName, file);
+
+    if (error) {
+      console.error("Error subiendo logo:", error);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from("logos")
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("nombre", form.nombre);
-      formData.append("nombreEmpresa", form.nombreEmpresa);
-      formData.append("correo", form.correo);
-      formData.append("telefono", form.telefono);
-      formData.append("password", form.password);
+      let logoUrl = null;
 
+      // 👇 Subimos primero a Supabase
       if (logoEmpresa) {
-        formData.append("logo", logoEmpresa);
+        logoUrl = await subirLogoASupabase(logoEmpresa);
+
+        if (!logoUrl) {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo subir el logo",
+          });
+          setLoading(false);
+          return;
+        }
       }
 
+      // 👇 Ahora mandamos JSON al backend
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/register",
         {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            nombre: form.nombre,
+            nombreEmpresa: form.nombreEmpresa,
+            correo: form.correo,
+            telefono: form.telefono,
+            password: form.password,
+            logo_url: logoUrl,
+          }),
         }
       );
 
@@ -131,7 +169,6 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} autoComplete="off">
 
-          {/* LOGO como los demás inputs */}
           <div className="input-group">
             <input
               type="file"
@@ -146,7 +183,6 @@ export default function Register() {
             </label>
           </div>
 
-          {/* NOMBRE COMPLETO */}
           <div className="input-group">
             <input
               type="text"
@@ -162,7 +198,6 @@ export default function Register() {
             </label>
           </div>
 
-          {/* NOMBRE EMPRESA */}
           <div className="input-group">
             <input
               type="text"
@@ -178,7 +213,6 @@ export default function Register() {
             </label>
           </div>
 
-          {/* CORREO */}
           <div className="input-group">
             <input
               type="email"
@@ -194,7 +228,6 @@ export default function Register() {
             </label>
           </div>
 
-          {/* TELEFONO */}
           <div className="input-group">
             <input
               type="tel"
@@ -210,7 +243,6 @@ export default function Register() {
             </label>
           </div>
 
-          {/* PASSWORD */}
           <div className="input-group password-group">
             <input
               type={verPassword ? "text" : "password"}

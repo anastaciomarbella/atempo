@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@supabase/supabase-js": "^2.95.3",
+    "@supabase/supabase-js": "^2.97.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/user-event": "^13.5.0",
     "react": "^19.1.0",
