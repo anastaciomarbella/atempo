@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './modalNuevoEmpleado.css';
-import { FaTimes, FaUpload, FaSave } from 'react-icons/fa';
-import avatar from '../../assets/avatar.png';
+import { FaTimes, FaSave } from 'react-icons/fa';
 
 const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
   const [nombre, setNombre] = useState('');
@@ -34,9 +33,8 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
 
       setMensaje('✅ Empleado registrado correctamente');
 
-      // Notifica al componente padre que se creó un nuevo empleado
       setTimeout(() => {
-        onEmpleadoCreado(); // 🔁 Actualiza la lista y cierra el modal
+        onEmpleadoCreado();
       }, 1000);
 
     } catch (err) {
@@ -52,12 +50,8 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
         <button className="cerrar-modal" onClick={onClose}>
           <FaTimes />
         </button>
+
         <h2 className="titulo-modal">Nuevo empleado</h2>
-        <img src={avatar} alt="Avatar empleado" className="avatar-modal" />
-        <button className="btn-cargar-foto">
-          <FaUpload className="icono-upload" />
-          Cargar foto
-        </button>
 
         <div className="formulario-modal">
           <label>Nombre *</label>

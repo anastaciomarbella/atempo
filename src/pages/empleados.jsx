@@ -6,21 +6,26 @@ import ModalUpdateEmpleado from '../components/modalUpdateEmpleado/modalUpdateEm
 import ModalConfirmacionEliminar from '../components/modalConfirmar/modalConfirmarDelete';
 
 const Empleados = () => {
+    const [empleados, setEmpleados] = useState([]);
     const [mostrarModal, setMostrarModal] = useState(false);
     const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
     const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
-
-    const [empleados, setEmpleados] = useState([]);
     const [empleadoEditar, setEmpleadoEditar] = useState(null);
     const [empleadoAEliminar, setEmpleadoAEliminar] = useState(null);
 
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+    const API_URL = "https://mi-api-atempo.onrender.com";
 
     const cargarEmpleados = async () => {
         try {
             const res = await fetch(`${API_URL}/api/personas`);
+            if (!res.ok) throw new Error("Error al obtener empleados");
+
             const data = await res.json();
-            setEmpleados(data);
+
+            // 🔥 Esto cubre ambos casos: array directo o { data: [...] }
+            const lista = Array.isArray(data) ? data : data.data;
+
+            setEmpleados(lista || []);
         } catch (error) {
             console.error('Error al cargar empleados:', error);
         }
@@ -28,15 +33,14 @@ const Empleados = () => {
 
     useEffect(() => {
         cargarEmpleados();
-    }, [API_URL]);
+    }, []);
 
     const handleEditarClick = async (id) => {
         try {
             const res = await fetch(`${API_URL}/api/personas/${id}`);
+            if (!res.ok) throw new Error("No se pudo obtener el empleado");
+
             const data = await res.json();
-
-            if (!res.ok) throw new Error(data.message || 'No se pudo obtener el empleado');
-
             setEmpleadoEditar(data);
             setMostrarModalEditar(true);
         } catch (error) {
@@ -44,30 +48,17 @@ const Empleados = () => {
         }
     };
 
-    const handleEmpleadoCreado = () => {
-        setMostrarModal(false);
-        cargarEmpleados();
-    };
-
-    const handleEmpleadoActualizado = () => {
-        setMostrarModalEditar(false);
-        cargarEmpleados();
-    };
-
-    const handleEliminarClick = (empleado) => {
-        setEmpleadoAEliminar(empleado);
-        setMostrarConfirmacion(true);
-    };
-
     const eliminarEmpleado = async () => {
         if (!empleadoAEliminar) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/personas/${empleadoAEliminar.id}`, {
+            const id = empleadoAEliminar.id || empleadoAEliminar._id;
+
+            const res = await fetch(`${API_URL}/api/personas/${id}`, {
                 method: 'DELETE',
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Error al eliminar');
+
+            if (!res.ok) throw new Error("Error al eliminar");
 
             setMostrarConfirmacion(false);
             setEmpleadoAEliminar(null);
@@ -85,7 +76,7 @@ const Empleados = () => {
                     className="nuevo-empleado-btn" 
                     onClick={() => setMostrarModal(true)}
                 >
-                    Nuevo empleado <FaUserPlus className="icono-btn" />
+                    Nuevo empleado <FaUserPlus />
                 </button>
             </div>
 
@@ -99,32 +90,50 @@ const Empleados = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {empleados.map((emp) => (
-                        <tr key={emp.id}>
-                            <td>{emp.nombre}</td>
-                            <td>{emp.email}</td>
-                            <td>{emp.telefono}</td>
-                            <td>
-                                <FaEdit
-                                    className="icono-editar"
-                                    onClick={() => handleEditarClick(emp.id)}
-                                    style={{ cursor: 'pointer' }}
-                                />
-                                <FaTrash
-                                    className="icono-borrar"
-                                    onClick={() => handleEliminarClick(emp)}
-                                    style={{ cursor: 'pointer' }}
-                                />
+                    {empleados.length === 0 ? (
+                        <tr>
+                            <td colSpan="4" style={{ textAlign: "center" }}>
+                                No hay empleados registrados
                             </td>
                         </tr>
-                    ))}
+                    ) : (
+                        empleados.map((emp) => {
+                            const id = emp.id || emp._id;
+
+                            return (
+                                <tr key={id}>
+                                    <td>{emp.nombre}</td>
+                                    <td>{emp.email}</td>
+                                    <td>{emp.telefono}</td>
+                                    <td>
+                                        <FaEdit
+                                            className="icono-editar"
+                                            onClick={() => handleEditarClick(id)}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                        <FaTrash
+                                            className="icono-borrar"
+                                            onClick={() => {
+                                                setEmpleadoAEliminar(emp);
+                                                setMostrarConfirmacion(true);
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    )}
                 </tbody>
             </table>
 
             {mostrarModal && (
                 <ModalNuevoEmpleado
                     onClose={() => setMostrarModal(false)}
-                    onEmpleadoCreado={handleEmpleadoCreado}
+                    onEmpleadoCreado={() => {
+                        setMostrarModal(false);
+                        cargarEmpleados();
+                    }}
                 />
             )}
 
@@ -132,7 +141,10 @@ const Empleados = () => {
                 <ModalUpdateEmpleado
                     empleado={empleadoEditar}
                     onClose={() => setMostrarModalEditar(false)}
-                    onEmpleadoActualizado={handleEmpleadoActualizado}
+                    onEmpleadoActualizado={() => {
+                        setMostrarModalEditar(false);
+                        cargarEmpleados();
+                    }}
                 />
             )}
 
