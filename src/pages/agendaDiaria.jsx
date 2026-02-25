@@ -3,16 +3,6 @@ import "../styles/agendaDiaria.css";
 import ModalCita from "../components/modalCita/modalCita";
 import { API_URL } from "../config";
 
-const DIAS_SEMANA = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo",
-];
-
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
@@ -21,6 +11,7 @@ const AgendaDiaria = () => {
   const [error, setError] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
 
+  // 🔹 Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -34,6 +25,7 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
+  // 🔹 Cargar citas del día seleccionado
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -44,16 +36,11 @@ const AgendaDiaria = () => {
 
       if (!Array.isArray(data)) data = [];
 
-      const mes = fechaActual.getMonth();
-      const año = fechaActual.getFullYear();
+      const fechaSeleccionada = fechaActual.toISOString().split("T")[0];
 
-      data = data.filter((c) => {
-        const f = new Date(c.fecha);
-        return (
-          f.getMonth() === mes &&
-          f.getFullYear() === año
-        );
-      });
+      data = data.filter(
+        (c) => c.fecha?.split("T")[0] === fechaSeleccionada
+      );
 
       setCitas(data);
     } catch (err) {
@@ -68,82 +55,63 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
-  const diasDelMes = () => {
-    const fin = new Date(
-      fechaActual.getFullYear(),
-      fechaActual.getMonth() + 1,
-      0
-    );
-
-    return Array.from(
-      { length: fin.getDate() },
-      (_, i) => i + 1
-    );
-  };
-
-  const cambiarMes = (delta) => {
+  // 🔹 Cambiar día
+  const cambiarDia = (delta) => {
     const nueva = new Date(fechaActual);
-    nueva.setMonth(nueva.getMonth() + delta);
+    nueva.setDate(nueva.getDate() + delta);
     setFechaActual(nueva);
   };
 
   return (
     <main className="calendar-container">
       <div className="top-bar">
-        <div className="month-nav">
-          <button onClick={() => cambiarMes(-1)}>◀</button>
-          <span className="month-title">
+        <div className="day-nav">
+          <button onClick={() => cambiarDia(-1)}>◀</button>
+          <span className="day-title">
             {fechaActual.toLocaleDateString("es-MX", {
+              weekday: "long",
+              day: "numeric",
               month: "long",
               year: "numeric",
             })}
           </span>
-          <button onClick={() => cambiarMes(1)}>▶</button>
+          <button onClick={() => cambiarDia(1)}>▶</button>
         </div>
       </div>
 
       {loading && <div className="loading">Cargando citas...</div>}
       {error && <div className="error-banner">{error}</div>}
 
-      <div className="calendar-grid headers">
-        {DIAS_SEMANA.map((d) => (
-          <div key={d} className="day-header">
-            {d}
+      <div className="day-container">
+        {citas.length === 0 && !loading && (
+          <div className="no-events">No hay citas para este día</div>
+        )}
+
+        {citas.map((c) => (
+          <div
+            key={c.id_cita}
+            className="event-card"
+            style={{
+              backgroundColor: c.color || "#cfe2ff",
+            }}
+          >
+            <h3>{c.titulo}</h3>
+
+            <p><strong>Cliente:</strong> {c.nombre_cliente}</p>
+
+            <p><strong>Horario:</strong> 
+              {c.hora_inicio?.slice(0,5)} - {c.hora_final?.slice(0,5)}
+            </p>
+
+            {c.descripcion && (
+              <p><strong>Descripción:</strong> {c.descripcion}</p>
+            )}
+
+            {c.telefono && (
+              <p><strong>Teléfono:</strong> {c.telefono}</p>
+            )}
           </div>
         ))}
-      </div>
-
-      <div className="calendar-grid body">
-        {diasDelMes().map((day) => {
-          const citasDelDia = citas.filter(
-            (c) => new Date(c.fecha).getDate() === day
-          );
-
-          return (
-            <div key={day} className="day-cell">
-              <span className="day-number">{day}</span>
-
-              {citasDelDia.map((c) => (
-                <div
-                  key={c.id_cita}
-                  className="event-card"
-                  style={{
-                    backgroundColor: c.color || "#cfe2ff",
-                  }}
-                >
-                  <strong>{c.nombre_cliente}</strong>
-                  <div className="titulo-cita">
-                    {c.titulo}
-                  </div>
-                  <small>
-                    {c.hora_inicio?.slice(0, 5)} -{" "}
-                    {c.hora_final?.slice(0, 5)}
-                  </small>
-                </div>
-              ))}
-            </div>
-          );
-        })}
       </div>
 
       {mostrarModal && (
