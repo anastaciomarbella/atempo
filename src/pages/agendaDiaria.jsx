@@ -4,20 +4,15 @@ import ModalCita from "../components/modalCita/modalCita";
 import { API_URL } from "../config";
 
 const AgendaDiaria = () => {
-  // 🔹 Fecha actual
   const [fechaActual, setFechaActual] = useState(new Date());
-
-  // 🔹 Datos
   const [citas, setCitas] = useState([]);
   const [personas, setPersonas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mostrarModal, setMostrarModal] = useState(false);
 
-  // 🔹 Usuario logueado
   const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // 🔹 Cargar personas
+  // Cargar personas
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -31,20 +26,18 @@ const AgendaDiaria = () => {
     fetchPersonas();
   }, []);
 
-  // 🔹 Cargar citas del día y del usuario logueado
+  // Cargar citas del usuario y del día
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const res = await fetch(`${API_URL}/api/citas`);
       let data = await res.json();
-
       if (!Array.isArray(data)) data = [];
 
       const fechaSeleccionada = fechaActual.toISOString().split("T")[0];
 
-      // 🔹 Filtrar por fecha y usuario
+      // Filtrar por fecha y usuario
       data = data.filter(
         (c) =>
           c.fecha?.split("T")[0] === fechaSeleccionada &&
@@ -56,7 +49,6 @@ const AgendaDiaria = () => {
       console.error("Error citas:", err);
       setError("No se pudieron cargar las citas.");
     }
-
     setLoading(false);
   };
 
@@ -64,12 +56,14 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
-  // 🔹 Cambiar día
   const cambiarDia = (delta) => {
     const nueva = new Date(fechaActual);
     nueva.setDate(nueva.getDate() + delta);
     setFechaActual(nueva);
   };
+
+  // 🔹 Para que la cuadrícula siempre tenga 6 cuadros por ejemplo
+  const cuadriculaVacia = Array.from({ length: 6 }, (_, i) => i);
 
   return (
     <main className="calendar-container">
@@ -86,26 +80,23 @@ const AgendaDiaria = () => {
           </span>
           <button onClick={() => cambiarDia(1)}>▶</button>
         </div>
-        {/** 🔹 Botón eliminado */}
       </div>
 
       {loading && <div className="loading">Cargando citas...</div>}
       {error && <div className="error-banner">{error}</div>}
 
       <div className="day-container">
-        {/* 🔹 Mensaje cuando no hay citas */}
-        {citas.length === 0 && !loading && (
-          <div className="no-events">No hay citas para este día</div>
-        )}
+        {/* Renderizar siempre la cuadrícula vacía */}
+        {cuadriculaVacia.map((_, idx) => (
+          <div key={idx} className="event-card placeholder"></div>
+        ))}
 
-        {/* 🔹 Renderizar citas grandes en la cuadrícula */}
+        {/* Renderizar las citas sobre los cuadros */}
         {citas.map((c) => (
           <div
             key={c.id_cita}
             className="event-card"
-            style={{
-              backgroundColor: c.color || "#cfe2ff",
-            }}
+            style={{ backgroundColor: c.color || "#cfe2ff" }}
           >
             <h3>{c.titulo}</h3>
             <p>
@@ -127,19 +118,12 @@ const AgendaDiaria = () => {
             )}
           </div>
         ))}
-      </div>
 
-      {/** 🔹 Modal opcional, si quieres mantenerlo */}
-      {mostrarModal && (
-        <ModalCita
-          personas={personas}
-          onClose={() => setMostrarModal(false)}
-          onSave={() => {
-            setMostrarModal(false);
-            fetchCitas();
-          }}
-        />
-      )}
+        {/* Mensaje si no hay citas */}
+        {citas.length === 0 && !loading && (
+          <div className="no-events">No hay citas para este día</div>
+        )}
+      </div>
     </main>
   );
 };
