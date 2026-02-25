@@ -20,7 +20,7 @@
 ========================= */
 
 .login-card {
-  background-color: rgba(255, 255, 255, 0.95); /* ligera transparencia */
+  background-color: rgba(194, 255, 255, 0.95); /* ligera transparencia */
   backdrop-filter: blur(4px); /* efecto vidrio sutil */
   padding: 2rem;
   border-radius: 16px;
