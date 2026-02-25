@@ -71,9 +71,6 @@ const AgendaDiaria = () => {
     setFechaActual(nueva);
   };
 
-  // 🔹 Generar la grilla de horas (puedes ajustar a tu necesidad)
-  const horasDia = Array.from({ length: 24 }, (_, i) => i);
-
   return (
     <main className="calendar-container">
       <div className="top-bar">
@@ -89,28 +86,19 @@ const AgendaDiaria = () => {
           </span>
           <button onClick={() => cambiarDia(1)}>▶</button>
         </div>
-        <button onClick={() => setMostrarModal(true)} className="btn-agregar">
-          Agregar Cita
-        </button>
+        {/** 🔹 Botón eliminado */}
       </div>
 
       {loading && <div className="loading">Cargando citas...</div>}
       {error && <div className="error-banner">{error}</div>}
 
       <div className="day-container">
-        {/* 🔹 Cuadrícula de horas siempre visible */}
-        {horasDia.map((hora) => (
-          <div key={hora} className="hour-slot">
-            <span className="hour-label">{hora}:00</span>
-          </div>
-        ))}
-
         {/* 🔹 Mensaje cuando no hay citas */}
         {citas.length === 0 && !loading && (
-          <div className="no-events-overlay">No hay citas para este día</div>
+          <div className="no-events">No hay citas para este día</div>
         )}
 
-        {/* 🔹 Renderizar citas */}
+        {/* 🔹 Renderizar citas grandes en la cuadrícula */}
         {citas.map((c) => (
           <div
             key={c.id_cita}
@@ -141,7 +129,7 @@ const AgendaDiaria = () => {
         ))}
       </div>
 
-      {/* 🔹 Modal para agregar / editar citas */}
+      {/** 🔹 Modal opcional, si quieres mantenerlo */}
       {mostrarModal && (
         <ModalCita
           personas={personas}
