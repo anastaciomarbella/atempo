@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
@@ -8,45 +8,26 @@ const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("token");
 
   // ==============================
-  // Fetch citas del usuario
+  // Obtener citas
   // ==============================
   const fetchCitas = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
-      if (!usuarioLogueado?.id_usuario || !token) {
-        setCitas([]);
-        setLoading(false);
-        return;
-      }
+      setLoading(true);
 
       const res = await fetch(`${API_URL}/api/citas`, {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!res.ok) {
-        setError("No se pudieron cargar las citas.");
-        setLoading(false);
-        return;
-      }
+      const data = await res.json();
+      if (!Array.isArray(data)) return setCitas([]);
 
-      let data = await res.json();
-      if (!Array.isArray(data)) data = [];
-
-      // ✅ Filtrar solo citas del usuario
-      const citasUsuario = data.filter(c => c.id_usuario === usuarioLogueado.id_usuario);
-
-      // ✅ Filtrar solo las de la fecha actual
-      const citasHoy = citasUsuario.filter(c => {
+      const citasDelDia = data.filter(c => {
         const f = new Date(c.fecha);
         return (
           f.getFullYear() === fechaActual.getFullYear() &&
@@ -55,11 +36,10 @@ const AgendaDiaria = () => {
         );
       });
 
-      setCitas(citasHoy);
-
+      setCitas(citasDelDia);
     } catch (err) {
-      console.error("Error fetch citas:", err);
-      setError("No se pudieron cargar las citas.");
+      console.error("Error cargando citas:", err);
+      setCitas([]);
     } finally {
       setLoading(false);
     }
@@ -70,77 +50,61 @@ const AgendaDiaria = () => {
   }, [fechaActual]);
 
   // ==============================
-  // Cambiar día
+  // Navegación de días
   // ==============================
-  const cambiarDia = (delta) => {
+  const cambiarDia = delta => {
     const nueva = new Date(fechaActual);
     nueva.setDate(nueva.getDate() + delta);
     setFechaActual(nueva);
   };
 
-  // ==============================
-  // Convertir hora a posición vertical
-  // ==============================
-  const convertirAHoras = (hora) => {
-    const [h, m] = hora.split(":").map(Number);
-    return h + m / 60;
-  };
-
-  const calcularEstiloCita = (cita) => {
-    const inicio = convertirAHoras(cita.hora_inicio);
-    const fin = convertirAHoras(cita.hora_final);
-
-    return {
-      position: "absolute",
-      top: `${(inicio - 7) * 60}px`, // 7am es top=0
-      height: `${(fin - inicio) * 60}px`,
-      width: "95%",
-      left: "2.5%",
-      backgroundColor: cita.color || "rgba(47,128,237,0.3)",
-      borderRadius: "6px",
-      padding: "4px",
-      cursor: "pointer",
-    };
-  };
-
   return (
     <main className="calendar-container">
-      {/* ============================== */}
       {/* Barra superior */}
-      {/* ============================== */}
       <div className="top-bar">
         <button onClick={() => cambiarDia(-1)}>◀</button>
-        <span className="day-title">
-          {fechaActual.toLocaleDateString("es-MX", { 
-            weekday: "long", day: "numeric", month: "long", year: "numeric" 
-          })}
-        </span>
-        <button onClick={() => cambiarDia(1)}>▶</button>
 
-        {usuarioLogueado?.nombre_empresa && (
-          <div className="empresa-info">
-            Empresa: {usuarioLogueado.nombre_empresa}
-          </div>
-        )}
+        <strong>
+          {fechaActual.toLocaleDateString("es-MX", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </strong>
+
+        <button onClick={() => cambiarDia(1)}>▶</button>
       </div>
 
-      {loading && <div className="loading">Cargando citas...</div>}
-      {error && <div className="error-banner">{error}</div>}
+      {loading && <p>Cargando citas...</p>}
 
-      {/* ============================== */}
-      {/* Grilla horaria */}
-      {/* ============================== */}
-      <div className="day-grid">
+      {/* Agenda diaria */}
+      <div>
         {HORAS_DIA.map(hora => (
-          <div key={hora} className="hour-cell" style={{ position: "relative" }}>
-            <div className="hour-label">{hora}:00</div>
+          <div key={hora} className="hour-cell">
+            <div style={{ fontSize: 12, color: "#666" }}>
+              {hora}:00
+            </div>
 
-            {citas.map(cita => (
-              <div key={cita.id_cita} className="event-card" style={calcularEstiloCita(cita)}>
-                <strong>{cita.titulo}</strong>
-                <div>{cita.hora_inicio.slice(0,5)} - {cita.hora_final.slice(0,5)}</div>
-              </div>
-            ))}
+            {citas
+              .filter(c => parseInt(c.hora_inicio.split(":")[0]) === hora)
+              .map(cita => (
+                <div
+                  key={cita.id_cita}
+                  className="event-card"
+                  style={{ backgroundColor: cita.color || "#cfe2ff" }}
+                >
+                  <strong>{cita.titulo}</strong>
+                  <div style={{ fontSize: 11 }}>
+                    {cita.hora_inicio.slice(0, 5)} – {cita.hora_final.slice(0, 5)}
+                  </div>
+                  {cita.nombre_cliente && (
+                    <div style={{ fontSize: 11 }}>
+                      {cita.nombre_cliente}
+                    </div>
+                  )}
+                </div>
+              ))}
           </div>
         ))}
       </div>
