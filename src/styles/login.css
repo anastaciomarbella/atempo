@@ -269,3 +269,12 @@
     font-size: 14px;
   }
 }
+.login-error {
+  background: #ffe5e5;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+}

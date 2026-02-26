@@ -7,6 +7,7 @@ import "../styles/login.css";
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const initialForm = {
     correo: "",
@@ -20,6 +21,7 @@ export default function Login() {
       ...form,
       [e.target.name]: e.target.value,
     });
+    setError("");
   };
 
   const limpiarFormulario = () => {
@@ -30,11 +32,12 @@ export default function Login() {
     e.preventDefault();
 
     if (!form.correo || !form.password) {
-      alert("Todos los campos son obligatorios");
+      setError("Todos los campos son obligatorios");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -51,24 +54,27 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data?.message || "Correo o contraseña incorrectos");
+        setError(data?.message || "Correo o contraseña incorrectos");
         return;
       }
 
       if (!data.token) {
-        alert("El servidor no devolvió token");
+        setError("El servidor no devolvió token");
         return;
       }
 
+      // Guardar sesión
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.usuario));
 
       limpiarFormulario();
+
+      // Redirigir
       navigate("/agenda-diaria");
 
     } catch (error) {
       console.error("Error login:", error);
-      alert("No se pudo conectar con el servidor");
+      setError("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
     }
@@ -126,6 +132,12 @@ export default function Login() {
               Contraseña
             </label>
           </div>
+
+          {error && (
+            <div className="login-error">
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
