@@ -13,6 +13,9 @@ const AgendaDiaria = () => {
   const usuarioLogueado = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("token");
 
+  // ==============================
+  // Fetch citas del usuario
+  // ==============================
   const fetchCitas = async () => {
     setLoading(true);
     setError(null);
@@ -39,10 +42,10 @@ const AgendaDiaria = () => {
       let data = await res.json();
       if (!Array.isArray(data)) data = [];
 
-      // Filtrar solo las citas del usuario
+      // ✅ Filtrar solo citas del usuario
       const citasUsuario = data.filter(c => c.id_usuario === usuarioLogueado.id_usuario);
 
-      // Filtrar solo las de la fecha actual
+      // ✅ Filtrar solo las de la fecha actual
       const citasHoy = citasUsuario.filter(c => {
         const f = new Date(c.fecha);
         return (
@@ -66,12 +69,18 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
+  // ==============================
+  // Cambiar día
+  // ==============================
   const cambiarDia = (delta) => {
     const nueva = new Date(fechaActual);
     nueva.setDate(nueva.getDate() + delta);
     setFechaActual(nueva);
   };
 
+  // ==============================
+  // Convertir hora a posición vertical
+  // ==============================
   const convertirAHoras = (hora) => {
     const [h, m] = hora.split(":").map(Number);
     return h + m / 60;
@@ -83,25 +92,31 @@ const AgendaDiaria = () => {
 
     return {
       position: "absolute",
-      top: `${(inicio - 7) * 60}px`,
+      top: `${(inicio - 7) * 60}px`, // 7am es top=0
       height: `${(fin - inicio) * 60}px`,
       width: "95%",
       left: "2.5%",
       backgroundColor: cita.color || "rgba(47,128,237,0.3)",
       borderRadius: "6px",
       padding: "4px",
-      cursor: "pointer"
+      cursor: "pointer",
     };
   };
 
   return (
     <main className="calendar-container">
+      {/* ============================== */}
+      {/* Barra superior */}
+      {/* ============================== */}
       <div className="top-bar">
         <button onClick={() => cambiarDia(-1)}>◀</button>
         <span className="day-title">
-          {fechaActual.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          {fechaActual.toLocaleDateString("es-MX", { 
+            weekday: "long", day: "numeric", month: "long", year: "numeric" 
+          })}
         </span>
         <button onClick={() => cambiarDia(1)}>▶</button>
+
         {usuarioLogueado?.nombre_empresa && (
           <div className="empresa-info">
             Empresa: {usuarioLogueado.nombre_empresa}
@@ -112,10 +127,14 @@ const AgendaDiaria = () => {
       {loading && <div className="loading">Cargando citas...</div>}
       {error && <div className="error-banner">{error}</div>}
 
+      {/* ============================== */}
+      {/* Grilla horaria */}
+      {/* ============================== */}
       <div className="day-grid">
         {HORAS_DIA.map(hora => (
           <div key={hora} className="hour-cell" style={{ position: "relative" }}>
             <div className="hour-label">{hora}:00</div>
+
             {citas.map(cita => (
               <div key={cita.id_cita} className="event-card" style={calcularEstiloCita(cita)}>
                 <strong>{cita.titulo}</strong>
