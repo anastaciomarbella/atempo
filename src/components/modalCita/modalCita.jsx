@@ -21,7 +21,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   const [mensaje, setMensaje] = useState('');
 
   const [formulario, setFormulario] = useState({
-    id_cliente: null,      // ✅ CORRECTO
+    id_cliente: null,
     encargado: '',
     titulo: '',
     fecha: '',
@@ -48,7 +48,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   }, [token]);
 
   // =============================
-  // CARGAR DATOS AL EDITAR
+  // EDITAR
   // =============================
   useEffect(() => {
     if (modo === 'editar' && cita) {
@@ -84,6 +84,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     setMostrarListaEncargados(false);
   };
 
+  // =============================
+  // GUARDAR
+  // =============================
   const handleGuardar = async () => {
     if (
       !formulario.titulo ||
@@ -92,14 +95,14 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
       !formulario.end ||
       !formulario.id_cliente
     ) {
-      setMensaje('Todos los campos obligatorios deben completarse.');
+      setMensaje('Completa los campos obligatorios.');
       return;
     }
 
     setGuardando(true);
 
     const dataParaEnviar = {
-      id_cliente: formulario.id_cliente,   // ✅ CLAVE
+      id_cliente: formulario.id_cliente,
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio: convertirA24h(formulario.start),
@@ -125,18 +128,21 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
         body: JSON.stringify(dataParaEnviar)
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error();
 
       if (onSave) onSave();
       setMensaje('Cita guardada correctamente');
       setTimeout(onClose, 1200);
-    } catch (error) {
+    } catch {
       setMensaje('Error al guardar la cita');
     } finally {
       setGuardando(false);
     }
   };
 
+  // =============================
+  // ELIMINAR
+  // =============================
   const handleEliminar = async () => {
     if (!window.confirm('¿Eliminar esta cita?')) return;
 
@@ -156,59 +162,117 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     <>
       <div className="agendar-overlay visible" />
       <div className="agendar-modal">
-        <button onClick={onClose} className="agendar-cerrar-modal">
+        <button className="agendar-cerrar-modal" onClick={onClose}>
           <FaTimes />
         </button>
 
-        <h2>{modo === 'editar' ? 'Editar cita' : 'Agendar cita'}</h2>
+        <h2 className="agendar-titulo-modal">
+          {modo === 'editar' ? 'Detalles de la cita' : 'Agendar cita'}
+        </h2>
 
-        <input name="titulo" placeholder="Título *" value={formulario.titulo} onChange={handleChange} />
+        <div className="agendar-formulario">
 
-        <div className="dropdown-encargado">
-          <button onClick={() => setMostrarListaEncargados(!mostrarListaEncargados)}>
-            {formulario.encargado || 'Seleccionar encargado *'}
-          </button>
-          {mostrarListaEncargados && (
-            <ul>
-              {personas.map(p => (
-                <li key={p.id} onClick={() => handleEncargadoSelect(p)}>
-                  {p.nombre}
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* TÍTULO + ENCARGADO */}
+          <div className="agendar-fila">
+            <div>
+              <label>Título *</label>
+              <input
+                name="titulo"
+                value={formulario.titulo}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label>Encargado *</label>
+              <div className="dropdown-encargado">
+                <button
+                  type="button"
+                  className="dropdown-boton"
+                  onClick={() => setMostrarListaEncargados(!mostrarListaEncargados)}
+                >
+                  {formulario.encargado || 'Seleccionar'}
+                </button>
+
+                {mostrarListaEncargados && (
+                  <ul className="dropdown-lista">
+                    {personas.map(p => (
+                      <li key={p.id} onClick={() => handleEncargadoSelect(p)}>
+                        {p.nombre}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* FECHA + HORAS */}
+          <div className="agendar-fila">
+            <div>
+              <label>Fecha *</label>
+              <input type="date" name="fecha" value={formulario.fecha} onChange={handleChange} />
+            </div>
+
+            <div>
+              <label>Hora *</label>
+              <div className="agendar-horario">
+                <input type="time" name="start" value={formulario.start} onChange={handleChange} />
+                <span>a</span>
+                <input type="time" name="end" value={formulario.end} onChange={handleChange} />
+              </div>
+            </div>
+          </div>
+
+          {/* CLIENTE */}
+          <div className="agendar-fila">
+            <div>
+              <label>Cliente</label>
+              <input name="client" value={formulario.client} onChange={handleChange} />
+            </div>
+
+            <div>
+              <label>Teléfono</label>
+              <input name="clientPhone" value={formulario.clientPhone} onChange={handleChange} />
+            </div>
+          </div>
+
+          {/* COMENTARIO */}
+          <div className="agendar-fila">
+            <div style={{ gridColumn: 'span 2' }}>
+              <label>Comentario</label>
+              <input name="comentario" value={formulario.comentario} onChange={handleChange} />
+            </div>
+          </div>
+
+          {/* COLORES */}
+          <label>Color</label>
+          <div className="agendar-colores">
+            {coloresDisponibles.map(c => (
+              <span
+                key={c}
+                className={`agendar-color ${formulario.color === c ? 'seleccionado' : ''}`}
+                style={{ backgroundColor: c }}
+                onClick={() => setFormulario(prev => ({ ...prev, color: c }))}
+              />
+            ))}
+          </div>
+
+          {mensaje && <p className="mensaje">{mensaje}</p>}
+
+          <div className="agendar-botones">
+            <button className="agendar-btn-guardar" onClick={handleGuardar}>
+              <FaSave /> Guardar
+            </button>
+
+            {modo === 'editar' && (
+              <button className="agendar-btn-eliminar" onClick={handleEliminar}>
+                <FaTrash /> Eliminar
+              </button>
+            )}
+          </div>
+
         </div>
-
-        <input type="date" name="fecha" value={formulario.fecha} onChange={handleChange} />
-        <input type="time" name="start" value={formulario.start} onChange={handleChange} />
-        <input type="time" name="end" value={formulario.end} onChange={handleChange} />
-
-        <input name="client" placeholder="Cliente" value={formulario.client} onChange={handleChange} />
-        <input name="clientPhone" placeholder="Teléfono" value={formulario.clientPhone} onChange={handleChange} />
-        <input name="comentario" placeholder="Comentario" value={formulario.comentario} onChange={handleChange} />
-
-        <div className="agendar-colores">
-          {coloresDisponibles.map(c => (
-            <span
-              key={c}
-              style={{ background: c }}
-              className={formulario.color === c ? 'seleccionado' : ''}
-              onClick={() => setFormulario(prev => ({ ...prev, color: c }))}
-            />
-          ))}
-        </div>
-
-        {mensaje && <p className="mensaje">{mensaje}</p>}
-
-        <button onClick={handleGuardar} disabled={guardando}>
-          <FaSave /> Guardar
-        </button>
-
-        {modo === 'editar' && (
-          <button onClick={handleEliminar}>
-            <FaTrash /> Eliminar
-          </button>
-        )}
       </div>
     </>
   );
