@@ -17,9 +17,9 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   const [personas, setPersonas] = useState([]);
   const [mostrarListaEncargados, setMostrarListaEncargados] = useState(false);
   const [formulario, setFormulario] = useState({
-    id_persona: null,          // 👈 puede quedar null
+    id_persona: null,
     titulo: '',
-    encargado: '',             // solo para mostrar en UI
+    encargado: '',
     fecha: '',
     start: '',
     end: '',
@@ -31,15 +31,26 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  // === CARGAR PERSONAS ===
+  // 🔐 Obtener token
+  const token = localStorage.getItem("token");
+
+  // =============================
+  // CARGAR PERSONAS (CON TOKEN)
+  // =============================
   useEffect(() => {
-    fetch('https://mi-api-atempo.onrender.com/api/personas')
+    fetch('https://mi-api-atempo.onrender.com/api/personas', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(res => res.json())
       .then(data => setPersonas(Array.isArray(data) ? data : []))
       .catch(err => console.error('Error cargando personas:', err));
-  }, []);
+  }, [token]);
 
-  // === CARGAR DATOS AL EDITAR ===
+  // =============================
+  // CARGAR DATOS AL EDITAR
+  // =============================
   useEffect(() => {
     if (modo === 'editar' && cita && personas.length > 0) {
       const encargadoEncontrado = personas.find(p => p.id === cita.id_persona);
@@ -62,9 +73,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if ((name === 'start' || name === 'end') && mostrarListaEncargados) {
-      setMostrarListaEncargados(false);
-    }
     setFormulario(prev => ({ ...prev, [name]: value }));
     setMensaje('');
   };
@@ -73,18 +81,16 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     setFormulario(prev => ({ ...prev, color }));
   };
 
-  // === SELECCIONAR ENCARGADO (opcional) ===
   const handleEncargadoSelect = (persona) => {
     setFormulario(prev => ({
       ...prev,
-      id_persona: persona.id,   // si elige uno, se guarda
+      id_persona: persona.id,
       encargado: persona.nombre
     }));
     setMostrarListaEncargados(false);
     setMensaje('');
   };
 
-  // === LIMPIAR ENCARGADO (NUEVO) ===
   const quitarEncargado = () => {
     setFormulario(prev => ({
       ...prev,
@@ -94,10 +100,17 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     setMostrarListaEncargados(false);
   };
 
+  // =============================
+  // GUARDAR CITA (CON TOKEN)
+  // =============================
   const handleGuardar = async () => {
-    // ❌ YA NO EXIGIMOS ENCARGADO
     if (!formulario.titulo || !formulario.fecha || !formulario.start || !formulario.end) {
       setMensaje('Por favor completa los campos obligatorios.');
+      return;
+    }
+
+    if (!token) {
+      setMensaje('Sesión expirada. Inicia sesión nuevamente.');
       return;
     }
 
@@ -108,7 +121,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     const hora_final = convertirA24h(formulario.end);
 
     const dataParaEnviar = {
-      id_persona: formulario.id_persona || null, // 👈 CLAVE: puede ir vacío
+      id_persona: formulario.id_persona || null,
       titulo: formulario.titulo,
       fecha: formulario.fecha,
       hora_inicio,
@@ -126,7 +139,10 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
       const res = await fetch(url, {
         method: modo === 'editar' ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(dataParaEnviar)
       });
 
@@ -144,6 +160,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
       setMensaje('Tu cita ha sido guardada exitosamente.');
       setTimeout(() => onClose(), 1500);
+
     } catch (error) {
       setMensaje('Error al guardar la cita: ' + error.message);
       console.error(error);
@@ -152,13 +169,26 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
     }
   };
 
+  // =============================
+  // ELIMINAR CITA (CON TOKEN)
+  // =============================
   const handleEliminar = async () => {
     if (!window.confirm('¿Seguro que quieres eliminar esta cita?')) return;
+
+    if (!token) {
+      setMensaje('Sesión expirada. Inicia sesión nuevamente.');
+      return;
+    }
 
     try {
       const res = await fetch(
         `https://mi-api-atempo.onrender.com/api/citas/${cita.id}`,
-        { method: 'DELETE' }
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
       );
 
       if (!res.ok) {
@@ -170,6 +200,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
       setMensaje('Cita eliminada correctamente.');
       setTimeout(() => onClose(), 1000);
+
     } catch (error) {
       setMensaje('Error al eliminar la cita: ' + error.message);
       console.error(error);
@@ -189,6 +220,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
         </h2>
 
         <div className="agendar-formulario">
+
           <div className="agendar-fila">
             <div>
               <label>Título *</label>
@@ -204,7 +236,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
             <div>
               <label>Encargado (opcional)</label>
-
               <div className="dropdown-encargado">
                 <button
                   type="button"
@@ -217,8 +248,6 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
 
                 {mostrarListaEncargados && (
                   <ul className="dropdown-lista" style={{ maxHeight: 150, overflowY: 'auto' }}>
-
-                    {/* OPCIÓN PARA QUITAR ENCARGADO */}
                     <li style={{ fontWeight: 'bold' }} onClick={quitarEncargado}>
                       ➖ Sin encargado
                     </li>
@@ -359,6 +388,7 @@ const ModalCita = ({ modo = 'crear', cita = {}, onClose, onSave }) => {
               </button>
             )}
           </div>
+
         </div>
       </div>
     </>
