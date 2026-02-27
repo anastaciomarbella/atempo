@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
-import ModalCita from "./ModalCita";
+import ModalCita from "../components/modalCita/modalCita";
 
 const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7);
 
