@@ -9,35 +9,24 @@
   margin-bottom: 10px;
 }
 
-/* Contenedor principal */
-.agenda-wrapper {
-  position: relative;
-  border: 1px solid #ddd;
-  height: 840px; /* 14 horas × 60px */
-}
-
-/* Cada línea de hora */
-.hour-row {
-  height: 60px;
+.hour-cell {
   border-bottom: 1px solid #eee;
   position: relative;
 }
 
 .hour-label {
   position: absolute;
-  left: 5px;
-  top: 5px;
+  left: 0;
+  width: 50px;
+  text-align: right;
+  padding-right: 5px;
   font-size: 12px;
   color: #666;
 }
 
-/* Citas */
 .event-card {
-  position: absolute;
-  left: 60px;
-  right: 5px;
-  padding: 5px;
-  border-radius: 6px;
+  padding: 2px 4px;
+  border-radius: 4px;
   font-size: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
