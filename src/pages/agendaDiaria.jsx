@@ -3,6 +3,7 @@ import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
 const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7); // 7:00 - 20:00
+const ALTURA_HORA = 60; // 60px por hora
 
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
@@ -11,9 +12,6 @@ const AgendaDiaria = () => {
 
   const token = localStorage.getItem("token");
 
-  // ==============================
-  // Obtener citas
-  // ==============================
   const fetchCitas = async () => {
     try {
       setLoading(true);
@@ -49,18 +47,31 @@ const AgendaDiaria = () => {
     fetchCitas();
   }, [fechaActual]);
 
-  // ==============================
-  // Navegación de días
-  // ==============================
   const cambiarDia = delta => {
     const nueva = new Date(fechaActual);
     nueva.setDate(nueva.getDate() + delta);
     setFechaActual(nueva);
   };
 
+  const calcularTop = (horaInicio) => {
+    const [h, m] = horaInicio.split(":").map(Number);
+    const minutosDesdeInicio = (h - 7) * 60 + m;
+    return (minutosDesdeInicio / 60) * ALTURA_HORA;
+  };
+
+  const calcularAltura = (horaInicio, horaFinal) => {
+    const [h1, m1] = horaInicio.split(":").map(Number);
+    const [h2, m2] = horaFinal.split(":").map(Number);
+
+    const minutosInicio = h1 * 60 + m1;
+    const minutosFinal = h2 * 60 + m2;
+
+    const duracionMin = minutosFinal - minutosInicio;
+    return (duracionMin / 60) * ALTURA_HORA;
+  };
+
   return (
     <main className="calendar-container">
-      {/* Barra superior */}
       <div className="top-bar">
         <button onClick={() => cambiarDia(-1)}>◀</button>
 
@@ -78,33 +89,38 @@ const AgendaDiaria = () => {
 
       {loading && <p>Cargando citas...</p>}
 
-      {/* Agenda diaria */}
-      <div>
+      <div className="agenda-wrapper">
+        {/* Líneas de horas */}
         {HORAS_DIA.map(hora => (
-          <div key={hora} className="hour-cell">
-            <div style={{ fontSize: 12, color: "#666" }}>
-              {hora}:00
-            </div>
+          <div key={hora} className="hour-row">
+            <div className="hour-label">{hora}:00</div>
+          </div>
+        ))}
 
-            {citas
-              .filter(c => parseInt(c.hora_inicio.split(":")[0]) === hora)
-              .map(cita => (
-                <div
-                  key={cita.id_cita}
-                  className="event-card"
-                  style={{ backgroundColor: cita.color || "#cfe2ff" }}
-                >
-                  <strong>{cita.titulo}</strong>
-                  <div style={{ fontSize: 11 }}>
-                    {cita.hora_inicio.slice(0, 5)} – {cita.hora_final.slice(0, 5)}
-                  </div>
-                  {cita.nombre_cliente && (
-                    <div style={{ fontSize: 11 }}>
-                      {cita.nombre_cliente}
-                    </div>
-                  )}
-                </div>
-              ))}
+        {/* Citas posicionadas libremente */}
+        {citas.map(cita => (
+          <div
+            key={cita.id_cita}
+            className="event-card"
+            style={{
+              top: `${calcularTop(cita.hora_inicio)}px`,
+              height: `${calcularAltura(
+                cita.hora_inicio,
+                cita.hora_final
+              )}px`,
+              backgroundColor: cita.color || "#cfe2ff",
+            }}
+          >
+            <strong>{cita.titulo}</strong>
+            <div style={{ fontSize: 11 }}>
+              {cita.hora_inicio.slice(0, 5)} –{" "}
+              {cita.hora_final.slice(0, 5)}
+            </div>
+            {cita.nombre_cliente && (
+              <div style={{ fontSize: 11 }}>
+                {cita.nombre_cliente}
+              </div>
+            )}
           </div>
         ))}
       </div>

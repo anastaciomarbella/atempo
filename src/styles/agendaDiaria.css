@@ -9,33 +9,35 @@
   margin-bottom: 10px;
 }
 
-.day-nav button {
-  padding: 5px 10px;
-}
-
-.week-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-
-.day-header {
-  text-align: center;
-  font-weight: bold;
-  padding: 5px;
-  border: 1px solid #ccc;
-}
-
-.hour-cell {
-  min-height: 60px;
-  border: 1px solid #eee;
+/* Contenedor principal */
+.agenda-wrapper {
   position: relative;
-  padding: 2px;
+  border: 1px solid #ddd;
+  height: 840px; /* 14 horas × 60px */
 }
 
-.event-card {
+/* Cada línea de hora */
+.hour-row {
+  height: 60px;
+  border-bottom: 1px solid #eee;
   position: relative;
-  margin: 2px 0;
-  padding: 2px 4px;
-  border-radius: 4px;
+}
+
+.hour-label {
+  position: absolute;
+  left: 5px;
+  top: 5px;
   font-size: 12px;
+  color: #666;
+}
+
+/* Citas */
+.event-card {
+  position: absolute;
+  left: 60px;
+  right: 5px;
+  padding: 5px;
+  border-radius: 6px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
