@@ -19,7 +19,9 @@ const AgendaDiaria = () => {
       const data = await res.json();
       if (!Array.isArray(data)) return setCitas([]);
 
+      // Filtrar citas del día
       const citasDelDia = data.filter(c => {
+        if (!c.fecha) return false;
         const [y, m, d] = c.fecha.split("-");
         const fechaCita = new Date(y, m - 1, d);
         return (
@@ -48,6 +50,15 @@ const AgendaDiaria = () => {
     setFechaActual(nueva);
   };
 
+  // Función para obtener citas aunque no sean exactas a la hora
+  const citasPorHora = hora => {
+    return citas.filter(cita => {
+      if (!cita.hora_inicio) return false;
+      const [h] = cita.hora_inicio.split(":");
+      return parseInt(h) === hora;
+    });
+  };
+
   return (
     <main className="calendar-container">
       <div className="top-bar">
@@ -69,23 +80,24 @@ const AgendaDiaria = () => {
         {HORAS_DIA.map(hora => (
           <div key={hora} className="hour-cell">
             <div className="hour-label">{hora}:00</div>
-            {citas
-              .filter(c => parseInt(c.hora_inicio.split(":")[0]) === hora)
-              .map(cita => (
-                <div
-                  key={cita.id_cita}
-                  className="event-card"
-                  style={{ backgroundColor: cita.color || "#cfe2ff" }}
-                >
-                  <strong>{cita.titulo}</strong>
-                  <div style={{ fontSize: 11 }}>
-                    {cita.hora_inicio.slice(0, 5)} – {cita.hora_final.slice(0, 5)}
-                  </div>
-                  {cita.nombre_cliente && (
-                    <div style={{ fontSize: 11 }}>{cita.nombre_cliente}</div>
-                  )}
+
+            {/* Mostrar todas las citas de esta hora */}
+            {citasPorHora(hora).map(cita => (
+              <div
+                key={cita.id_cita || Math.random()} // seguridad por si id_cita falta
+                className="event-card"
+                style={{ backgroundColor: cita.color || "#cfe2ff" }}
+              >
+                <strong>{cita.titulo || "Sin título"}</strong>
+                <div style={{ fontSize: 11 }}>
+                  {cita.hora_inicio?.slice(0, 5) || "--:--"} –{" "}
+                  {cita.hora_final?.slice(0, 5) || "--:--"}
                 </div>
-              ))}
+                {cita.nombre_cliente && (
+                  <div style={{ fontSize: 11 }}>{cita.nombre_cliente}</div>
+                )}
+              </div>
+            ))}
           </div>
         ))}
       </div>
