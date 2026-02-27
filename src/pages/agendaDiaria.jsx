@@ -11,6 +11,7 @@ const AgendaDiaria = () => {
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
+  console.log("TOKEN:", token);
 
   const fetchCitas = async () => {
     try {
