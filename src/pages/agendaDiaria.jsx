@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
-const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7);
+const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7); // 7 a 20 hrs
 
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
@@ -21,7 +21,6 @@ const AgendaDiaria = () => {
       const res = await fetch(`${API_URL}/api/citas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       console.log("📡 Respuesta fetch:", res);
 
       const data = await res.json();
@@ -34,11 +33,7 @@ const AgendaDiaria = () => {
 
       // Filtrar citas del día
       const citasDelDia = data.filter(c => {
-        if (!c.fecha) {
-          console.warn("⚠️ Cita sin fecha:", c);
-          return false;
-        }
-
+        if (!c.fecha) return false;
         const [y, m, d] = c.fecha.split("-");
         const fechaCita = new Date(y, m - 1, d);
 
@@ -46,12 +41,6 @@ const AgendaDiaria = () => {
           fechaCita.getFullYear() === fechaActual.getFullYear() &&
           fechaCita.getMonth() === fechaActual.getMonth() &&
           fechaCita.getDate() === fechaActual.getDate();
-
-        if (!isSameDay) {
-          console.log("❌ Cita no es del día:", c.fecha, "vs", fechaActual);
-        } else {
-          console.log("✅ Cita filtrada:", c.fecha);
-        }
 
         return isSameDay;
       });
@@ -67,7 +56,7 @@ const AgendaDiaria = () => {
   };
 
   useEffect(() => {
-    console.log("🔄 useEffect disparado, fechaActual o token cambió");
+    console.log("🔄 useEffect disparado: fechaActual o token cambió");
     if (token) {
       fetchCitas();
       return;
@@ -84,22 +73,14 @@ const AgendaDiaria = () => {
     setFechaActual(nueva);
   };
 
-  // Función para obtener citas aunque no sean exactas a la hora
+  // Filtrar citas por hora de manera segura
   const citasPorHora = hora => {
-    const filtradas = citas.filter(cita => {
-      if (!cita.hora_inicio) {
-        console.warn("⚠️ Cita sin hora_inicio:", cita);
-        return false;
-      }
-      const [h] = cita.hora_inicio.split(":");
-      const match = parseInt(h) === hora;
-      if (!match) console.log(`❌ Cita ${cita.titulo} no coincide con hora ${hora}`);
-      else console.log(`✅ Cita ${cita.titulo} coincide con hora ${hora}`);
-      return match;
+    return citas.filter(cita => {
+      if (!cita.hora_inicio) return false;
+      const [hStr] = cita.hora_inicio.split(":");
+      const hNum = Number(hStr);
+      return hNum === hora;
     });
-
-    console.log(`🕒 Citas de la hora ${hora}:`, filtradas);
-    return filtradas;
   };
 
   return (
