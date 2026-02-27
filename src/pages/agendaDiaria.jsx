@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
-// Ampliamos de 7 a 23 horas
 const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7); // 7 a 23
 
 const AgendaDiaria = () => {
@@ -17,22 +16,16 @@ const AgendaDiaria = () => {
   const fetchCitas = async () => {
     try {
       setLoading(true);
-      console.log("⏳ Iniciando fetch de citas...");
+      console.log("⏳ Fetch citas...");
 
       const res = await fetch(`${API_URL}/api/citas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("📡 Respuesta fetch:", res);
-
       const data = await res.json();
       console.log("📄 Datos recibidos:", data);
 
-      if (!Array.isArray(data)) {
-        console.warn("⚠️ Data no es array:", data);
-        return setCitas([]);
-      }
+      if (!Array.isArray(data)) return setCitas([]);
 
-      // Filtrar citas del día
       const citasDelDia = data.filter(c => {
         if (!c.fecha) return false;
         const [y, m, d] = c.fecha.split("-");
@@ -42,9 +35,6 @@ const AgendaDiaria = () => {
           fechaCita.getFullYear() === fechaActual.getFullYear() &&
           fechaCita.getMonth() === fechaActual.getMonth() &&
           fechaCita.getDate() === fechaActual.getDate();
-
-        if (!isSameDay) console.log("❌ Cita no es del día:", c);
-        else console.log("✅ Cita filtrada:", c);
 
         return isSameDay;
       });
@@ -60,38 +50,42 @@ const AgendaDiaria = () => {
   };
 
   useEffect(() => {
-    console.log("🔄 useEffect disparado: fechaActual o token cambió");
-    if (token) {
-      fetchCitas();
-      return;
-    }
-    console.warn("⚠️ No hay token, no se hace fetch de citas");
-    setCitas([]);
-    setLoading(false);
+    if (token) fetchCitas();
+    else setCitas([]);
   }, [fechaActual, token]);
 
   const cambiarDia = delta => {
     const nueva = new Date(fechaActual);
     nueva.setDate(nueva.getDate() + delta);
-    console.log("🔄 Cambiando día a:", nueva);
     setFechaActual(nueva);
   };
 
-  // Filtrar citas que estén activas en la hora
+  // Calcular posición y altura de la cita en la celda
+  const calcularEstiloCita = cita => {
+    if (!cita.hora_inicio || !cita.hora_final) return { top: 0, height: 0 };
+
+    const [hi, mi] = cita.hora_inicio.split(":").map(Number);
+    const [hf, mf] = cita.hora_final.split(":").map(Number);
+
+    const startHour = hi;
+    const startMinutes = mi;
+    const endHour = hf;
+    const endMinutes = mf;
+
+    // Cada celda tiene min-height 60px → 60px = 60 minutos
+    const top = (startMinutes / 60) * 60; // px desde el inicio de la celda
+    const height = ((endHour - startHour) * 60 + (endMinutes - startMinutes)) / 60 * 60; // px
+
+    return { top, height };
+  };
+
   const citasPorHora = hora => {
-    const filtradas = citas.filter(cita => {
+    return citas.filter(cita => {
       if (!cita.hora_inicio || !cita.hora_final) return false;
-      const [hInicio] = cita.hora_inicio.split(":").map(Number);
-      const [hFin] = cita.hora_final.split(":").map(Number);
-
-      const match = hora >= hInicio && hora <= hFin;
-      console.log(
-        `🕒 Hora ${hora}: cita "${cita.titulo}" hInicio=${hInicio} hFin=${hFin} → match=${match}`
-      );
-      return match;
+      const [hi] = cita.hora_inicio.split(":").map(Number);
+      const [hf] = cita.hora_final.split(":").map(Number);
+      return hora >= hi && hora <= hf;
     });
-
-    return filtradas;
   };
 
   return (
@@ -116,23 +110,31 @@ const AgendaDiaria = () => {
           <div key={hora} className="hour-cell">
             <div className="hour-label">{hora}:00</div>
 
-            {/* Mostrar todas las citas de esta hora */}
-            {citasPorHora(hora).map(cita => (
-              <div
-                key={cita.id || Math.random()}
-                className="event-card"
-                style={{ backgroundColor: cita.color || "#cfe2ff" }}
-              >
-                <strong>{cita.titulo || "Sin título"}</strong>
-                <div style={{ fontSize: 11 }}>
-                  {cita.hora_inicio?.slice(0, 5) || "--:--"} –{" "}
-                  {cita.hora_final?.slice(0, 5) || "--:--"}
+            {citasPorHora(hora).map(cita => {
+              const estilo = calcularEstiloCita(cita);
+              return (
+                <div
+                  key={cita.id || Math.random()}
+                  className="event-card"
+                  style={{
+                    backgroundColor: cita.color || "#cfe2ff",
+                    position: "absolute",
+                    top: `${estilo.top}px`,
+                    height: `${estilo.height}px`,
+                    width: "95%",
+                  }}
+                >
+                  <strong>{cita.titulo || "Sin título"}</strong>
+                  <div style={{ fontSize: 11 }}>
+                    {cita.hora_inicio?.slice(0, 5) || "--:--"} –{" "}
+                    {cita.hora_final?.slice(0, 5) || "--:--"}
+                  </div>
+                  {cita.nombre_cliente && (
+                    <div style={{ fontSize: 11 }}>{cita.nombre_cliente}</div>
+                  )}
                 </div>
-                {cita.nombre_cliente && (
-                  <div style={{ fontSize: 11 }}>{cita.nombre_cliente}</div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         ))}
       </div>

@@ -14,7 +14,7 @@
   min-height: 60px;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: relative; /* necesario para absolute dentro */
 }
 
 .hour-label {
@@ -28,4 +28,6 @@
   border-radius: 4px;
   font-size: 12px;
   margin-bottom: 2px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
