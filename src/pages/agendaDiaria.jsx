@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
-const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7); // 7 a 20 hrs
+// Ampliamos de 7 a 23 horas
+const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7); // 7 a 23
 
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
@@ -42,6 +43,9 @@ const AgendaDiaria = () => {
           fechaCita.getMonth() === fechaActual.getMonth() &&
           fechaCita.getDate() === fechaActual.getDate();
 
+        if (!isSameDay) console.log("❌ Cita no es del día:", c);
+        else console.log("✅ Cita filtrada:", c);
+
         return isSameDay;
       });
 
@@ -73,14 +77,21 @@ const AgendaDiaria = () => {
     setFechaActual(nueva);
   };
 
-  // Filtrar citas por hora de manera segura
+  // Filtrar citas que estén activas en la hora
   const citasPorHora = hora => {
-    return citas.filter(cita => {
-      if (!cita.hora_inicio) return false;
-      const [hStr] = cita.hora_inicio.split(":");
-      const hNum = Number(hStr);
-      return hNum === hora;
+    const filtradas = citas.filter(cita => {
+      if (!cita.hora_inicio || !cita.hora_final) return false;
+      const [hInicio] = cita.hora_inicio.split(":").map(Number);
+      const [hFin] = cita.hora_final.split(":").map(Number);
+
+      const match = hora >= hInicio && hora <= hFin;
+      console.log(
+        `🕒 Hora ${hora}: cita "${cita.titulo}" hInicio=${hInicio} hFin=${hFin} → match=${match}`
+      );
+      return match;
     });
+
+    return filtradas;
   };
 
   return (
@@ -108,7 +119,7 @@ const AgendaDiaria = () => {
             {/* Mostrar todas las citas de esta hora */}
             {citasPorHora(hora).map(cita => (
               <div
-                key={cita.id_cita || Math.random()} // seguridad por si id_cita falta
+                key={cita.id || Math.random()}
                 className="event-card"
                 style={{ backgroundColor: cita.color || "#cfe2ff" }}
               >
