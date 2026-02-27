@@ -7,7 +7,7 @@ const HORAS_DIA = Array.from({ length: 14 }, (_, i) => i + 7);
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
   const [citas, setCitas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
 
   const fetchCitas = async () => {
@@ -41,8 +41,14 @@ const AgendaDiaria = () => {
   };
 
   useEffect(() => {
-    if (token) fetchCitas();
-  }, [fechaActual]);
+    if (token) {
+      fetchCitas();
+      return;
+    }
+
+    setCitas([]);
+    setLoading(false);
+  }, [fechaActual, token]);
 
   const cambiarDia = delta => {
     const nueva = new Date(fechaActual);
