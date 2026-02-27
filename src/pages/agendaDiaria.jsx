@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
-import ModalCita from "../components/modalCita/modalCita";
+import ModalCita from "./ModalCita";
 
-// Horas visibles de la agenda (7am a 23pm)
 const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7);
 
 const AgendaDiaria = () => {
@@ -14,9 +13,7 @@ const AgendaDiaria = () => {
 
   const token = localStorage.getItem("token");
 
-  // ==============================
-  // OBTENER CITAS
-  // ==============================
+  // ================= FETCH =================
   const fetchCitas = async () => {
     try {
       setLoading(true);
@@ -32,8 +29,7 @@ const AgendaDiaria = () => {
         return;
       }
 
-      // Filtrar por día actual
-      const citasDelDia = data.filter(cita => {
+      const citasDelDia = data.filter((cita) => {
         if (!cita.fecha) return false;
 
         const [y, m, d] = cita.fecha.split("-");
@@ -47,8 +43,8 @@ const AgendaDiaria = () => {
       });
 
       setCitas(citasDelDia);
-    } catch (error) {
-      console.error("Error al cargar citas:", error);
+    } catch (err) {
+      console.error("Error al cargar citas:", err);
       setCitas([]);
     } finally {
       setLoading(false);
@@ -59,49 +55,41 @@ const AgendaDiaria = () => {
     if (token) fetchCitas();
   }, [fechaActual, token]);
 
-  // ==============================
-  // CAMBIAR DÍA
-  // ==============================
-  const cambiarDia = delta => {
+  // ================= CAMBIAR DÍA =================
+  const cambiarDia = (delta) => {
     const nuevaFecha = new Date(fechaActual);
     nuevaFecha.setDate(nuevaFecha.getDate() + delta);
     setFechaActual(nuevaFecha);
   };
 
-  // ==============================
-  // CALCULAR POSICIÓN Y ALTURA
-  // ==============================
-  const calcularEstiloCita = cita => {
+  // ================= ESTILO CITA =================
+  const calcularEstiloCita = (cita) => {
     if (!cita.hora_inicio || !cita.hora_final)
       return { top: 0, height: 0 };
 
     const [hi, mi] = cita.hora_inicio.split(":").map(Number);
     const [hf, mf] = cita.hora_final.split(":").map(Number);
 
-    const duracionMinutos =
-      (hf * 60 + mf) - (hi * 60 + mi);
+    const inicioTotal = hi * 60 + mi;
+    const finTotal = hf * 60 + mf;
 
     return {
-      top: mi, // 1px = 1 minuto
-      height: duracionMinutos
+      top: mi,
+      height: finTotal - inicioTotal,
     };
   };
 
-  // ==============================
-  // MOSTRAR SOLO EN HORA INICIAL
-  // ==============================
-  const citasPorHora = hora => {
-    return citas.filter(cita => {
+  // ================= SOLO EN HORA INICIO =================
+  const citasPorHora = (hora) => {
+    return citas.filter((cita) => {
       if (!cita.hora_inicio) return false;
       const [hi] = cita.hora_inicio.split(":").map(Number);
       return hora === hi;
     });
   };
 
-  // ==============================
-  // MODAL
-  // ==============================
-  const abrirModal = cita => {
+  // ================= MODAL =================
+  const abrirModal = (cita) => {
     setCitaSeleccionada(cita);
   };
 
@@ -114,9 +102,7 @@ const AgendaDiaria = () => {
     fetchCitas();
   };
 
-  // ==============================
-  // RENDER
-  // ==============================
+  // ================= RENDER =================
   return (
     <main className="calendar-container">
       <div className="top-bar">
@@ -135,11 +121,11 @@ const AgendaDiaria = () => {
       {loading && <p>Cargando citas...</p>}
 
       <div className="agenda-wrapper">
-        {HORAS_DIA.map(hora => (
+        {HORAS_DIA.map((hora) => (
           <div key={hora} className="hour-cell">
             <div className="hour-label">{hora}:00</div>
 
-            {citasPorHora(hora).map(cita => {
+            {citasPorHora(hora).map((cita) => {
               const estilo = calcularEstiloCita(cita);
 
               return (
@@ -149,11 +135,9 @@ const AgendaDiaria = () => {
                   onClick={() => abrirModal(cita)}
                   style={{
                     backgroundColor: cita.color || "#cfe2ff",
-                    position: "absolute",
                     top: `${estilo.top}px`,
                     height: `${estilo.height}px`,
-                    width: "95%",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 >
                   <strong>{cita.titulo || "Sin título"}</strong>
