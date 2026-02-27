@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 
-const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7); // 7 a 23
+// Horas visibles de la agenda (7am a 23pm)
+const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7); 
 
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
@@ -11,30 +12,36 @@ const AgendaDiaria = () => {
   const token = localStorage.getItem("token");
 
   console.log("🔹 Token actual:", token);
-  console.log("🔹 Fecha actual:", fechaActual);
+  console.log("🔹 Fecha inicial:", fechaActual);
 
   const fetchCitas = async () => {
     try {
       setLoading(true);
-      console.log("⏳ Fetch citas...");
+      console.log("⏳ Iniciando fetch de citas...");
 
       const res = await fetch(`${API_URL}/api/citas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await res.json();
       console.log("📄 Datos recibidos:", data);
 
       if (!Array.isArray(data)) return setCitas([]);
 
-      const citasDelDia = data.filter(c => {
-        if (!c.fecha) return false;
-        const [y, m, d] = c.fecha.split("-");
+      // Filtrar citas del día actual
+      const citasDelDia = data.filter(cita => {
+        if (!cita.fecha) return false;
+
+        const [y, m, d] = cita.fecha.split("-");
         const fechaCita = new Date(y, m - 1, d);
 
         const isSameDay =
           fechaCita.getFullYear() === fechaActual.getFullYear() &&
           fechaCita.getMonth() === fechaActual.getMonth() &&
           fechaCita.getDate() === fechaActual.getDate();
+
+        if (!isSameDay) console.log("❌ Cita no es del día:", cita);
+        else console.log("✅ Cita filtrada:", cita);
 
         return isSameDay;
       });
@@ -50,41 +57,49 @@ const AgendaDiaria = () => {
   };
 
   useEffect(() => {
+    console.log("🔄 useEffect disparado: fechaActual o token cambió");
     if (token) fetchCitas();
-    else setCitas([]);
+    else {
+      console.warn("⚠️ No hay token, no se hace fetch de citas");
+      setCitas([]);
+      setLoading(false);
+    }
   }, [fechaActual, token]);
 
+  // Cambiar día
   const cambiarDia = delta => {
     const nueva = new Date(fechaActual);
     nueva.setDate(nueva.getDate() + delta);
+    console.log("🔄 Cambiando día a:", nueva);
     setFechaActual(nueva);
   };
 
-  // Calcular posición y altura de la cita en la celda
+  // Calcular posición y altura de cada cita dentro de la celda
   const calcularEstiloCita = cita => {
     if (!cita.hora_inicio || !cita.hora_final) return { top: 0, height: 0 };
 
     const [hi, mi] = cita.hora_inicio.split(":").map(Number);
     const [hf, mf] = cita.hora_final.split(":").map(Number);
 
-    const startHour = hi;
     const startMinutes = mi;
-    const endHour = hf;
-    const endMinutes = mf;
+    const endMinutesTotal = (hf - hi) * 60 + mf - mi;
 
-    // Cada celda tiene min-height 60px → 60px = 60 minutos
-    const top = (startMinutes / 60) * 60; // px desde el inicio de la celda
-    const height = ((endHour - startHour) * 60 + (endMinutes - startMinutes)) / 60 * 60; // px
+    // Cada celda tiene min-height 60px → 1px = 1 minuto
+    const top = startMinutes; // px desde inicio de la celda
+    const height = endMinutesTotal; // px de altura
 
     return { top, height };
   };
 
+  // Filtrar citas que estén activas en la hora
   const citasPorHora = hora => {
     return citas.filter(cita => {
       if (!cita.hora_inicio || !cita.hora_final) return false;
       const [hi] = cita.hora_inicio.split(":").map(Number);
       const [hf] = cita.hora_final.split(":").map(Number);
-      return hora >= hi && hora <= hf;
+      const match = hora >= hi && hora <= hf;
+      console.log(`🕒 Hora ${hora}: cita "${cita.titulo}" → match=${match}`);
+      return match;
     });
   };
 
