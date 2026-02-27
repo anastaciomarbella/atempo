@@ -62,24 +62,7 @@ const AgendaDiaria = () => {
     setFechaActual(nuevaFecha);
   };
 
-  // ================= ESTILO CITA =================
-  const calcularEstiloCita = (cita) => {
-    if (!cita.hora_inicio || !cita.hora_final)
-      return { top: 0, height: 0 };
-
-    const [hi, mi] = cita.hora_inicio.split(":").map(Number);
-    const [hf, mf] = cita.hora_final.split(":").map(Number);
-
-    const inicioTotal = hi * 60 + mi;
-    const finTotal = hf * 60 + mf;
-
-    return {
-      top: mi,
-      height: finTotal - inicioTotal,
-    };
-  };
-
-  // ================= SOLO EN HORA INICIO =================
+  // ================= CITAS POR HORA =================
   const citasPorHora = (hora) => {
     return citas.filter((cita) => {
       if (!cita.hora_inicio) return false;
@@ -125,34 +108,30 @@ const AgendaDiaria = () => {
           <div key={hora} className="hour-cell">
             <div className="hour-label">{hora}:00</div>
 
-            {citasPorHora(hora).map((cita) => {
-              const estilo = calcularEstiloCita(cita);
+            {citasPorHora(hora).map((cita) => (
+              <div
+                key={cita.id}
+                className="event-card"
+                onClick={() => abrirModal(cita)}
+                style={{
+                  backgroundColor: cita.color || "#cfe2ff",
+                  cursor: "pointer",
+                }}
+              >
+                <strong>{cita.titulo || "Sin título"}</strong>
 
-              return (
-                <div
-                  key={cita.id}
-                  className="event-card"
-                  onClick={() => abrirModal(cita)}
-                  style={{
-                    backgroundColor: cita.color || "#cfe2ff",
-                    top: `${estilo.top}px`,
-                    height: `${estilo.height}px`,
-                    cursor: "pointer",
-                  }}
-                >
-                  <strong>{cita.titulo || "Sin título"}</strong>
-                  <div style={{ fontSize: 11 }}>
-                    {cita.hora_inicio?.slice(0, 5)} –{" "}
-                    {cita.hora_final?.slice(0, 5)}
-                  </div>
-                  {cita.nombre_cliente && (
-                    <div style={{ fontSize: 11 }}>
-                      {cita.nombre_cliente}
-                    </div>
-                  )}
+                <div style={{ fontSize: 11 }}>
+                  {cita.hora_inicio?.slice(0, 5)} –{" "}
+                  {cita.hora_final?.slice(0, 5)}
                 </div>
-              );
-            })}
+
+                {cita.nombre_cliente && (
+                  <div style={{ fontSize: 11 }}>
+                    {cita.nombre_cliente}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         ))}
       </div>
