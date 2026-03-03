@@ -3,7 +3,7 @@ import '../styles/empleados.css';
 import { FaUserPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import ModalNuevoEmpleado from '../components/modalNuevoEmpleado/modalNuevoEmpleado';
 import ModalUpdateEmpleado from '../components/modalUpdateEmpleado/modalUpdateEmpleado';
-import ModalConfirmacion from '../components/modalConfirmarDelete/modalConfirmarDelete';
+import ModalConfirmacion from '../components/modalConfirmar/modalConfirmarDelete';
 
 const API_URL = "https://mi-api-atempo.onrender.com";
 
