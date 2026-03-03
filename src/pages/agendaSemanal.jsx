@@ -2,25 +2,16 @@ import React, { useState, useEffect } from "react";
 import "../styles/agendaSemanal.css";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
-
-const diasSemana = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo",
-];
+const HORAS = Array.from({ length: 17 }, (_, i) => i + 7); // 7am - 23pm
 
 const AgendaSemanal = () => {
   const [citas, setCitas] = useState([]);
-  const [fechaBase, setFechaBase] = useState(new Date()); // semana actual
+  const [fechaBase, setFechaBase] = useState(new Date());
 
-  // Obtener inicio de semana (lunes)
+  // Obtener lunes
   const getInicioSemana = (fecha) => {
     const f = new Date(fecha);
-    const dia = f.getDay(); // 0=domingo, 1=lunes...
+    const dia = f.getDay();
     const diff = dia === 0 ? -6 : 1 - dia;
     f.setDate(f.getDate() + diff);
     return f;
@@ -28,21 +19,13 @@ const AgendaSemanal = () => {
 
   const inicioSemana = getInicioSemana(fechaBase);
 
-  // Generar 35 días (5 filas x 7 columnas)
-  const generarDiasCalendario = () => {
-    const dias = [];
-    const actual = new Date(inicioSemana);
+  const diasSemana = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(inicioSemana);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
 
-    for (let i = 0; i < 35; i++) {
-      dias.push(new Date(actual));
-      actual.setDate(actual.getDate() + 1);
-    }
-    return dias;
-  };
-
-  const diasCalendario = generarDiasCalendario();
-
-  // Cargar citas
+  // ================= FETCH =================
   useEffect(() => {
     const fetchCitas = async () => {
       try {
@@ -50,7 +33,7 @@ const AgendaSemanal = () => {
           "https://mi-api-atempo.onrender.com/api/citas"
         );
         const data = await res.json();
-        setCitas(data);
+        setCitas(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error cargando citas", err);
       }
@@ -65,12 +48,20 @@ const AgendaSemanal = () => {
     setFechaBase(nueva);
   };
 
-  const citasPorDia = (fecha) => {
+  // ================= FILTRAR CITA POR DIA Y HORA =================
+  const obtenerCita = (fecha, hora) => {
     const fechaStr = fecha.toISOString().slice(0, 10);
 
-    return citas.filter(
-      (c) => c.fecha.slice(0, 10) === fechaStr
-    );
+    return citas.find((c) => {
+      if (!c.fecha || !c.hora_inicio) return false;
+
+      const [hi] = c.hora_inicio.split(":").map(Number);
+
+      return (
+        c.fecha.slice(0, 10) === fechaStr &&
+        hi === hora
+      );
+    });
   };
 
   return (
@@ -93,36 +84,49 @@ const AgendaSemanal = () => {
         </button>
       </header>
 
-      <div className="calendar-grid">
-        {/* Encabezado de días */}
-        {diasSemana.map((d) => (
-          <div key={d} className="day-header">
-            {d}
+      <div className="week-grid">
+
+        {/* Encabezado */}
+        <div className="hour-header"></div>
+        {diasSemana.map((dia, i) => (
+          <div key={i} className="day-header">
+            {dia.toLocaleDateString("es-MX", {
+              weekday: "short",
+              day: "numeric",
+            })}
           </div>
         ))}
 
-        {/* 5 filas de calendario */}
-        {diasCalendario.map((fecha, i) => {
-          const citasHoy = citasPorDia(fecha);
+        {/* Filas por hora */}
+        {HORAS.map((hora) => (
+          <React.Fragment key={hora}>
+            <div className="hour-label">{hora}:00</div>
 
-          return (
-            <div key={i} className="day-cell">
-              <div className="day-number">
-                {fecha.getDate()}
-              </div>
+            {diasSemana.map((dia, i) => {
+              const cita = obtenerCita(dia, hora);
 
-              {citasHoy.map((cita) => (
-                <div
-                  key={cita.id_cita}
-                  className="calendar-appointment"
-                  style={{ backgroundColor: cita.color || "#6FA8DC" }}
-                >
-                  {cita.titulo}
+              return (
+                <div key={i} className="cell">
+                  {cita && (
+                    <div
+                      className="event"
+                      style={{
+                        backgroundColor:
+                          cita.color || "#6FA8DC",
+                      }}
+                    >
+                      <strong>{cita.titulo}</strong>
+                      <div className="event-time">
+                        {cita.hora_inicio?.slice(0, 5)} –{" "}
+                        {cita.hora_final?.slice(0, 5)}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          );
-        })}
+              );
+            })}
+          </React.Fragment>
+        ))}
       </div>
     </main>
   );
