@@ -15,15 +15,14 @@ const Empleados = () => {
 
     const API_URL = "https://mi-api-atempo.onrender.com";
 
-    // ==============================
-    // CARGAR EMPLEADOS
-    // ==============================
     const cargarEmpleados = async () => {
         try {
             const res = await fetch(`${API_URL}/api/personas`);
             if (!res.ok) throw new Error("Error al obtener empleados");
 
             const data = await res.json();
+
+            // 🔥 Esto cubre ambos casos: array directo o { data: [...] }
             const lista = Array.isArray(data) ? data : data.data;
 
             setEmpleados(lista || []);
@@ -36,9 +35,6 @@ const Empleados = () => {
         cargarEmpleados();
     }, []);
 
-    // ==============================
-    // EDITAR EMPLEADO
-    // ==============================
     const handleEditarClick = async (id) => {
         try {
             const res = await fetch(`${API_URL}/api/personas/${id}`);
@@ -52,40 +48,21 @@ const Empleados = () => {
         }
     };
 
-    // ==============================
-    // ELIMINAR EMPLEADO
-    // ==============================
     const eliminarEmpleado = async () => {
         if (!empleadoAEliminar) return;
 
         try {
-            const id = empleadoAEliminar.id_persona;
-
-            if (!id) {
-                console.error("No existe id_persona:", empleadoAEliminar);
-                return;
-            }
+            const id = empleadoAEliminar.id || empleadoAEliminar._id;
 
             const res = await fetch(`${API_URL}/api/personas/${id}`, {
                 method: 'DELETE',
             });
 
-            if (!res.ok) {
-                const errorText = await res.text();
-                console.error("Error backend:", errorText);
-                throw new Error("Error al eliminar");
-            }
-
-            // 🔥 Eliminación inmediata sin recargar todo
-            setEmpleados(prev =>
-                prev.filter(emp => emp.id_persona !== id)
-            );
+            if (!res.ok) throw new Error("Error al eliminar");
 
             setMostrarConfirmacion(false);
             setEmpleadoAEliminar(null);
-
-            console.log("Empleado eliminado correctamente");
-
+            cargarEmpleados();
         } catch (error) {
             console.error('Error al eliminar empleado:', error);
         }
@@ -126,7 +103,7 @@ const Empleados = () => {
                             return (
                                 <tr key={id}>
                                     <td>{emp.nombre}</td>
-                                    <td>{emp.correo}</td>
+                                    <td>{emp.email}</td>
                                     <td>{emp.telefono}</td>
                                     <td>
                                         <FaEdit
