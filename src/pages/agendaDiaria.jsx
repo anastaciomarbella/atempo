@@ -3,7 +3,7 @@ import "../styles/agendaDiaria.css";
 import { API_URL } from "../config";
 import ModalCita from "../components/modalCita/modalCita";
 
-const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7);
+const HORAS_DIA = Array.from({ length: 17 }, (_, i) => i + 7); // 7am a 23pm
 
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
@@ -62,7 +62,7 @@ const AgendaDiaria = () => {
     setFechaActual(nuevaFecha);
   };
 
-  // ================= CITAS POR HORA =================
+  // ================= FILTRAR POR HORA =================
   const citasPorHora = (hora) => {
     return citas.filter((cita) => {
       if (!cita.hora_inicio) return false;
@@ -72,13 +72,8 @@ const AgendaDiaria = () => {
   };
 
   // ================= MODAL =================
-  const abrirModal = (cita) => {
-    setCitaSeleccionada(cita);
-  };
-
-  const cerrarModal = () => {
-    setCitaSeleccionada(null);
-  };
+  const abrirModal = (cita) => setCitaSeleccionada(cita);
+  const cerrarModal = () => setCitaSeleccionada(null);
 
   const guardarYCerrar = () => {
     cerrarModal();
@@ -90,6 +85,7 @@ const AgendaDiaria = () => {
     <main className="calendar-container">
       <div className="top-bar">
         <button onClick={() => cambiarDia(-1)}>◀</button>
+
         <strong>
           {fechaActual.toLocaleDateString("es-MX", {
             weekday: "long",
@@ -98,6 +94,7 @@ const AgendaDiaria = () => {
             year: "numeric",
           })}
         </strong>
+
         <button onClick={() => cambiarDia(1)}>▶</button>
       </div>
 
@@ -105,33 +102,34 @@ const AgendaDiaria = () => {
 
       <div className="agenda-wrapper">
         {HORAS_DIA.map((hora) => (
-          <div key={hora} className="hour-cell">
+          <div key={hora} className="hour-row">
             <div className="hour-label">{hora}:00</div>
 
-            {citasPorHora(hora).map((cita) => (
-              <div
-                key={cita.id}
-                className="event-card"
-                onClick={() => abrirModal(cita)}
-                style={{
-                  backgroundColor: cita.color || "#cfe2ff",
-                  cursor: "pointer",
-                }}
-              >
-                <strong>{cita.titulo || "Sin título"}</strong>
+            <div className="hour-slot">
+              {citasPorHora(hora).map((cita) => (
+                <div
+                  key={cita.id}
+                  className="event-card"
+                  onClick={() => abrirModal(cita)}
+                  style={{
+                    backgroundColor: cita.color || "#cfe2ff",
+                  }}
+                >
+                  <strong>{cita.titulo || "Sin título"}</strong>
 
-                <div style={{ fontSize: 11 }}>
-                  {cita.hora_inicio?.slice(0, 5)} –{" "}
-                  {cita.hora_final?.slice(0, 5)}
-                </div>
-
-                {cita.nombre_cliente && (
-                  <div style={{ fontSize: 11 }}>
-                    {cita.nombre_cliente}
+                  <div className="event-time">
+                    {cita.hora_inicio?.slice(0, 5)} –{" "}
+                    {cita.hora_final?.slice(0, 5)}
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {cita.nombre_cliente && (
+                    <div className="event-client">
+                      {cita.nombre_cliente}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
