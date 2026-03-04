@@ -17,6 +17,9 @@ const Empleados = () => {
   const [empleadoEditar, setEmpleadoEditar] = useState(null);
   const [empleadoEliminar, setEmpleadoEliminar] = useState(null);
 
+  // =========================
+  // CARGAR EMPLEADOS
+  // =========================
   const cargarEmpleados = async () => {
     try {
       const res = await fetch(`${API_URL}/api/personas`);
@@ -26,6 +29,7 @@ const Empleados = () => {
       const lista = Array.isArray(data) ? data : data.data;
 
       setEmpleados(lista || []);
+
     } catch (error) {
       console.error("Error al cargar empleados:", error);
     }
@@ -35,9 +39,12 @@ const Empleados = () => {
     cargarEmpleados();
   }, []);
 
-  const handleEditarClick = async (id) => {
+  // =========================
+  // EDITAR
+  // =========================
+  const handleEditarClick = async (id_persona) => {
     try {
-      const res = await fetch(`${API_URL}/api/personas/${id}`);
+      const res = await fetch(`${API_URL}/api/personas/${id_persona}`);
       if (!res.ok) throw new Error("No se pudo obtener el empleado");
 
       const data = await res.json();
@@ -50,15 +57,23 @@ const Empleados = () => {
     }
   };
 
+  // =========================
+  // ELIMINAR
+  // =========================
   const handleEliminarClick = (empleado) => {
     setEmpleadoEliminar(empleado);
     setMostrarModalEliminar(true);
   };
 
   const handleConfirmarEliminar = async () => {
+    if (!empleadoEliminar?.id_persona) {
+      alert("Error: ID no válido");
+      return;
+    }
+
     try {
       const res = await fetch(
-        `${API_URL}/api/personas/${empleadoEliminar.id}`,
+        `${API_URL}/api/personas/${empleadoEliminar.id_persona}`,
         { method: "DELETE" }
       );
 
@@ -111,14 +126,14 @@ const Empleados = () => {
             </tr>
           ) : (
             empleados.map((emp) => (
-              <tr key={emp.id}>
+              <tr key={emp.id_persona}>
                 <td>{emp.nombre}</td>
                 <td>{emp.email}</td>
                 <td>{emp.telefono}</td>
                 <td>
                   <FaEdit
                     className="icono-editar"
-                    onClick={() => handleEditarClick(emp.id)}
+                    onClick={() => handleEditarClick(emp.id_persona)}
                     style={{ cursor: "pointer", marginRight: "10px" }}
                   />
 
