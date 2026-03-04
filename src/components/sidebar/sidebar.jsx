@@ -43,11 +43,11 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
   return (
     <aside className="sidebar">
       
-      {/* EMPRESA + USUARIO */}
-      <div className="logo-section">
+      {/* HEADER EMPRESA */}
+      <div className="sidebar-header">
 
         <h1 className="company-title">
-          {user.nombre_empresa}
+          {user.nombre_empresa?.toUpperCase()}
         </h1>
 
         <div className="user-info">
@@ -62,7 +62,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
       </div>
 
-      {/* MENÚ */}
+      {/* MENU */}
       <nav className="menu">
         <NavLink
           to="/agenda-diaria"
@@ -103,9 +103,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
       </nav>
 
-      {/* CERRAR SESIÓN */}
+      {/* LOGOUT */}
       <button className="logout-btn" onClick={handleLogout}>
-        <FaSignOutAlt className="icon logout-icon" />
+        <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>
 
