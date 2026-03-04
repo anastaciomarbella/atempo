@@ -14,17 +14,19 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   const [user, setUser] = useState({
     nombre_usuario: "Usuario",
+    nombre_empresa: "Mi Empresa",
   });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        console.log("Usuario desde localStorage:", parsedUser);
 
         setUser({
           nombre_usuario: parsedUser.nombre_usuario || "Usuario",
+          nombre_empresa: parsedUser.nombre_empresa || "Mi Empresa",
         });
       } catch (error) {
         console.error("Error leyendo usuario:", error);
@@ -40,12 +42,24 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-      {/* PERFIL USUARIO */}
+      
+      {/* EMPRESA + USUARIO */}
       <div className="logo-section">
-        <div className="logo-placeholder">
-          {user.nombre_usuario.charAt(0).toUpperCase()}
+
+        <h1 className="company-title">
+          {user.nombre_empresa}
+        </h1>
+
+        <div className="user-info">
+          <div className="avatar">
+            {user.nombre_usuario.charAt(0).toUpperCase()}
+          </div>
+
+          <span className="user-name">
+            {user.nombre_usuario}
+          </span>
         </div>
-        <h2 className="brand-name">{user.nombre_usuario}</h2>
+
       </div>
 
       {/* MENÚ */}
@@ -94,6 +108,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         <FaSignOutAlt className="icon logout-icon" />
         Cerrar sesión
       </button>
+
     </aside>
   );
 };
