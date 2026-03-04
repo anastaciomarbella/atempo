@@ -6,22 +6,28 @@ const Header = () => {
   const [empresa, setEmpresa] = useState("Mi Empresa");
   const [logo, setLogo] = useState(null);
 
-  // Función para obtener URL segura del logo
+  // Función para obtener URL segura
   const getSafeLogoUrl = (logoUrl) => {
-    if (!logoUrl || logoUrl === "null") return null;
+    if (!logoUrl || logoUrl === "null" || logoUrl.trim() === "") {
+      console.log("Logo vacío o null, se usará placeholder");
+      return null;
+    }
 
     // Absoluta: forzar HTTPS
     if (/^https?:\/\//i.test(logoUrl)) {
-      return logoUrl.replace(/^http:\/\//i, "https://");
+      const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
+      console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
+      return httpsUrl;
     }
 
     // Relativa: agregar API_URL
-    return `${API_URL}/${logoUrl}`;
+    const fullUrl = `${API_URL}/${logoUrl}`;
+    console.log("Logo relativo convertido a URL completa:", fullUrl);
+    return fullUrl;
   };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -29,7 +35,6 @@ const Header = () => {
 
         setEmpresa(parsedUser.nombre_empresa || "Mi Empresa");
         setLogo(getSafeLogoUrl(parsedUser.logo_url));
-        console.log("URL final del logo:", getSafeLogoUrl(parsedUser.logo_url));
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
@@ -47,9 +52,9 @@ const Header = () => {
             alt="Logo empresa"
             className="empresa-logo"
             onError={(e) => {
-              console.error("Error cargando la imagen del logo:", e.target.src);
+              console.log("Error cargando la imagen del logo:", e.target.src);
               e.target.onerror = null;
-              e.target.src = null; // Mostrar placeholder
+              e.target.src = null; // mostrar placeholder
             }}
           />
         ) : (

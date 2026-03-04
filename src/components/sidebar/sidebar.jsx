@@ -8,7 +8,7 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { API_URL } from "../../config"; // tu URL base de API
+import { API_URL } from "../../config";
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
@@ -18,21 +18,19 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
     empresaLogo: null,
   });
 
-  // Función para obtener URL segura del logo
+  // Función para obtener URL segura
   const getSafeLogoUrl = (logoUrl) => {
     if (!logoUrl || logoUrl === "null" || logoUrl.trim() === "") {
       console.log("Logo vacío o null, se usará placeholder");
       return null;
     }
 
-    // Absoluta: forzar HTTPS
     if (/^https?:\/\//i.test(logoUrl)) {
       const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
       console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
       return httpsUrl;
     }
 
-    // Relativa: agregar API_URL
     const fullUrl = `${API_URL}/${logoUrl}`;
     console.log("Logo relativo convertido a URL completa:", fullUrl);
     return fullUrl;
@@ -40,7 +38,6 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
