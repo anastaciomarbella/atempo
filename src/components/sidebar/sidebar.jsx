@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import "./sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -12,7 +12,21 @@ import {
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
 
+  // 🔍 Ver si el componente realmente se renderiza
+  console.log("🟢 Sidebar renderizado");
+
+  // 🔍 Ver qué props están llegando
+  console.log("📦 Props recibidas:", {
+    onAbrirModal,
+    modalActivo,
+  });
+
+  useEffect(() => {
+    console.log("🟡 Sidebar montado correctamente");
+  }, []);
+
   const handleLogout = () => {
+    console.log("🔴 Logout ejecutado");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/");
@@ -20,13 +34,16 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
+      {console.log("🎯 Render del return ejecutado")}
+
       {/* 🔹 MENÚ */}
       <nav className="menu">
         <NavLink
           to="/agenda-diaria"
-          className={({ isActive }) =>
-            isActive && modalActivo !== "cita" ? "active" : ""
-          }
+          className={({ isActive }) => {
+            console.log("📅 Agenda diaria isActive:", isActive);
+            return isActive && modalActivo !== "cita" ? "active" : "";
+          }}
         >
           <FaCalendarDay className="icon" />
           Agenda diaria
@@ -34,9 +51,10 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <NavLink
           to="/agenda-semanal"
-          className={({ isActive }) =>
-            isActive && modalActivo !== "cita" ? "active" : ""
-          }
+          className={({ isActive }) => {
+            console.log("📆 Agenda semanal isActive:", isActive);
+            return isActive && modalActivo !== "cita" ? "active" : "";
+          }}
         >
           <FaCalendarWeek className="icon" />
           Agenda semanal
@@ -44,7 +62,13 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <button
           type="button"
-          onClick={() => onAbrirModal && onAbrirModal("cita")}
+          onClick={() => {
+            console.log("➕ Click en Agendar cita");
+            if (!onAbrirModal) {
+              console.error("❌ onAbrirModal es undefined");
+            }
+            onAbrirModal && onAbrirModal("cita");
+          }}
           className={`menu-btn ${
             modalActivo === "cita" ? "active" : ""
           }`}
@@ -55,9 +79,10 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <NavLink
           to="/empleados"
-          className={({ isActive }) =>
-            isActive && modalActivo !== "cita" ? "active" : ""
-          }
+          className={({ isActive }) => {
+            console.log("👥 Empleados isActive:", isActive);
+            return isActive && modalActivo !== "cita" ? "active" : "";
+          }}
         >
           <FaUsers className="icon" />
           Empleados
