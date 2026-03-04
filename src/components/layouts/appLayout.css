@@ -1,18 +1,22 @@
+/* appLayout.css */
+
 .app-layout {
   display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f6fa;
 }
 
-/* Contenedor que compensa el sidebar fijo */
 .main-content {
-  margin-left: 240px;
-  width: calc(100% - 240px);
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-/* Área real donde vive cada pantalla */
 .page-content {
   flex: 1;
   padding: 20px;
+  overflow: auto;
+  background: #ffffff;
 }
