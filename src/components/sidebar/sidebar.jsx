@@ -9,7 +9,9 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 
-const Sidebar = ({ onAbrirModal = () => {}, modalActivo = null }) => {
+const Sidebar = ({ onAbrirModal, modalActivo }) => {
+  console.log("🟢 Sidebar renderizando");
+
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
@@ -18,29 +20,35 @@ const Sidebar = ({ onAbrirModal = () => {}, modalActivo = null }) => {
   });
 
   useEffect(() => {
+    console.log("🟡 useEffect Sidebar ejecutado");
+
     try {
       const storedUser = localStorage.getItem("user");
+      console.log("📦 localStorage user:", storedUser);
 
       if (!storedUser) return;
 
       const parsedUser = JSON.parse(storedUser);
+      console.log("👤 Usuario parseado:", parsedUser);
 
       setUser({
         nombre_usuario: parsedUser?.nombre || "Usuario",
         nombre_empresa: parsedUser?.nombre_empresa || "Mi Empresa",
       });
     } catch (error) {
-      console.error("Error leyendo usuario:", error);
+      console.error("❌ Error leyendo usuario:", error);
     }
   }, []);
 
   const handleLogout = () => {
+    console.log("🔴 Cerrando sesión");
+
     try {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       navigate("/");
     } catch (error) {
-      console.error("Error cerrando sesión:", error);
+      console.error("❌ Error cerrando sesión:", error);
     }
   };
 
@@ -48,16 +56,16 @@ const Sidebar = ({ onAbrirModal = () => {}, modalActivo = null }) => {
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1 className="company-title">
-          {user.nombre_empresa?.toUpperCase()}
+          {(user.nombre_empresa || "Mi Empresa").toUpperCase()}
         </h1>
 
         <div className="user-info">
           <div className="avatar">
-            {user.nombre_usuario?.charAt(0)?.toUpperCase() || "U"}
+            {(user.nombre_usuario || "U").charAt(0).toUpperCase()}
           </div>
 
           <span className="user-name">
-            {user.nombre_usuario}
+            {user.nombre_usuario || "Usuario"}
           </span>
         </div>
       </div>
@@ -85,8 +93,10 @@ const Sidebar = ({ onAbrirModal = () => {}, modalActivo = null }) => {
 
         <button
           type="button"
-          onClick={() => onAbrirModal("cita")}
-          className={`menu-btn ${modalActivo === "cita" ? "active" : ""}`}
+          onClick={() => onAbrirModal && onAbrirModal("cita")}
+          className={`menu-btn ${
+            modalActivo === "cita" ? "active" : ""
+          }`}
         >
           <FaPlus className="icon" />
           Agendar cita
