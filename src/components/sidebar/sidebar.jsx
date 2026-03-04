@@ -24,11 +24,15 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
     // Si es absoluta (http o https), forzar https
     if (/^https?:\/\//i.test(logoUrl)) {
-      return logoUrl.replace(/^http:\/\//i, "https://");
+      const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
+      console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
+      return httpsUrl;
     }
 
     // Si es relativa, agregar API_URL
-    return `${API_URL}/${logoUrl}`;
+    const fullUrl = `${API_URL}/${logoUrl}`;
+    console.log("Logo relativo convertido a URL completa:", fullUrl);
+    return fullUrl;
   };
 
   useEffect(() => {
@@ -37,6 +41,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        console.log("Usuario desde localStorage:", parsedUser);
 
         setUser({
           empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
@@ -45,6 +50,8 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
+    } else {
+      console.log("No hay usuario en localStorage");
     }
   }, []);
 
@@ -64,7 +71,8 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
             alt="Logo empresa"
             className="logo"
             onError={(e) => {
-              // Si falla la carga, mostrar placeholder
+              console.error("Error cargando la imagen del logo:", e.target.src);
+              // Mostrar placeholder en caso de error
               e.target.onerror = null;
               e.target.src = null;
             }}
