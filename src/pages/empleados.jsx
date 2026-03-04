@@ -33,6 +33,7 @@ const Empleados = () => {
     } catch (error) {
       console.error("Error al cargar empleados:", error);
     }
+    console.log("Empleados cargados:", lista);
   };
 
   useEffect(() => {
