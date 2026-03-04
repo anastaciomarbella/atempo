@@ -1,27 +1,39 @@
-import React, { useState } from 'react';
-import Sidebar from '../sidebar/sidebar';
-import Header from '../header/header';
-import ModalNuevoEmpleado from '../modalNuevoEmpleado/modalNuevoEmpleado';
-import ModalNuevoClienteFrecuente from '../modalNuevoClienteFrecuente/modalNuevoClienteFrecuente';
-import ModalCita from '../modalCita/modalCita';
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../sidebar/sidebar";
+import Header from "../header/header";
+import ModalNuevoEmpleado from "../modalNuevoEmpleado/modalNuevoEmpleado";
+import ModalNuevoClienteFrecuente from "../modalNuevoClienteFrecuente/modalNuevoClienteFrecuente";
+import ModalCita from "../modalCita/modalCita";
 
-const AppLayout = ({ children }) => {
+const AppLayout = () => {
   const [modalActivo, setModalActivo] = useState(null);
 
   const cerrarModales = () => setModalActivo(null);
 
   return (
     <div className="main-layout">
-      <Sidebar onAbrirModal={setModalActivo} modalActivo={modalActivo} />
-      
+      <Sidebar
+        onAbrirModal={setModalActivo}
+        modalActivo={modalActivo}
+      />
+
       <main className="main-content">
         <Header />
-        {children}
+        <Outlet />
       </main>
 
-      {modalActivo === 'empleado' && <ModalNuevoEmpleado onClose={cerrarModales} />}
-      {modalActivo === 'cliente' && <ModalNuevoClienteFrecuente onClose={cerrarModales} />}
-      {modalActivo === 'cita' && <ModalCita modo="crear" onClose={cerrarModales} />}
+      {modalActivo === "empleado" && (
+        <ModalNuevoEmpleado onClose={cerrarModales} />
+      )}
+
+      {modalActivo === "cliente" && (
+        <ModalNuevoClienteFrecuente onClose={cerrarModales} />
+      )}
+
+      {modalActivo === "cita" && (
+        <ModalCita modo="crear" onClose={cerrarModales} />
+      )}
     </div>
   );
 };
