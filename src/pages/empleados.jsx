@@ -25,13 +25,19 @@ const Empleados = () => {
       if (!res.ok) throw new Error("Error al obtener empleados");
 
       const data = await res.json();
-      const lista = Array.isArray(data) ? data : data.data;
+      // fallback seguro
+      const lista = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : [];
 
-      console.log("Empleados cargados desde API:", lista); // depuración
+      console.log("Empleados cargados desde API:", lista);
 
-      setEmpleados(lista || []);
+      setEmpleados(lista);
     } catch (error) {
       console.error("Error al cargar empleados:", error);
+      setEmpleados([]); // garantizar arreglo
     }
   };
 
@@ -43,7 +49,7 @@ const Empleados = () => {
   // EDITAR
   // =========================
   const handleEditarClick = async (id_persona) => {
-    console.log("ID recibido para editar:", id_persona); // depuración
+    console.log("ID recibido para editar:", id_persona);
     if (!id_persona) {
       console.error("ID inválido, no se puede editar");
       return;
@@ -54,9 +60,9 @@ const Empleados = () => {
       if (!res.ok) throw new Error("No se pudo obtener el empleado");
 
       const data = await res.json();
-      console.log("Empleado obtenido para editar:", data); // depuración
+      console.log("Empleado obtenido para editar:", data);
 
-      setEmpleadoEditar(data);
+      setEmpleadoEditar(data || {});
       setMostrarModalEditar(true);
     } catch (error) {
       console.error("Error al obtener empleado:", error);
@@ -67,8 +73,8 @@ const Empleados = () => {
   // ELIMINAR
   // =========================
   const handleEliminarClick = (empleado) => {
-    console.log("Empleado seleccionado para eliminar:", empleado); // depuración
-    setEmpleadoEliminar(empleado);
+    console.log("Empleado seleccionado para eliminar:", empleado);
+    setEmpleadoEliminar(empleado || {});
     setMostrarModalEliminar(true);
   };
 
@@ -126,12 +132,12 @@ const Empleados = () => {
             </tr>
           ) : (
             empleados.map((emp) => {
-              const id = emp.id_persona || emp.id; // fallback si la API devuelve "id"
+              const id = emp.id_persona ?? emp.id ?? Math.random();
               return (
                 <tr key={id}>
-                  <td>{emp.nombre}</td>
-                  <td>{emp.email}</td>
-                  <td>{emp.telefono}</td>
+                  <td>{emp.nombre || "—"}</td>
+                  <td>{emp.email || "—"}</td>
+                  <td>{emp.telefono || "—"}</td>
                   <td>
                     <FaEdit
                       className="icono-editar"
@@ -161,9 +167,9 @@ const Empleados = () => {
         />
       )}
 
-      {mostrarModalEditar && empleadoEditar && (
+      {mostrarModalEditar && (
         <ModalUpdateEmpleado
-          empleado={empleadoEditar}
+          empleado={empleadoEditar || {}}
           onClose={() => setMostrarModalEditar(false)}
           onEmpleadoActualizado={() => {
             setMostrarModalEditar(false);
@@ -172,9 +178,9 @@ const Empleados = () => {
         />
       )}
 
-      {mostrarModalEliminar && empleadoEliminar && (
+      {mostrarModalEliminar && (
         <ModalConfirmacion
-          mensaje={`Se eliminará a ${empleadoEliminar.nombre}. Esta acción no se puede deshacer.`}
+          mensaje={`Se eliminará a ${empleadoEliminar?.nombre || "este empleado"}. Esta acción no se puede deshacer.`}
           onConfirmar={handleConfirmarEliminar}
           onCancelar={() => {
             setMostrarModalEliminar(false);
