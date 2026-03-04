@@ -14,25 +14,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   const [user, setUser] = useState({
     nombre_usuario: "Usuario",
-    logoUsuario: null,
   });
-
-  // Función para obtener URL segura del logo de Supabase
-  const getSafeLogoUrl = (logoUrl) => {
-    if (!logoUrl || logoUrl === "null" || logoUrl.trim() === "") {
-      console.log("Logo vacío o null, se usará placeholder");
-      return null;
-    }
-
-    // Si ya es URL completa
-    if (/^https?:\/\//i.test(logoUrl)) {
-      return logoUrl;
-    }
-
-    // Si es solo el path dentro del bucket de Supabase
-    const supabasePublicUrl = `https://bjstsqvzzczjiahlxffp.supabase.co/storage/v1/object/public/bucket_logo/${logoUrl}`;
-    return supabasePublicUrl;
-  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -43,7 +25,6 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         setUser({
           nombre_usuario: parsedUser.nombre_usuario || "Usuario",
-          logoUsuario: getSafeLogoUrl(parsedUser.logo_url),
         });
       } catch (error) {
         console.error("Error leyendo usuario:", error);
@@ -59,24 +40,11 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-      {/* LOGO USUARIO */}
+      {/* PERFIL USUARIO */}
       <div className="logo-section">
-        {user.logoUsuario ? (
-          <img
-            src={user.logoUsuario}
-            alt="Logo usuario"
-            className="logo"
-            onError={(e) => {
-              console.log("Error cargando la imagen del logo:", e.target.src);
-              e.target.onerror = null;
-              e.target.src = "/placeholder-logo.png"; // placeholder local
-            }}
-          />
-        ) : (
-          <div className="logo-placeholder">
-            {user.nombre_usuario.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <div className="logo-placeholder">
+          {user.nombre_usuario.charAt(0).toUpperCase()}
+        </div>
         <h2 className="brand-name">{user.nombre_usuario}</h2>
       </div>
 

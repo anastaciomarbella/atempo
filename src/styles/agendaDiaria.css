@@ -1,6 +1,8 @@
 .calendar-container {
   padding: 20px;
   font-family: Arial, sans-serif;
+  background-color: #0f172a; /* Fondo general */
+  color: #f1f5f9;
 }
 
 /* Barra superior */
@@ -14,14 +16,18 @@
 .top-bar button {
   padding: 6px 12px;
   cursor: pointer;
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 6px;
 }
 
 /* Contenedor principal */
 .agenda-wrapper {
   display: flex;
   flex-direction: column;
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid #334155;
+  background: #1e293b;
 }
 
 /* Cada fila de hora */
@@ -29,40 +35,52 @@
   display: grid;
   grid-template-columns: 80px 1fr;
   min-height: 70px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid #334155;
 }
 
 /* Columna izquierda (hora) */
 .hour-label {
-  background: #f8f9fa;
-  border-right: 1px solid #e5e5e5;
+  background: #111827;
+  border-right: 1px solid #334155;
   padding: 6px;
   font-size: 12px;
-  color: #555;
+  font-weight: 600;
+  color: #f1f5f9;
 }
 
 /* Celda donde van las citas */
 .hour-slot {
   padding: 5px;
   position: relative;
+  background-color: #1e293b;
 }
 
 /* Tarjeta de cita */
 .event-card {
-  border-radius: 6px;
+  background-color: #3b82f6; /* Azul vibrante */
+  border-radius: 8px;
   padding: 6px;
   font-size: 12px;
   margin-bottom: 4px;
   cursor: pointer;
-  color: #000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hover elegante */
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.4);
 }
 
 /* Texto interno */
 .event-time {
   font-size: 11px;
+  font-weight: 600;
 }
 
 .event-client {
   font-size: 11px;
+  opacity: 0.9;
 }

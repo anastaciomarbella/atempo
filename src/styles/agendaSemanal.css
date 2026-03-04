@@ -2,6 +2,8 @@
   padding: 20px;
   width: 100%;
   box-sizing: border-box;
+  background-color: #0f172a; /* Fondo general */
+  color: #f1f5f9;
 }
 
 /* Barra superior */
@@ -15,6 +17,10 @@
 .top-bar button {
   padding: 6px 12px;
   cursor: pointer;
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 6px;
 }
 
 /* ================== GRID PRINCIPAL ================== */
@@ -22,48 +28,54 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  border: 1px solid #ddd;
+  border: 1px solid #334155;
+  background-color: #1e293b;
 }
 
 /* Encabezados de días */
 .day-header {
-  border: 1px solid #ddd;
+  border: 1px solid #334155;
   padding: 10px;
   text-align: center;
-  font-weight: bold;
-  background-color: #f4f6f9;
+  font-weight: 600;
+  background-color: #0f172a;
+  color: #f1f5f9;
 }
 
 /* Celda vacía esquina */
 .hour-header {
-  border: 1px solid #ddd;
-  background-color: #f4f6f9;
+  border: 1px solid #334155;
+  background-color: #0f172a;
 }
 
 /* Columna de horas */
 .hour-label {
-  border: 1px solid #ddd;
+  border: 1px solid #334155;
   padding: 8px;
   text-align: center;
-  font-weight: bold;
-  background-color: #fafafa;
+  font-weight: 600;
+  background-color: #111827;
+  color: #f1f5f9;
 }
 
 /* Celdas normales */
 .calendar-cell {
-  border: 1px solid #eee;
+  border: 1px solid #334155;
   min-height: 80px;
   position: relative;
   padding: 4px;
+  background-color: #1e293b;
 }
 
 /* Evento */
 .event-card {
-  background-color: #cfe2ff;
+  background-color: #3b82f6; /* Azul vibrante */
+  color: white;
   padding: 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
   height: 100%;
   box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
