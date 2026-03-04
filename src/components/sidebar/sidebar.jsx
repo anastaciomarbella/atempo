@@ -31,7 +31,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         console.log("✅ Usuario parseado:", parsedUser);
 
         setUser({
-          nombre_usuario: parsedUser.nombre_usuario || "Usuario",
+          nombre_usuario: parsedUser.nombre || "Usuario",
           nombre_empresa: parsedUser.nombre_empresa || "Mi Empresa",
         });
       } catch (error) {
