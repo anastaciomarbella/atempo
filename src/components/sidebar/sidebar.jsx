@@ -26,9 +26,11 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         setUser({
           empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
-          empresaLogo: parsedUser.logo_url || null,
+          // Forzar HTTPS automáticamente
+          empresaLogo: parsedUser.logo_url
+            ? parsedUser.logo_url.replace(/^http:\/\//i, "https://")
+            : null,
         });
-
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
@@ -43,7 +45,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-
+      {/* LOGO */}
       <div className="logo-section">
         {user.empresaLogo ? (
           <img
@@ -51,6 +53,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
             alt="Logo empresa"
             className="logo"
             onError={(e) => {
+              // Si la imagen no carga, ocultarla
               e.target.onerror = null;
               e.target.style.display = "none";
             }}
@@ -64,6 +67,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         <h2 className="brand-name">{user.empresaNombre}</h2>
       </div>
 
+      {/* MENÚ */}
       <nav className="menu">
         <NavLink
           to="/agenda-diaria"
@@ -104,6 +108,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
       </nav>
 
+      {/* CERRAR SESIÓN */}
       <button className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon logout-icon" />
         Cerrar sesión

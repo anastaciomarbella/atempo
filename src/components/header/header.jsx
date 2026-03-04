@@ -13,20 +13,19 @@ const Header = () => {
       try {
         const parsedUser = JSON.parse(storedUser);
 
-        // ✅ Usar los nombres reales que manda el backend
         setEmpresa(parsedUser.nombre_empresa || "Mi Empresa");
 
         if (parsedUser.logo_url) {
-          // 🔥 Si viene con http lo convertimos a https
-          if (parsedUser.logo_url.startsWith("http")) {
-            setLogo(
-              parsedUser.logo_url.replace("http://", "https://")
-            );
-          } else {
-            setLogo(`${API_URL}/${parsedUser.logo_url}`);
-          }
-        }
+          // Forzar HTTPS automáticamente si viene con http://
+          const safeUrl = parsedUser.logo_url.replace(/^http:\/\//i, "https://");
 
+          // Si la URL es relativa, agregar el API_URL
+          const finalUrl = safeUrl.startsWith("https://")
+            ? safeUrl
+            : `${API_URL}/${safeUrl}`;
+
+          setLogo(finalUrl);
+        }
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
@@ -36,12 +35,20 @@ const Header = () => {
   return (
     <header className="top-header">
       <div className="empresa-container">
-        {logo && (
+        {logo ? (
           <img
             src={logo}
             alt="Logo empresa"
             className="empresa-logo"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = "none";
+            }}
           />
+        ) : (
+          <div className="logo-placeholder">
+            {empresa.charAt(0).toUpperCase()}
+          </div>
         )}
         <h1 className="business-name">{empresa}</h1>
       </div>
