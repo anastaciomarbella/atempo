@@ -6,21 +6,17 @@ const Header = () => {
   const [empresa, setEmpresa] = useState("Mi Empresa");
   const [logo, setLogo] = useState(null);
 
-  // Función para obtener una URL segura para la imagen
+  // Función para obtener URL segura del logo
   const getSafeLogoUrl = (logoUrl) => {
-    if (!logoUrl) return null;
+    if (!logoUrl || logoUrl === "null") return null;
 
-    // Si la URL es absoluta (http o https), forzar https
+    // Absoluta: forzar HTTPS
     if (/^https?:\/\//i.test(logoUrl)) {
-      const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
-      console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
-      return httpsUrl;
+      return logoUrl.replace(/^http:\/\//i, "https://");
     }
 
-    // Si es relativa, agregar API_URL
-    const fullUrl = `${API_URL}/${logoUrl}`;
-    console.log("Logo relativo convertido a URL completa:", fullUrl);
-    return fullUrl;
+    // Relativa: agregar API_URL
+    return `${API_URL}/${logoUrl}`;
   };
 
   useEffect(() => {
@@ -31,13 +27,9 @@ const Header = () => {
         const parsedUser = JSON.parse(storedUser);
         console.log("Usuario desde localStorage:", parsedUser);
 
-        // Nombre de la empresa
         setEmpresa(parsedUser.nombre_empresa || "Mi Empresa");
-
-        // URL segura del logo
-        const safeLogo = getSafeLogoUrl(parsedUser.logo_url);
-        console.log("URL final del logo:", safeLogo);
-        setLogo(safeLogo);
+        setLogo(getSafeLogoUrl(parsedUser.logo_url));
+        console.log("URL final del logo:", getSafeLogoUrl(parsedUser.logo_url));
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
@@ -56,9 +48,8 @@ const Header = () => {
             className="empresa-logo"
             onError={(e) => {
               console.error("Error cargando la imagen del logo:", e.target.src);
-              // Mostrar placeholder en caso de error
               e.target.onerror = null;
-              e.target.src = null;
+              e.target.src = null; // Mostrar placeholder
             }}
           />
         ) : (
