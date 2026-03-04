@@ -17,24 +17,35 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
     nombre_empresa: "Mi Empresa",
   });
 
+  console.log("🟢 Sidebar renderizado");
+
   useEffect(() => {
+    console.log("🟡 useEffect ejecutado");
+
     const storedUser = localStorage.getItem("user");
+    console.log("📦 localStorage user:", storedUser);
 
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        console.log("✅ Usuario parseado:", parsedUser);
 
         setUser({
           nombre_usuario: parsedUser.nombre_usuario || "Usuario",
           nombre_empresa: parsedUser.nombre_empresa || "Mi Empresa",
         });
       } catch (error) {
-        console.error("Error leyendo usuario:", error);
+        console.error("❌ Error parseando usuario:", error);
       }
+    } else {
+      console.warn("⚠️ No existe 'user' en localStorage");
     }
   }, []);
 
+  console.log("👤 Estado actual user:", user);
+
   const handleLogout = () => {
+    console.log("🚪 Cerrando sesión...");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/");
@@ -42,27 +53,22 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-      
-      {/* HEADER EMPRESA */}
       <div className="sidebar-header">
-
         <h1 className="company-title">
           {user.nombre_empresa?.toUpperCase()}
         </h1>
 
         <div className="user-info">
           <div className="avatar">
-            {user.nombre_usuario.charAt(0).toUpperCase()}
+            {user.nombre_usuario?.charAt(0).toUpperCase()}
           </div>
 
           <span className="user-name">
             {user.nombre_usuario}
           </span>
         </div>
-
       </div>
 
-      {/* MENU */}
       <nav className="menu">
         <NavLink
           to="/agenda-diaria"
@@ -103,12 +109,10 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
       </nav>
 
-      {/* LOGOUT */}
       <button className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>
-
     </aside>
   );
 };
