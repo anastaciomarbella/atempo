@@ -8,33 +8,11 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { API_URL } from "../../config";
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState({
-    empresaNombre: "Mi Empresa",
-    empresaLogo: null,
-  });
-
-  // Función para obtener URL segura
-  const getSafeLogoUrl = (logoUrl) => {
-    if (!logoUrl || logoUrl === "null" || logoUrl.trim() === "") {
-      console.log("Logo vacío o null, se usará placeholder");
-      return null;
-    }
-
-    if (/^https?:\/\//i.test(logoUrl)) {
-      const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
-      console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
-      return httpsUrl;
-    }
-
-    const fullUrl = `${API_URL}/${logoUrl}`;
-    console.log("Logo relativo convertido a URL completa:", fullUrl);
-    return fullUrl;
-  };
+  const [empresaNombre, setEmpresaNombre] = useState("Mi Empresa");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -42,11 +20,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         console.log("Usuario desde localStorage:", parsedUser);
-
-        setUser({
-          empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
-          empresaLogo: getSafeLogoUrl(parsedUser.logo_url),
-        });
+        setEmpresaNombre(parsedUser.nombre_empresa || "Mi Empresa");
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
@@ -63,25 +37,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-      {/* LOGO */}
+      {/* NOMBRE EMPRESA */}
       <div className="logo-section">
-        {user.empresaLogo ? (
-          <img
-            src={user.empresaLogo}
-            alt="Logo empresa"
-            className="logo"
-            onError={(e) => {
-              console.log("Error cargando la imagen del logo:", e.target.src);
-              e.target.onerror = null;
-              e.target.src = null; // mostrar placeholder
-            }}
-          />
-        ) : (
-          <div className="logo-placeholder">
-            {user.empresaNombre.charAt(0).toUpperCase()}
-          </div>
-        )}
-        <h2 className="brand-name">{user.empresaNombre}</h2>
+        <h2 className="brand-name">{empresaNombre}</h2>
       </div>
 
       {/* MENÚ */}
