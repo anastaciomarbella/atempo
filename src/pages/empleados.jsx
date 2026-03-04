@@ -17,9 +17,6 @@ const Empleados = () => {
   const [empleadoEditar, setEmpleadoEditar] = useState(null);
   const [empleadoEliminar, setEmpleadoEliminar] = useState(null);
 
-  // =============================
-  // CARGAR EMPLEADOS
-  // =============================
   const cargarEmpleados = async () => {
     try {
       const res = await fetch(`${API_URL}/api/personas`);
@@ -38,12 +35,9 @@ const Empleados = () => {
     cargarEmpleados();
   }, []);
 
-  // =============================
-  // EDITAR
-  // =============================
-  const handleEditarClick = async (id_persona) => {
+  const handleEditarClick = async (id) => {
     try {
-      const res = await fetch(`${API_URL}/api/personas/${id_persona}`);
+      const res = await fetch(`${API_URL}/api/personas/${id}`);
       if (!res.ok) throw new Error("No se pudo obtener el empleado");
 
       const data = await res.json();
@@ -56,9 +50,6 @@ const Empleados = () => {
     }
   };
 
-  // =============================
-  // ELIMINAR
-  // =============================
   const handleEliminarClick = (empleado) => {
     setEmpleadoEliminar(empleado);
     setMostrarModalEliminar(true);
@@ -67,7 +58,7 @@ const Empleados = () => {
   const handleConfirmarEliminar = async () => {
     try {
       const res = await fetch(
-        `${API_URL}/api/personas/${empleadoEliminar.id_persona}`,
+        `${API_URL}/api/personas/${empleadoEliminar.id}`,
         { method: "DELETE" }
       );
 
@@ -120,14 +111,14 @@ const Empleados = () => {
             </tr>
           ) : (
             empleados.map((emp) => (
-              <tr key={emp.id_persona}>
+              <tr key={emp.id}>
                 <td>{emp.nombre}</td>
                 <td>{emp.email}</td>
                 <td>{emp.telefono}</td>
                 <td>
                   <FaEdit
                     className="icono-editar"
-                    onClick={() => handleEditarClick(emp.id_persona)}
+                    onClick={() => handleEditarClick(emp.id)}
                     style={{ cursor: "pointer", marginRight: "10px" }}
                   />
 
@@ -143,7 +134,6 @@ const Empleados = () => {
         </tbody>
       </table>
 
-      {/* ================= MODAL NUEVO ================= */}
       {mostrarModalNuevo && (
         <ModalNuevoEmpleado
           onClose={() => setMostrarModalNuevo(false)}
@@ -154,7 +144,6 @@ const Empleados = () => {
         />
       )}
 
-      {/* ================= MODAL EDITAR ================= */}
       {mostrarModalEditar && empleadoEditar && (
         <ModalUpdateEmpleado
           empleado={empleadoEditar}
@@ -166,7 +155,6 @@ const Empleados = () => {
         />
       )}
 
-      {/* ================= MODAL ELIMINAR ================= */}
       {mostrarModalEliminar && empleadoEliminar && (
         <ModalConfirmacion
           mensaje={`Se eliminará a ${empleadoEliminar.nombre}. Esta acción no se puede deshacer.`}

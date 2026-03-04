@@ -28,7 +28,7 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
     }
 
     try {
-     const res = await fetch(`https://mi-api-atempo.onrender.com/api/personas/${empleado.id_persona}`,{
+     const res = await fetch(`https://mi-api-atempo.onrender.com/api/personas/${empleado.id}`,{
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, telefono }),
