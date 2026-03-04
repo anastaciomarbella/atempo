@@ -9,7 +9,7 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 
-const Sidebar = ({ onAbrirModal, modalActivo }) => {
+const Sidebar = ({ onAbrirModal = () => {}, modalActivo = null }) => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
@@ -17,38 +17,31 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
     nombre_empresa: "Mi Empresa",
   });
 
-  console.log("🟢 Sidebar renderizado");
-
   useEffect(() => {
-    console.log("🟡 useEffect ejecutado");
+    try {
+      const storedUser = localStorage.getItem("user");
 
-    const storedUser = localStorage.getItem("user");
-    console.log("📦 localStorage user:", storedUser);
+      if (!storedUser) return;
 
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        console.log("✅ Usuario parseado:", parsedUser);
+      const parsedUser = JSON.parse(storedUser);
 
-        setUser({
-          nombre_usuario: parsedUser.nombre || "Usuario",
-          nombre_empresa: parsedUser.nombre_empresa || "Mi Empresa",
-        });
-      } catch (error) {
-        console.error("❌ Error parseando usuario:", error);
-      }
-    } else {
-      console.warn("⚠️ No existe 'user' en localStorage");
+      setUser({
+        nombre_usuario: parsedUser?.nombre || "Usuario",
+        nombre_empresa: parsedUser?.nombre_empresa || "Mi Empresa",
+      });
+    } catch (error) {
+      console.error("Error leyendo usuario:", error);
     }
   }, []);
 
-  console.log("👤 Estado actual user:", user);
-
   const handleLogout = () => {
-    console.log("🚪 Cerrando sesión...");
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    navigate("/");
+    try {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      navigate("/");
+    } catch (error) {
+      console.error("Error cerrando sesión:", error);
+    }
   };
 
   return (
@@ -60,7 +53,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <div className="user-info">
           <div className="avatar">
-            {user.nombre_usuario?.charAt(0).toUpperCase()}
+            {user.nombre_usuario?.charAt(0)?.toUpperCase() || "U"}
           </div>
 
           <span className="user-name">
@@ -91,6 +84,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
 
         <button
+          type="button"
           onClick={() => onAbrirModal("cita")}
           className={`menu-btn ${modalActivo === "cita" ? "active" : ""}`}
         >
@@ -109,7 +103,11 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         </NavLink>
       </nav>
 
-      <button className="logout-btn" onClick={handleLogout}>
+      <button
+        type="button"
+        className="logout-btn"
+        onClick={handleLogout}
+      >
         <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>
