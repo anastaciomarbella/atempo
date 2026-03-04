@@ -16,84 +16,59 @@ const Empleados = () => {
 
   const [empleadoEditar, setEmpleadoEditar] = useState(null);
   const [empleadoEliminar, setEmpleadoEliminar] = useState(null);
-
   // =========================
-  // CARGAR EMPLEADOS
-  // =========================
-  const cargarEmpleados = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/personas`);
-      if (!res.ok) throw new Error("Error al obtener empleados");
+// CARGAR EMPLEADOS
+// =========================
+const cargarEmpleados = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/personas`);
+    if (!res.ok) throw new Error("Error al obtener empleados");
 
-      const data = await res.json();
-      const lista = Array.isArray(data) ? data : data.data;
+    const data = await res.json();
+    const lista = Array.isArray(data) ? data : data.data;
 
-      setEmpleados(lista || []);
+    console.log("Empleados cargados desde API:", lista); // <-- aquí vemos toda la data
 
-    } catch (error) {
-      console.error("Error al cargar empleados:", error);
-    }
-    console.log("Empleados cargados:", lista);
-  };
+    setEmpleados(lista || []);
 
-  useEffect(() => {
-    cargarEmpleados();
-  }, []);
+  } catch (error) {
+    console.error("Error al cargar empleados:", error);
+  }
+};
 
-  // =========================
-  // EDITAR
-  // =========================
-  const handleEditarClick = async (id_persona) => {
-    try {
-      const res = await fetch(`${API_URL}/api/personas/${id_persona}`);
-      if (!res.ok) throw new Error("No se pudo obtener el empleado");
+// =========================
+// EDITAR
+// =========================
+const handleEditarClick = async (id_persona) => {
+  console.log("ID recibido para editar:", id_persona); // <-- aquí vemos qué id llega
+  if (!id_persona) {
+    console.error("ID inválido, no se puede editar");
+    return;
+  }
 
-      const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/api/personas/${id_persona}`);
+    if (!res.ok) throw new Error("No se pudo obtener el empleado");
 
-      setEmpleadoEditar(data);
-      setMostrarModalEditar(true);
+    const data = await res.json();
+    console.log("Empleado obtenido para editar:", data); // <-- aquí vemos el empleado
 
-    } catch (error) {
-      console.error("Error al obtener empleado:", error);
-    }
-  };
+    setEmpleadoEditar(data);
+    setMostrarModalEditar(true);
 
-  // =========================
-  // ELIMINAR
-  // =========================
-  const handleEliminarClick = (empleado) => {
-    setEmpleadoEliminar(empleado);
-    setMostrarModalEliminar(true);
-  };
+  } catch (error) {
+    console.error("Error al obtener empleado:", error);
+  }
+};
 
-  const handleConfirmarEliminar = async () => {
-    if (!empleadoEliminar?.id_persona) {
-      alert("Error: ID no válido");
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `${API_URL}/api/personas/${empleadoEliminar.id_persona}`,
-        { method: "DELETE" }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Error al eliminar empleado");
-      }
-
-      setMostrarModalEliminar(false);
-      setEmpleadoEliminar(null);
-      cargarEmpleados();
-
-    } catch (error) {
-      alert(error.message);
-      console.error("Error al eliminar:", error);
-    }
-  };
-
+// =========================
+// ELIMINAR
+// =========================
+const handleEliminarClick = (empleado) => {
+  console.log("Empleado seleccionado para eliminar:", empleado); // <-- ver el objeto
+  setEmpleadoEliminar(empleado);
+  setMostrarModalEliminar(true);
+};
   return (
     <div className="empleados-container">
 
