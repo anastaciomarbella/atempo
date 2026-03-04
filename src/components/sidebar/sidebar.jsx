@@ -8,32 +8,30 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { API_URL } from "../../config";
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
-    empresaNombre: "Mi Empresa",
-    empresaLogo: null,
+    nombre_usuario: "Usuario",
+    logoUsuario: null,
   });
 
-  // Función para obtener URL segura
+  // Función para obtener URL segura del logo de Supabase
   const getSafeLogoUrl = (logoUrl) => {
     if (!logoUrl || logoUrl === "null" || logoUrl.trim() === "") {
       console.log("Logo vacío o null, se usará placeholder");
       return null;
     }
 
+    // Si ya es URL completa
     if (/^https?:\/\//i.test(logoUrl)) {
-      const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
-      console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
-      return httpsUrl;
+      return logoUrl;
     }
 
-    const fullUrl = `${API_URL}/${logoUrl}`;
-    console.log("Logo relativo convertido a URL completa:", fullUrl);
-    return fullUrl;
+    // Si es solo el path dentro del bucket de Supabase
+    const supabasePublicUrl = `https://bjstsqvzzczjiahlxffp.supabase.co/storage/v1/object/public/bucket_logo/${logoUrl}`;
+    return supabasePublicUrl;
   };
 
   useEffect(() => {
@@ -44,14 +42,12 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
         console.log("Usuario desde localStorage:", parsedUser);
 
         setUser({
-          empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
-          empresaLogo: getSafeLogoUrl(parsedUser.logo_url),
+          nombre_usuario: parsedUser.nombre_usuario || "Usuario",
+          logoUsuario: getSafeLogoUrl(parsedUser.logo_url),
         });
       } catch (error) {
         console.error("Error leyendo usuario:", error);
       }
-    } else {
-      console.log("No hay usuario en localStorage");
     }
   }, []);
 
@@ -63,25 +59,25 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-      {/* LOGO */}
+      {/* LOGO USUARIO */}
       <div className="logo-section">
-        {user.empresaLogo ? (
+        {user.logoUsuario ? (
           <img
-            src={user.empresaLogo}
-            alt="Logo empresa"
+            src={user.logoUsuario}
+            alt="Logo usuario"
             className="logo"
             onError={(e) => {
               console.log("Error cargando la imagen del logo:", e.target.src);
               e.target.onerror = null;
-              e.target.src = null; // mostrar placeholder
+              e.target.src = "/placeholder-logo.png"; // placeholder local
             }}
           />
         ) : (
           <div className="logo-placeholder">
-            {user.empresaNombre.charAt(0).toUpperCase()}
+            {user.nombre_usuario.charAt(0).toUpperCase()}
           </div>
         )}
-        <h2 className="brand-name">{user.empresaNombre}</h2>
+        <h2 className="brand-name">{user.nombre_usuario}</h2>
       </div>
 
       {/* MENÚ */}
