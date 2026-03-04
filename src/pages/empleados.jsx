@@ -1,35 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import '../styles/empleados.css';
-import { FaUserPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import ModalNuevoEmpleado from '../components/modalNuevoEmpleado/modalNuevoEmpleado';
-import ModalUpdateEmpleado from '../components/modalUpdateEmpleado/modalUpdateEmpleado';
-import ModalConfirmacion from '../components/modalConfirmar/modalConfirmarDelete';
+import React, { useEffect, useState } from "react";
 
 const API_URL = "https://mi-api-atempo.onrender.com";
 
-const Empleados = () => {
-
+const Personas = () => {
   const [empleados, setEmpleados] = useState([]);
-  const [mostrarModalNuevo, setMostrarModalNuevo] = useState(false);
-  const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
-  const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
-
-  const [empleadoEditar, setEmpleadoEditar] = useState(null);
   const [empleadoEliminar, setEmpleadoEliminar] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
 
-  // =========================
+  // ==============================
   // CARGAR EMPLEADOS
-  // =========================
+  // ==============================
   const cargarEmpleados = async () => {
     try {
       const res = await fetch(`${API_URL}/api/personas`);
-      if (!res.ok) throw new Error("Error al obtener empleados");
-
       const data = await res.json();
-      const lista = Array.isArray(data) ? data : data.data;
 
-      setEmpleados(lista || []);
+      console.log("Datos recibidos:", data);
+      console.table(data);
 
+      setEmpleados(data || []);
     } catch (error) {
       console.error("Error al cargar empleados:", error);
     }
@@ -39,150 +28,135 @@ const Empleados = () => {
     cargarEmpleados();
   }, []);
 
-  // =========================
+  // ==============================
   // EDITAR
-  // =========================
-  const handleEditarClick = async (id_persona) => {
-    try {
-      const res = await fetch(`${API_URL}/api/personas/${id_persona}`);
-      if (!res.ok) throw new Error("No se pudo obtener el empleado");
-
-      const data = await res.json();
-
-      setEmpleadoEditar(data);
-      setMostrarModalEditar(true);
-
-    } catch (error) {
-      console.error("Error al obtener empleado:", error);
-    }
+  // ==============================
+  const handleEditarClick = (empleado) => {
+    console.log("Editar:", empleado);
+    // aquí puedes navegar o abrir formulario
   };
 
-  // =========================
-  // ELIMINAR
-  // =========================
-  const handleEliminarClick = (empleado) => {
-    setEmpleadoEliminar(empleado);
-    setMostrarModalEliminar(true);
+  // ==============================
+  // ABRIR MODAL ELIMINAR
+  // ==============================
+  const handleEliminarClick = (id) => {
+    console.log("ID seleccionado para eliminar:", id);
+    setEmpleadoEliminar(id);
+    setMostrarModal(true);
   };
 
+  // ==============================
+  // CONFIRMAR ELIMINAR
+  // ==============================
   const handleConfirmarEliminar = async () => {
-    if (!empleadoEliminar?.id_persona) {
-      alert("Error: ID no válido");
-      return;
-    }
+    if (!empleadoEliminar) return;
+
+    console.log("Enviando DELETE con ID:", empleadoEliminar);
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/personas/${empleadoEliminar.id_persona}`,
-        { method: "DELETE" }
+      const response = await fetch(
+        `${API_URL}/api/personas/${empleadoEliminar}`,
+        {
+          method: "DELETE",
+        }
       );
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Error al eliminar empleado");
+      if (!response.ok) {
+        throw new Error("Error al eliminar persona");
       }
 
-      setMostrarModalEliminar(false);
+      alert("Persona eliminada correctamente");
+
+      setMostrarModal(false);
       setEmpleadoEliminar(null);
       cargarEmpleados();
 
     } catch (error) {
-      alert(error.message);
-      console.error("Error al eliminar:", error);
+      console.error("Error al eliminar persona:", error);
     }
   };
 
   return (
-    <div className="empleados-container">
+    <div style={{ padding: "20px" }}>
+      <h2>Lista de Personas</h2>
 
-      <div className="header-empleados">
-        <h2 className="titulo-empleados">Empleados</h2>
-
-        <button
-          className="nuevo-empleado-btn"
-          onClick={() => setMostrarModalNuevo(true)}
-        >
-          Nuevo empleado <FaUserPlus />
-        </button>
-      </div>
-
-      <table className="tabla-empleados">
+      <table border="1" cellPadding="10">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Nombre</th>
-            <th>Correo electrónico</th>
-            <th>Teléfono</th>
-            <th>Opciones</th>
+            <th>Email</th>
+            <th>Telefono</th>
+            <th>Acciones</th>
           </tr>
         </thead>
 
         <tbody>
-          {empleados.length === 0 ? (
-            <tr>
-              <td colSpan="4" style={{ textAlign: "center" }}>
-                No hay empleados registrados
+          {empleados.map((emp) => (
+            <tr key={emp.id}>
+              <td>{emp.id}</td>
+              <td>{emp.nombre}</td>
+              <td>{emp.email}</td>
+              <td>{emp.telefono}</td>
+              <td>
+                <button onClick={() => handleEditarClick(emp)}>
+                  Editar
+                </button>
+
+                <button
+                  onClick={() => handleEliminarClick(emp.id)}
+                  style={{ marginLeft: "10px", color: "red" }}
+                >
+                  Eliminar
+                </button>
               </td>
             </tr>
-          ) : (
-            empleados.map((emp) => (
-              <tr key={emp.id_persona}>
-                <td>{emp.nombre}</td>
-                <td>{emp.email}</td>
-                <td>{emp.telefono}</td>
-                <td>
-                  <FaEdit
-                    className="icono-editar"
-                    onClick={() => handleEditarClick(emp.id_persona)}
-                    style={{ cursor: "pointer", marginRight: "10px" }}
-                  />
-
-                  <FaTrash
-                    className="icono-eliminar"
-                    onClick={() => handleEliminarClick(emp)}
-                    style={{ cursor: "pointer", color: "red" }}
-                  />
-                </td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
 
-      {mostrarModalNuevo && (
-        <ModalNuevoEmpleado
-          onClose={() => setMostrarModalNuevo(false)}
-          onEmpleadoCreado={() => {
-            setMostrarModalNuevo(false);
-            cargarEmpleados();
-          }}
-        />
-      )}
+      {/* ==============================
+          MODAL SIMPLE
+         ============================== */}
 
-      {mostrarModalEditar && empleadoEditar && (
-        <ModalUpdateEmpleado
-          empleado={empleadoEditar}
-          onClose={() => setMostrarModalEditar(false)}
-          onEmpleadoActualizado={() => {
-            setMostrarModalEditar(false);
-            cargarEmpleados();
+      {mostrarModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
-        />
-      )}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+            }}
+          >
+            <h3>¿Seguro que deseas eliminar?</h3>
 
-      {mostrarModalEliminar && empleadoEliminar && (
-        <ModalConfirmacion
-          mensaje={`Se eliminará a ${empleadoEliminar.nombre}. Esta acción no se puede deshacer.`}
-          onConfirmar={handleConfirmarEliminar}
-          onCancelar={() => {
-            setMostrarModalEliminar(false);
-            setEmpleadoEliminar(null);
-          }}
-        />
-      )}
+            <button onClick={handleConfirmarEliminar}>
+              Sí, eliminar
+            </button>
 
+            <button
+              onClick={() => setMostrarModal(false)}
+              style={{ marginLeft: "10px" }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Empleados;
+export default Personas;
