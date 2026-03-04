@@ -5,6 +5,7 @@ import Header from "../header/header";
 import ModalNuevoEmpleado from "../modalNuevoEmpleado/modalNuevoEmpleado";
 import ModalNuevoClienteFrecuente from "../modalNuevoClienteFrecuente/modalNuevoClienteFrecuente";
 import ModalCita from "../modalCita/modalCita";
+import "./appLayout.css";
 
 const AppLayout = () => {
   const [modalActivo, setModalActivo] = useState(null);
@@ -12,16 +13,19 @@ const AppLayout = () => {
   const cerrarModales = () => setModalActivo(null);
 
   return (
-    <div className="main-layout">
+    <div className="app-layout">
       <Sidebar
         onAbrirModal={setModalActivo}
         modalActivo={modalActivo}
       />
 
-      <main className="main-content">
+      <div className="main-content">
         <Header />
-        <Outlet />
-      </main>
+
+        <div className="page-content">
+          <Outlet />
+        </div>
+      </div>
 
       {modalActivo === "empleado" && (
         <ModalNuevoEmpleado onClose={cerrarModales} />
