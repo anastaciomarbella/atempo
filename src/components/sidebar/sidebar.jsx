@@ -8,7 +8,7 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { API_URL } from "../../config";
+import { API_URL } from "../../config"; // tu URL base de API
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
@@ -20,15 +20,22 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   // Función para obtener URL segura del logo
   const getSafeLogoUrl = (logoUrl) => {
-    if (!logoUrl || logoUrl === "null") return null;
+    if (!logoUrl || logoUrl === "null" || logoUrl.trim() === "") {
+      console.log("Logo vacío o null, se usará placeholder");
+      return null;
+    }
 
     // Absoluta: forzar HTTPS
     if (/^https?:\/\//i.test(logoUrl)) {
-      return logoUrl.replace(/^http:\/\//i, "https://");
+      const httpsUrl = logoUrl.replace(/^http:\/\//i, "https://");
+      console.log("Logo absoluto convertido a HTTPS:", httpsUrl);
+      return httpsUrl;
     }
 
     // Relativa: agregar API_URL
-    return `${API_URL}/${logoUrl}`;
+    const fullUrl = `${API_URL}/${logoUrl}`;
+    console.log("Logo relativo convertido a URL completa:", fullUrl);
+    return fullUrl;
   };
 
   useEffect(() => {
@@ -67,9 +74,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
             alt="Logo empresa"
             className="logo"
             onError={(e) => {
-              console.error("Error cargando la imagen del logo:", e.target.src);
+              console.log("Error cargando la imagen del logo:", e.target.src);
               e.target.onerror = null;
-              e.target.src = null; // Mostrar placeholder
+              e.target.src = null; // mostrar placeholder
             }}
           />
         ) : (
