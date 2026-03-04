@@ -8,6 +8,7 @@ import {
   FaUsers,
   FaSignOutAlt,
 } from "react-icons/fa";
+import { API_URL } from "../../config"; // Asegúrate de tener tu API_URL
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
@@ -16,6 +17,19 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
     empresaNombre: "Mi Empresa",
     empresaLogo: null,
   });
+
+  // Función para obtener URL segura del logo
+  const getSafeLogoUrl = (logoUrl) => {
+    if (!logoUrl) return null;
+
+    // Si es absoluta (http o https), forzar https
+    if (/^https?:\/\//i.test(logoUrl)) {
+      return logoUrl.replace(/^http:\/\//i, "https://");
+    }
+
+    // Si es relativa, agregar API_URL
+    return `${API_URL}/${logoUrl}`;
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -26,10 +40,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         setUser({
           empresaNombre: parsedUser.nombre_empresa || "Mi Empresa",
-          // Forzar HTTPS automáticamente
-          empresaLogo: parsedUser.logo_url
-            ? parsedUser.logo_url.replace(/^http:\/\//i, "https://")
-            : null,
+          empresaLogo: getSafeLogoUrl(parsedUser.logo_url),
         });
       } catch (error) {
         console.error("Error leyendo usuario:", error);
@@ -53,9 +64,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
             alt="Logo empresa"
             className="logo"
             onError={(e) => {
-              // Si la imagen no carga, ocultarla
+              // Si falla la carga, mostrar placeholder
               e.target.onerror = null;
-              e.target.style.display = "none";
+              e.target.src = null;
             }}
           />
         ) : (
@@ -63,7 +74,6 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
             {user.empresaNombre.charAt(0).toUpperCase()}
           </div>
         )}
-
         <h2 className="brand-name">{user.empresaNombre}</h2>
       </div>
 
