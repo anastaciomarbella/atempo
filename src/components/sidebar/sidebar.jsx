@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -9,14 +9,20 @@ import {
   FaSignOutAlt,
   FaStore,
   FaUserCircle,
+  FaCopy,
 } from "react-icons/fa";
 
-const Sidebar = ({ onAbrirModal, modalActivo }) => {
+const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => {
   const navigate = useNavigate();
+  const [copiado, setCopiado] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
+  const slug = user.slug;
+  const linkPublico = slug
+    ? `${window.location.origin}/reservar/${slug}`
+    : null;
 
   useEffect(() => {
     console.log("🟡 Sidebar montado correctamente");
@@ -26,6 +32,12 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  const copiarLink = () => {
+    navigator.clipboard.writeText(linkPublico);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   };
 
   return (
@@ -45,16 +57,33 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
       <div className="sidebar-divider" />
 
+      {/* 🔹 LINK PÚBLICO */}
+      {linkPublico && (
+        <div className="link-publico">
+          <span>Link de reservas para clientes:</span>
+          <button onClick={copiarLink} className="btn-copiar-link">
+            <FaCopy />
+            {copiado ? "¡Copiado!" : "Copiar link"}
+          </button>
+        </div>
+      )}
+
+      <div className="sidebar-divider" />
+
       {/* 🔹 MENÚ */}
       <nav className="menu">
         <NavLink
           to="/agenda-diaria"
+          onClick={onMarcarVistas}
           className={({ isActive }) =>
             isActive && modalActivo !== "cita" ? "active" : ""
           }
         >
           <FaCalendarDay className="icon" />
           Agenda diaria
+          {citasNuevas > 0 && (
+            <span className="badge-notificacion">{citasNuevas}</span>
+          )}
         </NavLink>
 
         <NavLink
