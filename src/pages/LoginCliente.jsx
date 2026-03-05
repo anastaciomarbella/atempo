@@ -63,7 +63,7 @@ const LoginCliente = () => {
       localStorage.setItem('clienteUser', JSON.stringify(data.cliente));
 
       // redirigir
-      navigate(`/reservar-cita/${slug}`);
+    navigate(`/reservar/${slug}`);
 
     } catch (err) {
       console.error(err);
