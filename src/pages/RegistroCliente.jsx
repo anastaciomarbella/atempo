@@ -36,7 +36,7 @@ const RegistroCliente = () => {
 
       localStorage.setItem('clienteToken', data.token);
       localStorage.setItem('clienteUser', JSON.stringify(data.cliente));
-      navigate(`/reservar/${slug}`);
+     navigate(`/login-cliente/${slug}`);
     } catch {
       setError('Error de conexión');
     } finally {

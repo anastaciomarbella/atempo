@@ -8,9 +8,14 @@ const API = 'https://mi-api-atempo.onrender.com';
 const LoginCliente = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ telefono: '', password: '' });
+
+  const [form, setForm] = useState({
+    telefono: '',
+    password: ''
+  });
 
   const handleChange = e => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -18,30 +23,40 @@ const LoginCliente = () => {
   };
 
   const handleSubmit = async () => {
+
     if (!form.telefono || !form.password) {
       setError('Todos los campos son obligatorios');
       return;
     }
 
     setLoading(true);
+
     try {
+
       const res = await fetch(`${API}/api/cliente-auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, slug })
+        body: JSON.stringify(form)
       });
 
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+
+      if (!res.ok) {
+        setError(data.error);
+        return;
+      }
 
       localStorage.setItem('clienteToken', data.token);
       localStorage.setItem('clienteUser', JSON.stringify(data.cliente));
-      navigate(`/reservar/${slug}`);
+
+      navigate(`/reservar-cita/${slug}`);
+
     } catch {
       setError('Error de conexión');
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
@@ -96,13 +111,13 @@ const LoginCliente = () => {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? 'Ingresando...' : 'Ingresar'}
+          {loading ? 'Entrando...' : 'Iniciar sesión'}
         </button>
 
         <div className="login-footer">
           ¿No tienes cuenta?{' '}
           <Link to={`/registro-cliente/${slug}`} className="login-link">
-            Regístrate
+            Crear cuenta
           </Link>
         </div>
 
