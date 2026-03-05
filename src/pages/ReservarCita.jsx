@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './reservarCita.css';
+import '../styles/reservarCita.css';
 
 const coloresDisponibles = [
   '#f16b74', '#56fa47', '#f58225', '#bbf7d0',
