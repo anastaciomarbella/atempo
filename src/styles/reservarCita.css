@@ -1,0 +1,124 @@
+/* ===== TABS ===== */
+.reservar-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.reservar-tabs button {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reservar-tabs button:hover {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.reservar-tabs .tab-activo {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: white;
+}
+
+.tab-logout {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+
+.tab-logout:hover {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+/* ===== MIS CITAS ===== */
+.mis-citas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.mis-citas-vacio {
+  text-align: center;
+  padding: 32px 0;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.cita-card {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cita-card p {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 0;
+}
+
+.cita-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cita-card-header strong {
+  color: #f1f5f9;
+  font-size: 15px;
+}
+
+.cita-estado {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.cita-estado.proxima {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+.cita-estado.pasada {
+  background-color: #334155;
+  color: #94a3b8;
+}
+
+.cita-pasada {
+  opacity: 0.6;
+}
+
+.btn-cancelar-cita {
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.btn-cancelar-cita:hover {
+  background-color: #ef4444;
+  color: white;
+}

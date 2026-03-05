@@ -11,6 +11,9 @@ import Empleados from "./pages/empleados";
 import ClientesFrecuentes from "./pages/clientesFrecuentes";
 import AvisoDePrivacidad from "./pages/avisoDePrivacidad";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ReservarCita from "./pages/ReservarCita";
+import RegistroCliente from "./pages/RegistroCliente";
+import LoginCliente from "./pages/LoginCliente";
 
 function App() {
   return (
@@ -20,10 +23,15 @@ function App() {
         {/* Ruta inicial */}
         <Route path="/" element={<Navigate to="/register" replace />} />
 
-        {/* Rutas públicas */}
+        {/* Rutas públicas del negocio */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
+
+        {/* Rutas públicas de clientes */}
+        <Route path="/reservar/:slug" element={<ReservarCita />} />
+        <Route path="/registro-cliente/:slug" element={<RegistroCliente />} />
+        <Route path="/login-cliente/:slug" element={<LoginCliente />} />
 
         {/* Rutas privadas con layout compartido */}
         <Route
