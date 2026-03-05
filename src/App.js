@@ -25,61 +25,20 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
-        {/* Rutas privadas */}
+        {/* Rutas privadas con layout compartido */}
         <Route
-          path="/agenda-diaria"
           element={
             <ProtectedRoute>
-              <AppLayout>
-                <AgendaDiaria />
-              </AppLayout>
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
-
-        <Route
-          path="/agenda-semanal"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <AgendaSemanal />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/empleados"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Empleados />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/clientes-frecuentes"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <ClientesFrecuentes />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/nuevos-empleados"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <RegisterEmployees />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route path="/agenda-diaria" element={<AgendaDiaria />} />
+          <Route path="/agenda-semanal" element={<AgendaSemanal />} />
+          <Route path="/empleados" element={<Empleados />} />
+          <Route path="/clientes-frecuentes" element={<ClientesFrecuentes />} />
+          <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/register" replace />} />
