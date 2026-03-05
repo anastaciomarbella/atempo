@@ -31,10 +31,8 @@ const AgendaDiaria = () => {
 
       const citasDelDia = data.filter((cita) => {
         if (!cita.fecha) return false;
-
         const [y, m, d] = cita.fecha.split("-");
         const fechaCita = new Date(y, m - 1, d);
-
         return (
           fechaCita.getFullYear() === fechaActual.getFullYear() &&
           fechaCita.getMonth() === fechaActual.getMonth() &&
@@ -134,8 +132,10 @@ const AgendaDiaria = () => {
         ))}
       </div>
 
+      {/* Modal abre siempre en modo "ver" */}
       {citaSeleccionada && (
         <ModalCita
+          modo="ver"
           cita={citaSeleccionada}
           onClose={cerrarModal}
           onSave={guardarYCerrar}

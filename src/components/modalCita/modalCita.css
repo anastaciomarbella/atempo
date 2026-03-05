@@ -5,7 +5,7 @@
   width: calc(100% - 262px);
   height: 100vh;
   backdrop-filter: blur(0px);
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
   transition: backdrop-filter 0.8s ease-in-out, background-color 0.8s ease-in-out;
   z-index: 100;
   opacity: 0;
@@ -14,7 +14,7 @@
 
 .agendar-overlay.visible {
   backdrop-filter: blur(3px);
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.5);
   opacity: 1;
   pointer-events: auto;
 }
@@ -24,10 +24,11 @@
   top: 50%;
   left: 58.5%;
   transform: translate(-50%, -50%);
-  background: white;
+  background: #1e293b;
   padding: 35px;
   border-radius: 18px;
-  box-shadow: 0 0px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
+  box-shadow: 0 0px 25px rgba(0, 0, 0, 0.6);
   z-index: 101;
   max-width: 786px;
   width: 100%;
@@ -40,7 +41,7 @@
   padding-top: 5px;
   top: 12px;
   right: 12px;
-  background: #d93025;
+  background: #ef4444;
   color: white;
   border: none;
   border-radius: 28%;
@@ -48,6 +49,11 @@
   width: 30px;
   height: 30px;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.agendar-cerrar-modal:hover {
+  background: #dc2626;
 }
 
 .agendar-titulo-modal {
@@ -55,6 +61,7 @@
   font-weight: 700;
   margin-bottom: 18px;
   text-align: center;
+  color: #f1f5f9;
 }
 
 .agendar-formulario {
@@ -69,17 +76,39 @@
   font-weight: 600;
   padding-left: 5px;
   margin-bottom: 5px;
+  color: #94a3b8;
 }
 
 .agendar-formulario input,
 .agendar-formulario select,
 .agendar-formulario textarea {
   padding: 12px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #334155;
   border-radius: 6px;
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
+  background-color: #0f172a;
+  color: #f1f5f9;
+  transition: border 0.2s ease;
+}
+
+.agendar-formulario input:focus,
+.agendar-formulario select:focus,
+.agendar-formulario textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.agendar-formulario input::placeholder,
+.agendar-formulario textarea::placeholder {
+  color: #475569;
+}
+
+/* Opciones del select */
+.agendar-formulario select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
 }
 
 .agendar-fila {
@@ -115,12 +144,17 @@
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline: 1px solid rgba(255, 255, 255, 0.15);
   outline-offset: 2px;
+  transition: transform 0.2s ease;
+}
+
+.agendar-color:hover {
+  transform: scale(1.1);
 }
 
 .agendar-color.seleccionado {
-  border: 4px solid #96CEDD;
+  border: 4px solid #f1f5f9;
   outline: 0px solid rgba(0, 0, 0, 0.1);
 }
 
@@ -129,7 +163,7 @@
   text-align: right;
   font-size: 12px;
   font-style: italic;
-  color: #666;
+  color: #475569;
   margin-top: -6px;
   margin-bottom: 10px;
 }
@@ -137,7 +171,7 @@
 .agendar-btn-guardar {
   grid-column: span 2;
   margin: 0 auto;
-  background: linear-gradient(to right, #1976d2, #1e88e5);
+  background: linear-gradient(to right, #1d4ed8, #3b82f6);
   color: white;
   border: none;
   padding: 10px 24px;
@@ -149,14 +183,16 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.25);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .agendar-btn-guardar:hover {
-  background: linear-gradient(to right, #1565c0, #1976d2);
+  background: linear-gradient(to right, #1e40af, #1d4ed8);
+  transform: translateY(-1px);
 }
 
+/* ===== DROPDOWN ===== */
 .dropdown-encargado {
   position: relative;
   width: 100%;
@@ -164,18 +200,19 @@
 
 .dropdown-boton {
   width: 100%;
-  padding: 8px 12px;
-  background-color: #f3f4f6;
-  border: 1px solid #ccc;
+  padding: 10px 12px;
+  background-color: #0f172a;
+  border: 1px solid #334155;
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
   font-size: 14px;
-  transition: background 0.2s ease;
+  color: #f1f5f9;
+  transition: border 0.2s ease;
 }
 
 .dropdown-boton:hover {
-  background-color: #e5e7eb;
+  border-color: #3b82f6;
 }
 
 .dropdown-lista {
@@ -183,22 +220,89 @@
   top: 100%;
   left: 0;
   width: 100%;
-  background: white;
-  border: 1px solid #ccc;
+  background: #1e293b;
+  border: 1px solid #334155;
   border-radius: 6px;
   margin-top: 4px;
   z-index: 10;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   max-height: 150px;
   overflow-y: auto;
 }
 
 .dropdown-lista li {
-  padding: 8px 12px;
+  padding: 10px 12px;
   cursor: pointer;
+  color: #f1f5f9;
+  font-size: 14px;
   transition: background 0.2s;
 }
 
 .dropdown-lista li:hover {
-  background-color: #f0f0f0;
+  background-color: #334155;
+}
+/* Botón eliminar */
+.agendar-btn-eliminar {
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease;
+}
+
+.agendar-btn-eliminar:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Botón cancelar edición */
+.agendar-btn-cancelar {
+  background: transparent;
+  border: 1px solid #94a3b8;
+  color: #94a3b8;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.agendar-btn-cancelar:hover {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+
+/* Contenedor de botones */
+.agendar-botones {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Inputs deshabilitados en modo ver */
+.agendar-formulario input:disabled,
+.agendar-formulario select:disabled,
+.dropdown-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mensaje */
+.mensaje {
+  grid-column: span 2;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 4px 0;
 }
