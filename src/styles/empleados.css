@@ -1,94 +1,104 @@
 .empleados-container {
-    padding: 25px 25px 25px 40px; /* derecha, abajo, izquierda */
+  padding: 25px 25px 25px 25px;
+  background-color: #0f172a;
+  min-height: 100vh;
+  color: #f1f5f9;
 }
 
 .header-empleados {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-left: 15px;
-    margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
 .titulo-empleados {
-    font-size: 27px;
-    font-weight: 700;
-    margin: 0;
+  font-size: 27px;
+  font-weight: 700;
+  margin: 0;
+  color: #f1f5f9;
 }
 
 .nuevo-empleado-btn {
-    background-color: white;
-    color: #1d1d1d;
-    border: 1.5px solid #1d1d1d;
-    padding: 8px 14px;
-    font-weight: 600;
-    font-size: 15px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
+  background-color: #1d4ed8;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .nuevo-empleado-btn:hover {
-    background-color: #f2f2f2;
+  background-color: #2563eb;
 }
 
-.tabla-empleados {    
-    margin-left: 10px;
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    font-size: 17px;
-    border-spacing: 0;
+.tabla-empleados {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #1e293b;
+  font-size: 16px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #334155;
 }
 
 .tabla-empleados th,
 .tabla-empleados td {
-    padding: 12px 10px;
-    text-align: center;
+  padding: 14px 12px;
+  text-align: center;
 }
 
 .tabla-empleados thead th {
-    font-weight: 700;
-    border-bottom: 1px solid #d1d5db;
+  font-weight: 700;
+  background-color: #0f172a;
+  color: #94a3b8;
+  border-bottom: 1px solid #334155;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .tabla-empleados tbody td {
-    border-bottom: 1px solid #d1d5db;
-}
-
-.avatar-empleado {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.tabla-empleados th:not(:first-child),
-.tabla-empleados td:not(:first-child) {
-    border-left: 1px solid #d1d5db;
+  border-bottom: 1px solid #334155;
+  color: #f1f5f9;
 }
 
 .tabla-empleados tbody tr:last-child td {
   border-bottom: none;
 }
 
-.header-empleados,
-.tabla-empleados {
-  margin-left: 0;
+.tabla-empleados tbody tr:hover td {
+  background-color: #334155;
+}
+
+.tabla-empleados th:not(:first-child),
+.tabla-empleados td:not(:first-child) {
+  border-left: 1px solid #334155;
+}
+
+.avatar-empleado {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #334155;
 }
 
 .icono-editar {
-    color: #2563eb;
-    cursor: pointer;
-    font-size: 200px;
+  color: #3b82f6;
+  cursor: pointer;
+  font-size: 18px;
 }
 
 .icono-borrar {
-    color: #dc2626;
-    cursor: pointer;
-    font-size: 200px;
-    margin-left: 30px;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: 16px;
 }

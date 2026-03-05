@@ -7,26 +7,22 @@ import {
   FaPlus,
   FaUsers,
   FaSignOutAlt,
+  FaStore,
+  FaUserCircle,
 } from "react-icons/fa";
 
 const Sidebar = ({ onAbrirModal, modalActivo }) => {
   const navigate = useNavigate();
 
-  // 🔍 Ver si el componente realmente se renderiza
-  console.log("🟢 Sidebar renderizado");
-
-  // 🔍 Ver qué props están llegando
-  console.log("📦 Props recibidas:", {
-    onAbrirModal,
-    modalActivo,
-  });
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
+  const nombreUsuario = user.nombre || "Usuario";
 
   useEffect(() => {
     console.log("🟡 Sidebar montado correctamente");
   }, []);
 
   const handleLogout = () => {
-    console.log("🔴 Logout ejecutado");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/");
@@ -34,16 +30,28 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
   return (
     <aside className="sidebar">
-      {console.log("🎯 Render del return ejecutado")}
+
+      {/* 🔹 EMPRESA Y USUARIO */}
+      <div className="sidebar-profile">
+        <div className="empresa-info">
+          <FaStore className="empresa-icon" />
+          <span className="empresa-nombre">{nombreEmpresa}</span>
+        </div>
+        <div className="usuario-info">
+          <FaUserCircle className="usuario-icon" />
+          <span className="usuario-nombre">{nombreUsuario}</span>
+        </div>
+      </div>
+
+      <div className="sidebar-divider" />
 
       {/* 🔹 MENÚ */}
       <nav className="menu">
         <NavLink
           to="/agenda-diaria"
-          className={({ isActive }) => {
-            console.log("📅 Agenda diaria isActive:", isActive);
-            return isActive && modalActivo !== "cita" ? "active" : "";
-          }}
+          className={({ isActive }) =>
+            isActive && modalActivo !== "cita" ? "active" : ""
+          }
         >
           <FaCalendarDay className="icon" />
           Agenda diaria
@@ -51,10 +59,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <NavLink
           to="/agenda-semanal"
-          className={({ isActive }) => {
-            console.log("📆 Agenda semanal isActive:", isActive);
-            return isActive && modalActivo !== "cita" ? "active" : "";
-          }}
+          className={({ isActive }) =>
+            isActive && modalActivo !== "cita" ? "active" : ""
+          }
         >
           <FaCalendarWeek className="icon" />
           Agenda semanal
@@ -62,16 +69,8 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <button
           type="button"
-          onClick={() => {
-            console.log("➕ Click en Agendar cita");
-            if (!onAbrirModal) {
-              console.error("❌ onAbrirModal es undefined");
-            }
-            onAbrirModal && onAbrirModal("cita");
-          }}
-          className={`menu-btn ${
-            modalActivo === "cita" ? "active" : ""
-          }`}
+          onClick={() => onAbrirModal && onAbrirModal("cita")}
+          className={`menu-btn ${modalActivo === "cita" ? "active" : ""}`}
         >
           <FaPlus className="icon" />
           Agendar cita
@@ -79,10 +78,9 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
 
         <NavLink
           to="/empleados"
-          className={({ isActive }) => {
-            console.log("👥 Empleados isActive:", isActive);
-            return isActive && modalActivo !== "cita" ? "active" : "";
-          }}
+          className={({ isActive }) =>
+            isActive && modalActivo !== "cita" ? "active" : ""
+          }
         >
           <FaUsers className="icon" />
           Empleados
@@ -90,11 +88,7 @@ const Sidebar = ({ onAbrirModal, modalActivo }) => {
       </nav>
 
       {/* 🔹 CERRAR SESIÓN */}
-      <button
-        type="button"
-        className="logout-btn"
-        onClick={handleLogout}
-      >
+      <button type="button" className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>
