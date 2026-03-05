@@ -12,32 +12,38 @@ const Empleados = () => {
   const [mostrarModalNuevo, setMostrarModalNuevo] = useState(false);
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
   const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
-
   const [empleadoEditar, setEmpleadoEditar] = useState(null);
   const [empleadoEliminar, setEmpleadoEliminar] = useState(null);
+
+  const token = localStorage.getItem("token");
+
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 
   // =========================
   // CARGAR EMPLEADOS
   // =========================
   const cargarEmpleados = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/personas`);
+      const res = await fetch(`${API_URL}/api/personas`, {
+        headers: authHeaders,
+      });
+
       if (!res.ok) throw new Error("Error al obtener empleados");
 
       const data = await res.json();
-      // fallback seguro
       const lista = Array.isArray(data)
         ? data
         : Array.isArray(data?.data)
         ? data.data
         : [];
 
-      console.log("Empleados cargados desde API:", lista);
-
       setEmpleados(lista);
     } catch (error) {
       console.error("Error al cargar empleados:", error);
-      setEmpleados([]); // garantizar arreglo
+      setEmpleados([]);
     }
   };
 
@@ -49,19 +55,16 @@ const Empleados = () => {
   // EDITAR
   // =========================
   const handleEditarClick = async (id_persona) => {
-    console.log("ID recibido para editar:", id_persona);
-    if (!id_persona) {
-      console.error("ID inválido, no se puede editar");
-      return;
-    }
+    if (!id_persona) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/personas/${id_persona}`);
+      const res = await fetch(`${API_URL}/api/personas/${id_persona}`, {
+        headers: authHeaders,
+      });
+
       if (!res.ok) throw new Error("No se pudo obtener el empleado");
 
       const data = await res.json();
-      console.log("Empleado obtenido para editar:", data);
-
       setEmpleadoEditar(data || {});
       setMostrarModalEditar(true);
     } catch (error) {
@@ -73,7 +76,6 @@ const Empleados = () => {
   // ELIMINAR
   // =========================
   const handleEliminarClick = (empleado) => {
-    console.log("Empleado seleccionado para eliminar:", empleado);
     setEmpleadoEliminar(empleado || {});
     setMostrarModalEliminar(true);
   };
@@ -87,10 +89,10 @@ const Empleados = () => {
     try {
       const res = await fetch(`${API_URL}/api/personas/${empleadoEliminar.id_persona}`, {
         method: "DELETE",
+        headers: authHeaders,
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message || "Error al eliminar empleado");
 
       setMostrarModalEliminar(false);
@@ -126,7 +128,7 @@ const Empleados = () => {
         <tbody>
           {empleados.length === 0 ? (
             <tr>
-              <td colSpan="4" style={{ textAlign: "center" }}>
+              <td colSpan="4" style={{ textAlign: "center", padding: "20px" }}>
                 No hay empleados registrados
               </td>
             </tr>
@@ -147,7 +149,7 @@ const Empleados = () => {
                     <FaTrash
                       className="icono-eliminar"
                       onClick={() => handleEliminarClick(emp)}
-                      style={{ cursor: "pointer", color: "red" }}
+                      style={{ cursor: "pointer", color: "#ef4444" }}
                     />
                   </td>
                 </tr>
