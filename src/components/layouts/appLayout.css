@@ -7,11 +7,13 @@
   background: #f5f6fa;
 }
 
+/* ✅ appLayout.css */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  margin-left: 240px; /* ← agrega esta línea */
 }
 
 .page-content {
