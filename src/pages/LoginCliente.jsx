@@ -6,6 +6,7 @@ import '../styles/login.css';
 const API = 'https://mi-api-atempo.onrender.com';
 
 const LoginCliente = () => {
+
   const { slug } = useParams();
   const navigate = useNavigate();
 
@@ -17,8 +18,12 @@ const LoginCliente = () => {
     password: ''
   });
 
-  const handleChange = e => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+
     setError('');
   };
 
@@ -35,35 +40,46 @@ const LoginCliente = () => {
 
       const res = await fetch(`${API}/api/cliente-auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          telefono: form.telefono,
+          password: form.password,
+          slug: slug
+        })
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error);
+        setError(data.error || 'Error al iniciar sesión');
+        setLoading(false);
         return;
       }
 
+      // guardar datos
       localStorage.setItem('clienteToken', data.token);
       localStorage.setItem('clienteUser', JSON.stringify(data.cliente));
 
+      // redirigir
       navigate(`/reservar-cita/${slug}`);
 
-    } catch {
-      setError('Error de conexión');
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError('Error de conexión con el servidor');
     }
 
+    setLoading(false);
   };
 
   return (
     <div className="login-container">
+
       <div className="login-card show">
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
+
           <img
             src={logo}
             alt="Logo"
@@ -76,11 +92,14 @@ const LoginCliente = () => {
               boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
             }}
           />
+
           <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Iniciar sesión</h2>
+
         </div>
 
         <div className="input-group">
+
           <input
             type="tel"
             name="telefono"
@@ -89,10 +108,15 @@ const LoginCliente = () => {
             value={form.telefono}
             onChange={handleChange}
           />
-          <label className="floating-label-text">Teléfono</label>
+
+          <label className="floating-label-text">
+            Teléfono
+          </label>
+
         </div>
 
         <div className="input-group">
+
           <input
             type="password"
             name="password"
@@ -101,10 +125,18 @@ const LoginCliente = () => {
             value={form.password}
             onChange={handleChange}
           />
-          <label className="floating-label-text">Contraseña</label>
+
+          <label className="floating-label-text">
+            Contraseña
+          </label>
+
         </div>
 
-        {error && <div className="login-error">{error}</div>}
+        {error && (
+          <div className="login-error">
+            {error}
+          </div>
+        )}
 
         <button
           className="login-button"
@@ -115,13 +147,20 @@ const LoginCliente = () => {
         </button>
 
         <div className="login-footer">
+
           ¿No tienes cuenta?{' '}
-          <Link to={`/registro-cliente/${slug}`} className="login-link">
+
+          <Link
+            to={`/registro-cliente/${slug}`}
+            className="login-link"
+          >
             Crear cuenta
           </Link>
+
         </div>
 
       </div>
+
     </div>
   );
 };
