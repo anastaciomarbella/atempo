@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 
 const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => {
+
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
 
@@ -23,16 +24,8 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
 
-  /* URL base de Supabase Storage */
-  const SUPABASE_STORAGE =
-    "https://bjstsqvzzczjiahlxffp.supabase.co/storage/v1/object/public/logo/";
-
-  /* Construir URL del logo */
-  const logoEmpresa = user.logo_url
-    ? user.logo_url.startsWith("http")
-      ? user.logo_url
-      : `${SUPABASE_STORAGE}${user.logo_url}`
-    : null;
+  /* usar directamente la url que viene del backend */
+  const logoEmpresa = user.logo_url || null;
 
   const linkPublico = slug
     ? `${window.location.origin}/reservar/${slug}`
@@ -45,18 +38,22 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   };
 
   const copiarLink = () => {
+    if (!linkPublico) return;
+
     navigator.clipboard.writeText(linkPublico);
     setCopiado(true);
+
     setTimeout(() => setCopiado(false), 2000);
   };
 
   return (
     <aside className="sidebar">
 
-      {/* EMPRESA Y USUARIO */}
+      {/* EMPRESA */}
       <div className="sidebar-profile">
 
         <div className="empresa-info">
+
           {logoEmpresa ? (
             <img
               src={logoEmpresa}
@@ -67,12 +64,21 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
             <FaStore className="empresa-icon" />
           )}
 
-          <span className="empresa-nombre">{nombreEmpresa}</span>
+          <span className="empresa-nombre">
+            {nombreEmpresa}
+          </span>
+
         </div>
 
+        {/* USUARIO */}
         <div className="usuario-info">
+
           <FaUserCircle className="usuario-icon" />
-          <span className="usuario-nombre">{nombreUsuario}</span>
+
+          <span className="usuario-nombre">
+            {nombreUsuario}
+          </span>
+
         </div>
 
       </div>
@@ -82,13 +88,18 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
       {/* LINK PUBLICO */}
       {linkPublico && (
         <div className="link-publico">
+
           <span>Link de reservas para clientes:</span>
 
-          <button onClick={copiarLink} className="btn-copiar-link">
+          <button
+            onClick={copiarLink}
+            className="btn-copiar-link"
+          >
             <FaCopy />
 
             {copiado ? "¡Copiado!" : "Copiar link"}
           </button>
+
         </div>
       )}
 
@@ -112,6 +123,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
               {citasNuevas}
             </span>
           )}
+
         </NavLink>
 
         <NavLink
@@ -158,7 +170,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
         Configuración
       </NavLink>
 
-      {/* CERRAR SESION */}
+      {/* LOGOUT */}
       <button
         type="button"
         className="logout-btn"
