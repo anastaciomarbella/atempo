@@ -17,91 +17,100 @@ const Configuracion = () => {
   });
 
   const [preview, setPreview] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-
     setForm({
-      nombre: user.nombre || "",
+      nombre:         user.nombre         || "",
       nombre_empresa: user.nombre_empresa || "",
-      telefono: user.telefono || "",
-      slug: user.slug || "",
+      telefono:       user.telefono       || "",
+      slug:           user.slug           || "",
       logo: null
     });
-
     setPreview(user.logo_url || null);
-
   }, []);
 
   const handleChange = (e) => {
-
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
-
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleLogo = (e) => {
-
     const file = e.target.files[0];
-
     if (!file) return;
-
-    setForm({
-      ...form,
-      logo: file
-    });
-
+    setForm({ ...form, logo: file });
     setPreview(URL.createObjectURL(file));
-
   };
 
   const guardarCambios = async () => {
-
-    const formData = new FormData();
-
-    formData.append("nombre", form.nombre);
-    formData.append("nombre_empresa", form.nombre_empresa);
-    formData.append("telefono", form.telefono);
-    formData.append("slug", form.slug);
-
-    if (form.logo) {
-      formData.append("logo", form.logo);
-    }
+    setCargando(true);
 
     try {
 
-      const res = await fetch(`${API}/api/empresas/${user.id_empresa}`, {
+      // ==============================
+      // 1. Actualizar PERSONAS (nombre + telefono)
+      // ==============================
+      const resPersona = await fetch(`${API}/api/personas/${user.id_persona}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre:   form.nombre,
+          telefono: form.telefono
+        })
+      });
+
+      const dataPersona = await resPersona.json();
+
+      if (!resPersona.ok) {
+        alert(dataPersona.mensaje || "Error al actualizar persona");
+        setCargando(false);
+        return;
+      }
+
+      // ==============================
+      // 2. Actualizar EMPRESAS (nombre_empresa + slug + logo)
+      // ==============================
+      const formData = new FormData();
+      formData.append("nombre_empresa", form.nombre_empresa);
+      formData.append("slug", form.slug);
+
+      if (form.logo) {
+        formData.append("logo", form.logo);
+      }
+
+      const resEmpresa = await fetch(`${API}/api/empresas/${user.id_empresa}`, {
         method: "PUT",
         body: formData
       });
 
-      const data = await res.json();
+      const dataEmpresa = await resEmpresa.json();
 
-      if (res.ok) {
-
-        const nuevoUser = {
-          ...user,
-          ...data
-        };
-
-        localStorage.setItem("user", JSON.stringify(nuevoUser));
-
-        alert("Configuración actualizada");
-
-      } else {
-
-        alert(data.message || "Error al actualizar");
-
+      if (!resEmpresa.ok) {
+        alert(dataEmpresa.mensaje || "Error al actualizar empresa");
+        setCargando(false);
+        return;
       }
 
-    } catch (err) {
+      // ==============================
+      // 3. Actualizar localStorage con todo
+      // ==============================
+      const nuevoUser = {
+        ...user,
+        nombre:         form.nombre,
+        telefono:       form.telefono,
+        nombre_empresa: dataEmpresa.nombre_empresa || form.nombre_empresa,
+        slug:           dataEmpresa.slug           || form.slug,
+        logo_url:       dataEmpresa.logo_url       || user.logo_url
+      };
 
+      localStorage.setItem("user", JSON.stringify(nuevoUser));
+      alert("✅ Configuración actualizada correctamente");
+
+    } catch (err) {
       console.error(err);
       alert("Error del servidor");
-
+    } finally {
+      setCargando(false);
     }
-
   };
 
   return (
@@ -116,11 +125,7 @@ const Configuracion = () => {
         <div className="logo-section">
 
           {preview ? (
-            <img
-              src={preview}
-              className="logo-preview"
-              alt="logo"
-            />
+            <img src={preview} className="logo-preview" alt="logo" />
           ) : (
             <div className="logo-placeholder">
               <FaImage />
@@ -180,9 +185,10 @@ const Configuracion = () => {
           <button
             className="guardar-btn"
             onClick={guardarCambios}
+            disabled={cargando}
           >
             <FaSave />
-            Guardar cambios
+            {cargando ? "Guardando..." : "Guardar cambios"}
           </button>
 
         </div>
