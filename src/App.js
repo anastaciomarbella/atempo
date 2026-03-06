@@ -24,17 +24,17 @@ function App() {
         {/* Ruta inicial */}
         <Route path="/" element={<Navigate to="/register" replace />} />
 
-        {/* Rutas públicas del negocio */}
+        {/* ================= PUBLICAS NEGOCIO ================= */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
-        {/* Rutas públicas clientes */}
+        {/* ================= PUBLICAS CLIENTES ================= */}
         <Route path="/reservar/:slug" element={<ReservarCita />} />
         <Route path="/registro-cliente/:slug" element={<RegistroCliente />} />
         <Route path="/login-cliente/:slug" element={<LoginCliente />} />
 
-        {/* Rutas privadas */}
+        {/* ================= PRIVADAS ================= */}
         <Route
           element={
             <ProtectedRoute>
@@ -50,8 +50,8 @@ function App() {
           <Route path="/configuracion" element={<Configuracion />} />
         </Route>
 
-        {/* fallback */}
-        <Route path="*" element={<Navigate to="/register" replace />} />
+        {/* ================= FALLBACK ================= */}
+        <Route path="*" element={<div style={{padding:40}}>Página no encontrada</div>} />
 
       </Routes>
     </Router>
