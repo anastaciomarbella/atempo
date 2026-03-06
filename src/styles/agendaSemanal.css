@@ -1,81 +1,156 @@
+/* ============================================================
+   agendaSemanal.css — Vibrante y llamativo
+   ============================================================ */
+
 .calendar-container {
   padding: 20px;
   width: 100%;
   box-sizing: border-box;
-  background-color: #0f172a; /* Fondo general */
+  background: linear-gradient(160deg, #0f0c29 0%, #1a1040 50%, #24243e 100%);
+  min-height: 100vh;
   color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Barra superior */
+/* ── BARRA SUPERIOR ── */
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 14px;
+  padding: 10px 18px;
+  backdrop-filter: blur(8px);
 }
 
 .top-bar button {
-  padding: 6px 12px;
+  padding: 8px 18px;
   cursor: pointer;
-  background-color: #1e293b;
-  color: #f1f5f9;
-  border: 1px solid #334155;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.2s ease;
 }
 
-/* ================== GRID PRINCIPAL ================== */
+.top-bar button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(102,126,234,0.5);
+}
 
+.top-bar strong {
+  color: #e2e8f0;
+  font-size: 15px;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+/* ── GRID PRINCIPAL ── */
 .calendar-grid {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  border: 1px solid #334155;
-  background-color: #1e293b;
+  border: 1px solid rgba(167,139,250,0.15);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  background: rgba(26,16,64,0.7);
 }
 
-/* Encabezados de días */
+/* ── ENCABEZADOS DE DÍAS ── */
 .day-header {
-  border: 1px solid #334155;
-  padding: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 8px;
   text-align: center;
-  font-weight: 600;
-  background-color: #0f172a;
-  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 12px;
+  background: linear-gradient(135deg, #1a1040, #24243e);
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 }
 
-/* Celda vacía esquina */
+/* ── CELDA ESQUINA ── */
 .hour-header {
-  border: 1px solid #334155;
-  background-color: #0f172a;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(15,12,41,0.9);
 }
 
-/* Columna de horas */
+/* ── COLUMNA DE HORAS ── */
 .hour-label {
-  border: 1px solid #334155;
+  border: 1px solid rgba(255,255,255,0.06);
   padding: 8px;
   text-align: center;
-  font-weight: 600;
-  background-color: #111827;
-  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 12px;
+  background: rgba(15,12,41,0.8);
+  color: #a78bfa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.03em;
 }
 
-/* Celdas normales */
+/* ── CELDAS NORMALES ── */
 .calendar-cell {
-  border: 1px solid #334155;
+  border: 1px solid rgba(255,255,255,0.04);
   min-height: 80px;
   position: relative;
   padding: 4px;
-  background-color: #1e293b;
+  background: rgba(26,16,64,0.5);
+  transition: background 0.15s;
 }
 
-/* Evento */
+.calendar-cell:hover {
+  background: rgba(102,126,234,0.08);
+}
+
+/* ── EVENTO ── */
 .event-card {
-  background-color: #3b82f6; /* Azul vibrante */
   color: white;
-  padding: 6px;
+  padding: 6px 8px;
   border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
   height: 100%;
   box-sizing: border-box;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  border-left: 3px solid rgba(255,255,255,0.35);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+.event-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+.event-card strong {
+  font-size: 12px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.event-time {
+  font-size: 11px;
+  color: rgba(255,255,255,0.8);
+}
+
+.event-client {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 2px;
 }

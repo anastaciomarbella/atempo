@@ -17,15 +17,17 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const [copiado, setCopiado] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
+  const logoEmpresa = user.logo_url; // 🔹 logo
+
   const linkPublico = slug
     ? `${window.location.origin}/reservar/${slug}`
     : null;
 
   useEffect(() => {
-    console.log("🟡 Sidebar montado correctamente");
   }, []);
 
   const handleLogout = () => {
@@ -45,10 +47,20 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
       {/* 🔹 EMPRESA Y USUARIO */}
       <div className="sidebar-profile">
+
         <div className="empresa-info">
-          <FaStore className="empresa-icon" />
+          {logoEmpresa ? (
+            <img
+              src={logoEmpresa}
+              alt="Logo empresa"
+              className="empresa-logo"
+            />
+          ) : (
+            <FaStore className="empresa-icon" />
+          )}
           <span className="empresa-nombre">{nombreEmpresa}</span>
         </div>
+
         <div className="usuario-info">
           <FaUserCircle className="usuario-icon" />
           <span className="usuario-nombre">{nombreUsuario}</span>
@@ -72,6 +84,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
       {/* 🔹 MENÚ */}
       <nav className="menu">
+
         <NavLink
           to="/agenda-diaria"
           onClick={onMarcarVistas}
@@ -114,6 +127,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
           <FaUsers className="icon" />
           Empleados
         </NavLink>
+
       </nav>
 
       {/* 🔹 CERRAR SESIÓN */}
@@ -121,6 +135,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
         <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>
+
     </aside>
   );
 };

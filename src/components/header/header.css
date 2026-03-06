@@ -1,31 +1,71 @@
+/* ============================================================
+   topHeader.css — Vibrante y llamativo
+   ============================================================ */
+
 .top-header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background-color: #0f172a;
-  padding: 12px 20px;
+  background: linear-gradient(135deg, #0f0c29, #1a1040);
+  padding: 12px 24px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid rgba(167,139,250,0.15);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+.top-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 55%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #a78bfa, #f472b6, #a78bfa, transparent);
 }
 
 .empresa-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .empresa-logo {
-  width: 45px;
-  height: 45px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #334155;
+  border: 2px solid #764ba2;
+  box-shadow: 0 0 16px rgba(118,75,162,0.55);
+  transition: all 0.2s;
+}
+
+.empresa-logo:hover {
+  box-shadow: 0 0 26px rgba(167,139,250,0.7);
+  transform: scale(1.05);
 }
 
 .business-name {
   font-size: 26px;
-  font-weight: 600;
-  color: #f1f5f9;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.01em;
+}
+.empresa-logo-header{
+  width:40px;
+  height:40px;
+  border-radius:8px;
+  object-fit:cover;
+  margin-right:10px;
+}
+
+.empresa-container{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }

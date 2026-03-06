@@ -1,20 +1,25 @@
+/* ============================================================
+   sidebar.css — Vibrante y llamativo
+   ============================================================ */
+
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   width: 240px;
-  background-color: #0f172a;
+  background: linear-gradient(180deg, #0f0c29 0%, #1a1040 50%, #24243e 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 16px 20px; /* ← quitamos justify-content space-between */
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+  padding: 24px 16px 20px;
+  box-shadow: 4px 0 24px rgba(102,126,234,0.2);
   z-index: 100;
   overflow-y: auto;
+  border-right: 1px solid rgba(167,139,250,0.15);
 }
 
-/* ===== PERFIL ===== */
+/* ── PERFIL ── */
 .sidebar-profile {
   width: 100%;
   display: flex;
@@ -27,15 +32,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #1e293b;
+  background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.2));
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #334155;
+  border-radius: 12px;
+  border: 1px solid rgba(167,139,250,0.25);
 }
 
 .empresa-icon {
   font-size: 20px;
-  color: #3b82f6;
+  color: #a78bfa;
   flex-shrink: 0;
 }
 
@@ -53,37 +58,37 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #1e293b;
+  background: rgba(255,255,255,0.05);
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid #334155;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .usuario-icon {
   font-size: 18px;
-  color: #94a3b8;
+  color: #f472b6;
   flex-shrink: 0;
 }
 
 .usuario-nombre {
   font-size: 13px;
   font-weight: 500;
-  color: #94a3b8;
+  color: #cbd5e1;
   text-transform: capitalize;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ===== DIVISOR ===== */
+/* ── DIVISOR ── */
 .sidebar-divider {
   width: 100%;
   height: 1px;
-  background-color: #334155;
+  background: linear-gradient(90deg, transparent, rgba(167,139,250,0.4), transparent);
   margin: 8px 0 16px;
 }
 
-/* ===== MENÚ ===== */
+/* ── MENÚ ── */
 .main-content {
   margin-left: 240px;
   padding-left: 10px;
@@ -92,97 +97,107 @@
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
-  margin-bottom: 20px; /* ← espacio antes del botón logout */
+  margin-bottom: 20px;
 }
 
 .menu a {
   text-decoration: none;
   color: #94a3b8;
-  font-size: 15px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
   padding: 11px 14px;
-  border-radius: 8px;
-  transition: background 0.2s ease, color 0.2s ease;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .menu a:hover {
-  background-color: #1e293b;
-  color: #f1f5f9;
+  background: rgba(167,139,250,0.12);
+  color: #e2e8f0;
+  border-color: rgba(167,139,250,0.2);
+  transform: translateX(3px);
 }
 
 .menu a.active {
-  background-color: #1d4ed8;
-  color: #ffffff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(102,126,234,0.35);
 }
 
 .menu-btn {
   text-align: left;
   width: 100%;
   background: none;
-  border: none;
-  font-size: 15px;
+  border: 1px solid transparent;
+  font-size: 14px;
   color: #94a3b8;
   padding: 11px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .menu-btn:hover {
-  background-color: #1e293b;
-  color: #f1f5f9;
+  background: rgba(167,139,250,0.12);
+  color: #e2e8f0;
+  border-color: rgba(167,139,250,0.2);
+  transform: translateX(3px);
 }
 
-.menu-btn:focus {
-  outline: none;
-}
+.menu-btn:focus { outline: none; }
 
 .menu-btn.active {
-  background-color: #1d4ed8;
-  color: #ffffff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(102,126,234,0.35);
 }
 
-/* ===== CERRAR SESIÓN ===== */
+/* ── CERRAR SESIÓN ── */
 .logout-btn {
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: center;
-  background-color: #1e293b;
-  border: 1px solid #ef4444;
-  color: #ef4444;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #f87171;
   width: 100%;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 11px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-  margin-top: 16px; /* ← separación natural del menú */
+  transition: all 0.2s ease;
+  margin-top: 16px;
+  font-family: inherit;
 }
 
 .logout-btn:hover {
-  background-color: #ef4444;
+  background: #ef4444;
   color: white;
+  box-shadow: 0 4px 15px rgba(239,68,68,0.35);
+  border-color: #ef4444;
 }
 
-.icon {
-  font-size: 17px;
-}
-/* ===== LINK PÚBLICO ===== */
+.icon { font-size: 17px; }
+
+/* ── LINK PÚBLICO ── */
 .link-publico {
   width: 100%;
-  background-color: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
@@ -197,11 +212,11 @@
 }
 
 .btn-copiar-link {
-  background-color: #1d4ed8;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
   color: white;
   border: none;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -209,17 +224,20 @@
   align-items: center;
   gap: 6px;
   justify-content: center;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn-copiar-link:hover {
-  background-color: #2563eb;
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6,182,212,0.35);
 }
 
-/* ===== BADGE NOTIFICACIONES ===== */
+/* ── BADGE NOTIFICACIONES ── */
 .badge-notificacion {
   margin-left: auto;
-  background-color: #ef4444;
+  background: linear-gradient(135deg, #f43f5e, #ec4899);
   color: white;
   font-size: 11px;
   font-weight: 700;
@@ -228,9 +246,17 @@
   min-width: 20px;
   text-align: center;
   animation: pulse 1.5s infinite;
+  box-shadow: 0 0 8px rgba(244,63,94,0.5);
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.95); }
+}
+.empresa-logo{
+  width:32px;
+  height:32px;
+  border-radius:6px;
+  object-fit:cover;
+  margin-right:8px;
 }
