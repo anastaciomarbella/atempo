@@ -9,6 +9,9 @@ const coloresDisponibles = [
 
 const API = 'https://mi-api-atempo.onrender.com';
 
+// ✅ Sanitiza URLs de imágenes para evitar Mixed Content
+const safeUrl = (url) => url?.replace('http://', 'https://') || '';
+
 const ReservarCita = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -202,7 +205,9 @@ const ReservarCita = () => {
 
   if (exito) return (
     <div className="rc-exito">
-      {empresa.logo_url && <img src={empresa.logo_url} alt="logo" className="rc-exito-logo" />}
+      {empresa.logo_url && (
+        <img src={safeUrl(empresa.logo_url)} alt="logo" className="rc-exito-logo" />
+      )}
       <h2>{empresa.nombre_empresa}</h2>
       <div className="rc-exito-icono">✅</div>
       <h3>¡Cita agendada con éxito!</h3>
@@ -224,7 +229,7 @@ const ReservarCita = () => {
         {/* HEADER */}
         <div className="rc-header">
           {empresa.logo_url
-            ? <img src={empresa.logo_url} alt="logo" className="rc-logo" />
+            ? <img src={safeUrl(empresa.logo_url)} alt="logo" className="rc-logo" />
             : <div className="rc-logo-placeholder">{empresa.nombre_empresa?.charAt(0).toUpperCase()}</div>
           }
           <h1 className="rc-empresa">{empresa.nombre_empresa}</h1>
