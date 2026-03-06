@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ReservarCita from "./pages/ReservarCita";
 import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
+import Configuracion from "./pages/configuracion";
 
 function App() {
   return (
@@ -28,12 +29,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
-        {/* Rutas públicas de clientes */}
+        {/* Rutas públicas clientes */}
         <Route path="/reservar/:slug" element={<ReservarCita />} />
         <Route path="/registro-cliente/:slug" element={<RegistroCliente />} />
         <Route path="/login-cliente/:slug" element={<LoginCliente />} />
 
-        {/* Rutas privadas con layout compartido */}
+        {/* Rutas privadas */}
         <Route
           element={
             <ProtectedRoute>
@@ -46,9 +47,10 @@ function App() {
           <Route path="/empleados" element={<Empleados />} />
           <Route path="/clientes-frecuentes" element={<ClientesFrecuentes />} />
           <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
+          <Route path="/configuracion" element={<Configuracion />} />
         </Route>
 
-        {/* Fallback */}
+        {/* fallback */}
         <Route path="*" element={<Navigate to="/register" replace />} />
 
       </Routes>
