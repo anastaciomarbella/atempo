@@ -7,6 +7,7 @@ const API = "https://mi-api-atempo.onrender.com";
 const Configuracion = () => {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
     nombre: "",
@@ -47,21 +48,24 @@ const Configuracion = () => {
     try {
 
       // ==============================
-      // 1. Actualizar PERSONAS (nombre + telefono)
+      // 1. Actualizar USUARIOS (nombre + telefono)
       // ==============================
-      const resPersona = await fetch(`${API}/api/personas/${user.id_persona}`, {
+      const resUsuario = await fetch(`${API}/api/auth/usuarios/${user.id_usuario}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           nombre:   form.nombre,
           telefono: form.telefono
         })
       });
 
-      const dataPersona = await resPersona.json();
+      const dataUsuario = await resUsuario.json();
 
-      if (!resPersona.ok) {
-        alert(dataPersona.mensaje || "Error al actualizar persona");
+      if (!resUsuario.ok) {
+        alert(dataUsuario.mensaje || "Error al actualizar usuario");
         setCargando(false);
         return;
       }
@@ -91,7 +95,7 @@ const Configuracion = () => {
       }
 
       // ==============================
-      // 3. Actualizar localStorage con todo
+      // 3. Actualizar localStorage
       // ==============================
       const nuevoUser = {
         ...user,
