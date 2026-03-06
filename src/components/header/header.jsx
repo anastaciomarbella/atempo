@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./header.css";
-import { API_URL } from "../../config/api";
+import { API_URL } from "../../config";
 
 const Header = () => {
 
