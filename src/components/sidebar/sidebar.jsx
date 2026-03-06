@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -22,13 +22,21 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
-  const logoEmpresa = user.logo_url;
+
+  /* URL base de Supabase Storage */
+  const SUPABASE_STORAGE =
+    "https://bjstsqvzzczjiahlxffp.supabase.co/storage/v1/object/public/logo/";
+
+  /* Construir URL del logo */
+  const logoEmpresa = user.logo_url
+    ? user.logo_url.startsWith("http")
+      ? user.logo_url
+      : `${SUPABASE_STORAGE}${user.logo_url}`
+    : null;
 
   const linkPublico = slug
     ? `${window.location.origin}/reservar/${slug}`
     : null;
-
-  useEffect(() => {}, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -58,6 +66,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
           ) : (
             <FaStore className="empresa-icon" />
           )}
+
           <span className="empresa-nombre">{nombreEmpresa}</span>
         </div>
 
@@ -65,6 +74,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
           <FaUserCircle className="usuario-icon" />
           <span className="usuario-nombre">{nombreUsuario}</span>
         </div>
+
       </div>
 
       <div className="sidebar-divider" />
@@ -73,8 +83,10 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
       {linkPublico && (
         <div className="link-publico">
           <span>Link de reservas para clientes:</span>
+
           <button onClick={copiarLink} className="btn-copiar-link">
             <FaCopy />
+
             {copiado ? "¡Copiado!" : "Copiar link"}
           </button>
         </div>
@@ -94,8 +106,11 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
         >
           <FaCalendarDay className="icon" />
           Agenda diaria
+
           {citasNuevas > 0 && (
-            <span className="badge-notificacion">{citasNuevas}</span>
+            <span className="badge-notificacion">
+              {citasNuevas}
+            </span>
           )}
         </NavLink>
 
@@ -144,7 +159,11 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
       </NavLink>
 
       {/* CERRAR SESION */}
-      <button type="button" className="logout-btn" onClick={handleLogout}>
+      <button
+        type="button"
+        className="logout-btn"
+        onClick={handleLogout}
+      >
         <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>
