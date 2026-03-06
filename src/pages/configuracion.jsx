@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import "../styles/configuracion.css";
-import { FaSave, FaImage } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import "./configuracion.css";
 
 const API = "https://mi-api-atempo.onrender.com";
 
 const Configuracion = () => {
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const [user, setUser] = useState(null);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -16,28 +15,45 @@ const Configuracion = () => {
     logo: null
   });
 
-  const [preview, setPreview] = useState(null);
+  const [previewLogo, setPreviewLogo] = useState(null);
 
   useEffect(() => {
-    setForm({
-      nombre: user.nombre || "",
-      nombre_empresa: user.nombre_empresa || "",
-      telefono: user.telefono || "",
-      slug: user.slug || "",
-      logo: null
-    });
 
-    setPreview(user.logo_url || null);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    if (storedUser) {
+
+      setUser(storedUser);
+
+      setForm({
+        nombre: storedUser.nombre || "",
+        nombre_empresa: storedUser.nombre_empresa || "",
+        telefono: storedUser.telefono || "",
+        slug: storedUser.slug || "",
+        logo: null
+      });
+
+      if (storedUser.logo) {
+        setPreviewLogo(`${API}/uploads/${storedUser.logo}`);
+      }
+
+    }
+
   }, []);
 
   const handleChange = (e) => {
+
+    const { name, value } = e.target;
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
   };
 
   const handleLogo = (e) => {
+
     const file = e.target.files[0];
 
     if (!file) return;
@@ -47,7 +63,8 @@ const Configuracion = () => {
       logo: file
     });
 
-    setPreview(URL.createObjectURL(file));
+    setPreviewLogo(URL.createObjectURL(file));
+
   };
 
   const guardarCambios = async () => {
@@ -65,7 +82,7 @@ const Configuracion = () => {
 
     try {
 
-      const res = await fetch(`${API}/api/empresas/${user.id}`, {
+      const res = await fetch(`${API}/api/empresas/${user.id_empresa}`, {
         method: "PUT",
         body: formData
       });
@@ -83,6 +100,8 @@ const Configuracion = () => {
 
         alert("Configuración actualizada");
 
+        window.location.reload();
+
       } else {
 
         alert(data.message || "Error al actualizar");
@@ -99,91 +118,71 @@ const Configuracion = () => {
   };
 
   return (
-    <div className="configuracion-container">
+    <div className="config-container">
 
-      <h1 className="titulo-configuracion">
-        Configuración de cuenta
-      </h1>
+      <h2>Configuración</h2>
 
-      <div className="card-configuracion">
+      <div className="config-card">
 
-        <div className="logo-section">
+        <label>Nombre</label>
+        <input
+          type="text"
+          name="nombre"
+          value={form.nombre}
+          onChange={handleChange}
+        />
 
-          {preview ? (
-            <img
-              src={preview}
-              className="logo-preview"
-            />
-          ) : (
-            <div className="logo-placeholder">
-              <FaImage />
-            </div>
-          )}
+        <label>Nombre de la empresa</label>
+        <input
+          type="text"
+          name="nombre_empresa"
+          value={form.nombre_empresa}
+          onChange={handleChange}
+        />
 
-          <label className="btn-logo">
-            Cambiar logo
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleLogo}
-              hidden
-            />
-          </label>
+        <label>Teléfono</label>
+        <input
+          type="text"
+          name="telefono"
+          value={form.telefono}
+          onChange={handleChange}
+        />
 
-        </div>
+        <label>Slug (link público)</label>
+        <input
+          type="text"
+          name="slug"
+          value={form.slug}
+          onChange={handleChange}
+        />
 
-        <div className="form-configuracion">
+        <label>Logo</label>
 
-          <div className="campo">
-            <label>Nombre</label>
-            <input
-              name="nombre"
-              value={form.nombre}
-              onChange={handleChange}
-            />
-          </div>
+        {previewLogo && (
+          <img
+            src={previewLogo}
+            alt="logo"
+            className="preview-logo"
+          />
+        )}
 
-          <div className="campo">
-            <label>Nombre de empresa</label>
-            <input
-              name="nombre_empresa"
-              value={form.nombre_empresa}
-              onChange={handleChange}
-            />
-          </div>
+        <input
+          type="file"
+          onChange={handleLogo}
+        />
 
-          <div className="campo">
-            <label>Teléfono</label>
-            <input
-              name="telefono"
-              value={form.telefono}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="campo">
-            <label>Slug del link público</label>
-            <input
-              name="slug"
-              value={form.slug}
-              onChange={handleChange}
-            />
-          </div>
-
-          <button
-            className="guardar-btn"
-            onClick={guardarCambios}
-          >
-            <FaSave />
-            Guardar cambios
-          </button>
-
-        </div>
+        <button
+          className="btn-guardar"
+          onClick={guardarCambios}
+        >
+          Guardar cambios
+        </button>
 
       </div>
 
     </div>
   );
+
 };
 
 export default Configuracion;
