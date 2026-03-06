@@ -1,46 +1,52 @@
 import React, { useEffect, useState } from "react";
 import "./header.css";
+import { API_URL } from "../../config/api";
 
 const Header = () => {
-  const [empresa, setEmpresa] = useState("Mi Empresa");
-  const [logo, setLogo] = useState(null);
+
+  const [empresa, setEmpresa] = useState({
+    nombre: "",
+    logo: ""
+  });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setEmpresa(parsedUser?.nombre_empresa || "Mi Empresa");
-        setLogo(parsedUser?.logo_url || null);
-      } catch (error) {
-        console.error("Error leyendo usuario:", error);
-      }
-    }
+    obtenerEmpresa();
   }, []);
 
+  const obtenerEmpresa = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/empresa`);
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        setEmpresa(data[0]);
+      }
+
+    } catch (error) {
+      console.error("Error cargando empresa:", error);
+    }
+  };
+
   return (
-    <header className="top-header">
+    <div className="header">
+
       <div className="empresa-container">
 
-        {logo ? (
-          <img
-            src={logo}
-            alt="Logo empresa"
-            className="empresa-logo-header"
-          />
-        ) : (
-          <div className="logo-placeholder">
-            {empresa ? empresa.charAt(0).toUpperCase() : "?"}
-          </div>
-        )}
+        <img
+          src={
+            empresa.logo
+              ? `${API_URL}/uploads/${empresa.logo}`
+              : "/logo-default.png"
+          }
+          alt="Logo empresa"
+          className="empresa-logo-header"
+        />
 
-        <h1 className="business-name">
-          {empresa || "Mi Empresa"}
-        </h1>
+        <h2>{empresa.nombre}</h2>
 
       </div>
-    </header>
+
+    </div>
   );
 };
 
