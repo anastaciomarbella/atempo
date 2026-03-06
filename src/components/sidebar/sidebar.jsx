@@ -10,6 +10,7 @@ import {
   FaStore,
   FaUserCircle,
   FaCopy,
+  FaCog
 } from "react-icons/fa";
 
 const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => {
@@ -21,14 +22,13 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
-  const logoEmpresa = user.logo_url; // 🔹 logo
+  const logoEmpresa = user.logo_url;
 
   const linkPublico = slug
     ? `${window.location.origin}/reservar/${slug}`
     : null;
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -45,7 +45,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   return (
     <aside className="sidebar">
 
-      {/* 🔹 EMPRESA Y USUARIO */}
+      {/* EMPRESA Y USUARIO */}
       <div className="sidebar-profile">
 
         <div className="empresa-info">
@@ -69,7 +69,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
       <div className="sidebar-divider" />
 
-      {/* 🔹 LINK PÚBLICO */}
+      {/* LINK PUBLICO */}
       {linkPublico && (
         <div className="link-publico">
           <span>Link de reservas para clientes:</span>
@@ -82,7 +82,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
       <div className="sidebar-divider" />
 
-      {/* 🔹 MENÚ */}
+      {/* MENU */}
       <nav className="menu">
 
         <NavLink
@@ -130,7 +130,20 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
       </nav>
 
-      {/* 🔹 CERRAR SESIÓN */}
+      <div className="sidebar-divider" />
+
+      {/* CONFIGURACION */}
+      <NavLink
+        to="/configuracion"
+        className={({ isActive }) =>
+          isActive ? "config-btn active" : "config-btn"
+        }
+      >
+        <FaCog className="icon" />
+        Configuración
+      </NavLink>
+
+      {/* CERRAR SESION */}
       <button type="button" className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon" />
         Cerrar sesión
