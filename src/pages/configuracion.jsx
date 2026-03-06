@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import "./configuracion.css";
+import React, { useState, useEffect } from "react";
+import "../styles/configuracion.css";
+import { FaSave, FaImage } from "react-icons/fa";
 
 const API = "https://mi-api-atempo.onrender.com";
 
 const Configuracion = () => {
 
-  const [user, setUser] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [form, setForm] = useState({
     nombre: "",
@@ -15,39 +16,27 @@ const Configuracion = () => {
     logo: null
   });
 
-  const [previewLogo, setPreviewLogo] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
 
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setForm({
+      nombre: user.nombre || "",
+      nombre_empresa: user.nombre_empresa || "",
+      telefono: user.telefono || "",
+      slug: user.slug || "",
+      logo: null
+    });
 
-    if (storedUser) {
-
-      setUser(storedUser);
-
-      setForm({
-        nombre: storedUser.nombre || "",
-        nombre_empresa: storedUser.nombre_empresa || "",
-        telefono: storedUser.telefono || "",
-        slug: storedUser.slug || "",
-        logo: null
-      });
-
-      if (storedUser.logo) {
-        setPreviewLogo(`${API}/uploads/${storedUser.logo}`);
-      }
-
-    }
+    setPreview(user.logo_url || null);
 
   }, []);
 
   const handleChange = (e) => {
 
-    const { name, value } = e.target;
-
     setForm({
       ...form,
-      [name]: value
+      [e.target.name]: e.target.value
     });
 
   };
@@ -63,7 +52,7 @@ const Configuracion = () => {
       logo: file
     });
 
-    setPreviewLogo(URL.createObjectURL(file));
+    setPreview(URL.createObjectURL(file));
 
   };
 
@@ -100,8 +89,6 @@ const Configuracion = () => {
 
         alert("Configuración actualizada");
 
-        window.location.reload();
-
       } else {
 
         alert(data.message || "Error al actualizar");
@@ -118,65 +105,87 @@ const Configuracion = () => {
   };
 
   return (
-    <div className="config-container">
+    <div className="configuracion-container">
 
-      <h2>Configuración</h2>
+      <h1 className="titulo-configuracion">
+        Configuración de cuenta
+      </h1>
 
-      <div className="config-card">
+      <div className="card-configuracion">
 
-        <label>Nombre</label>
-        <input
-          type="text"
-          name="nombre"
-          value={form.nombre}
-          onChange={handleChange}
-        />
+        <div className="logo-section">
 
-        <label>Nombre de la empresa</label>
-        <input
-          type="text"
-          name="nombre_empresa"
-          value={form.nombre_empresa}
-          onChange={handleChange}
-        />
+          {preview ? (
+            <img
+              src={preview}
+              className="logo-preview"
+              alt="logo"
+            />
+          ) : (
+            <div className="logo-placeholder">
+              <FaImage />
+            </div>
+          )}
 
-        <label>Teléfono</label>
-        <input
-          type="text"
-          name="telefono"
-          value={form.telefono}
-          onChange={handleChange}
-        />
+          <label className="btn-logo">
+            Cambiar logo
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleLogo}
+              hidden
+            />
+          </label>
 
-        <label>Slug (link público)</label>
-        <input
-          type="text"
-          name="slug"
-          value={form.slug}
-          onChange={handleChange}
-        />
+        </div>
 
-        <label>Logo</label>
+        <div className="form-configuracion">
 
-        {previewLogo && (
-          <img
-            src={previewLogo}
-            alt="logo"
-            className="preview-logo"
-          />
-        )}
+          <div className="campo">
+            <label>Nombre</label>
+            <input
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+            />
+          </div>
 
-        <input
-          type="file"
-          onChange={handleLogo}
-        />
+          <div className="campo">
+            <label>Nombre de empresa</label>
+            <input
+              name="nombre_empresa"
+              value={form.nombre_empresa}
+              onChange={handleChange}
+            />
+          </div>
 
-        <button
-          className="btn-guardar"
-          onClick={guardarCambios}
-        >
-          Guardar cambios
-        </button>
+          <div className="campo">
+            <label>Teléfono</label>
+            <input
+              name="telefono"
+              value={form.telefono}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="campo">
+            <label>Slug del link público</label>
+            <input
+              name="slug"
+              value={form.slug}
+              onChange={handleChange}
+            />
+          </div>
+
+          <button
+            className="guardar-btn"
+            onClick={guardarCambios}
+          >
+            <FaSave />
+            Guardar cambios
+          </button>
+
+        </div>
 
       </div>
 
