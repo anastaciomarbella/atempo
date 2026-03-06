@@ -7,7 +7,6 @@ import {
   FaPlus,
   FaUsers,
   FaSignOutAlt,
-  FaStore,
   FaUserCircle,
   FaCopy,
   FaCog
@@ -23,9 +22,6 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
-
-  /* usar directamente la url que viene del backend */
-  const logoEmpresa = user.logo_url || null;
 
   const linkPublico = slug
     ? `${window.location.origin}/reservar/${slug}`
@@ -53,21 +49,9 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
       <div className="sidebar-profile">
 
         <div className="empresa-info">
-
-          {logoEmpresa ? (
-            <img
-              src={logoEmpresa}
-              alt="Logo empresa"
-              className="empresa-logo"
-            />
-          ) : (
-            <FaStore className="empresa-icon" />
-          )}
-
           <span className="empresa-nombre">
             {nombreEmpresa}
           </span>
-
         </div>
 
         {/* USUARIO */}
