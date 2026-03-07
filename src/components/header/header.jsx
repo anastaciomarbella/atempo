@@ -7,9 +7,9 @@ const Header = () => {
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
 
   return (
-    <div className="header">
+    <div className="top-header">
       <div className="empresa-container">
-        <h2>{nombreEmpresa}</h2>
+        <h2 className="business-name">{nombreEmpresa}</h2>
       </div>
     </div>
   );
