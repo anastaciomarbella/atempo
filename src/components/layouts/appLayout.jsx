@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../sidebar/sidebar";
-import Header from "../header/header";
 import ModalNuevoEmpleado from "../modalNuevoEmpleado/modalNuevoEmpleado";
 import ModalNuevoClienteFrecuente from "../modalNuevoClienteFrecuente/modalNuevoClienteFrecuente";
 import ModalCita from "../modalCita/modalCita";
@@ -16,6 +15,7 @@ const AppLayout = () => {
 
   return (
     <div className="app-layout">
+
       {/* SIDEBAR */}
       <Sidebar
         onAbrirModal={(tipo) => setModalActivo(tipo)}
@@ -24,8 +24,6 @@ const AppLayout = () => {
 
       {/* CONTENIDO PRINCIPAL */}
       <div className="main-content">
-        <Header />
-
         <div className="page-content">
           <Outlet />
         </div>
@@ -43,6 +41,7 @@ const AppLayout = () => {
       {modalActivo === "cita" && (
         <ModalCita modo="crear" onClose={cerrarModales} />
       )}
+
     </div>
   );
 };
