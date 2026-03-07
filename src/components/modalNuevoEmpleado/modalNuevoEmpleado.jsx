@@ -9,12 +9,32 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
+  const validarEmail = (correo) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(correo);
+  };
+
+  const validarTelefono = (tel) => {
+    const regex = /^[0-9]{10}$/; // 10 números
+    return regex.test(tel);
+  };
+
   const handleGuardar = async () => {
     setMensaje('');
     setError('');
 
     if (!nombre || !email || !telefono) {
       setError('⚠️ Todos los campos son obligatorios');
+      return;
+    }
+
+    if (!validarEmail(email)) {
+      setError('⚠️ Ingresa un correo electrónico válido');
+      return;
+    }
+
+    if (!validarTelefono(telefono)) {
+      setError('⚠️ El teléfono debe tener 10 números');
       return;
     }
 
@@ -46,6 +66,7 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
   return (
     <>
       <div className="overlay visible"></div>
+
       <div className="modal">
         <button className="cerrar-modal" onClick={onClose}>
           <FaTimes />
@@ -54,6 +75,7 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
         <h2 className="titulo-modal">Nuevo empleado</h2>
 
         <div className="formulario-modal">
+
           <label>Nombre *</label>
           <input
             type="text"
@@ -73,9 +95,13 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
           <label>Número celular *</label>
           <input
             type="tel"
-            placeholder="Número celular"
+            placeholder="10 dígitos"
+            maxLength="10"
             value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
+            onChange={(e) => {
+              const soloNumeros = e.target.value.replace(/\D/g, '');
+              setTelefono(soloNumeros);
+            }}
           />
 
           {mensaje && <p className="mensaje-exito">{mensaje}</p>}
@@ -85,6 +111,7 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
             <FaSave className="icono-guardar" />
             Guardar
           </button>
+
         </div>
       </div>
     </>

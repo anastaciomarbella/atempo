@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './modalUpdateEmpleado.css';
 import { FaTimes, FaSave } from 'react-icons/fa';
-import avatar from '../../assets/avatar.png';
 
 const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
   const [nombre, setNombre] = useState('');
@@ -18,6 +17,16 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
     }
   }, [empleado]);
 
+  const validarEmail = (correo) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(correo);
+  };
+
+  const validarTelefono = (tel) => {
+    const regex = /^[0-9]{10}$/;
+    return regex.test(tel);
+  };
+
   const handleGuardar = async () => {
     setMensaje('');
     setError('');
@@ -27,12 +36,25 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
       return;
     }
 
+    if (!validarEmail(email)) {
+      setError('⚠️ Ingresa un correo electrónico válido');
+      return;
+    }
+
+    if (!validarTelefono(telefono)) {
+      setError('⚠️ El teléfono debe tener 10 números');
+      return;
+    }
+
     try {
-     const res = await fetch(`https://mi-api-atempo.onrender.com/api/personas/${empleado.id}`,{
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, email, telefono }),
-      });
+      const res = await fetch(
+        `https://mi-api-atempo.onrender.com/api/personas/${empleado.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, telefono }),
+        }
+      );
 
       const data = await res.json();
 
@@ -40,11 +62,10 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
         throw new Error(data.message || 'Error al actualizar empleado');
       }
 
-      // Mostrar el mensaje que devuelve el backend
       setMensaje(data.message || 'Empleado actualizado correctamente');
 
       setTimeout(() => {
-        onEmpleadoActualizado(); // Cierra modal y recarga empleados
+        onEmpleadoActualizado();
       }, 1200);
     } catch (err) {
       setError(err.message || 'Error inesperado');
@@ -54,13 +75,16 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
   return (
     <>
       <div className="overlay visible"></div>
+
       <div className="modal">
         <button className="cerrar-modal" onClick={onClose}>
           <FaTimes />
         </button>
+
         <h2 className="titulo-modal">Editar empleado</h2>
-        <img src={avatar} alt="Avatar empleado" className="avatar-modal" />
+
         <div className="formulario-modal">
+
           <label>Nombre *</label>
           <input
             type="text"
@@ -80,9 +104,13 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
           <label>Número celular *</label>
           <input
             type="tel"
-            placeholder="Número celular"
+            placeholder="10 dígitos"
+            maxLength="10"
             value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
+            onChange={(e) => {
+              const soloNumeros = e.target.value.replace(/\D/g, '');
+              setTelefono(soloNumeros);
+            }}
           />
 
           {mensaje && <p className="mensaje-exito">{mensaje}</p>}
@@ -92,6 +120,7 @@ const ModalUpdateEmpleado = ({ empleado, onClose, onEmpleadoActualizado }) => {
             <FaSave className="icono-guardar" />
             Guardar
           </button>
+
         </div>
       </div>
     </>
