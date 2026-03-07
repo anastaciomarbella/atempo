@@ -1,24 +1,21 @@
-/* appLayout.css */
-
 .app-layout {
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background: #f5f6fa;
+  background: linear-gradient(160deg, #0f0c29, #1a1040, #24243e);
 }
 
-/* ✅ appLayout.css */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  margin-left: 240px; /* ← agrega esta línea */
+  margin-left: 240px;
 }
 
 .page-content {
   flex: 1;
-  padding: 20px;
   overflow: auto;
-  background: #ffffff;
+  background: transparent;
+  padding: 0;
 }
