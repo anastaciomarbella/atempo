@@ -9,7 +9,8 @@ import {
   FaSignOutAlt,
   FaUserCircle,
   FaCopy,
-  FaCog
+  FaCog,
+  FaStore
 } from "react-icons/fa";
 
 const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => {
@@ -22,6 +23,9 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
+
+  /* LOGO DE EMPRESA */
+  const logoEmpresa = user.logo_url || null;
 
   const linkPublico = slug
     ? `${window.location.origin}/reservar/${slug}`
@@ -49,9 +53,21 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
       <div className="sidebar-profile">
 
         <div className="empresa-info">
+
+          {logoEmpresa ? (
+            <img
+              src={logoEmpresa}
+              alt="logo"
+              className="empresa-logo"
+            />
+          ) : (
+            <FaStore className="empresa-icon" />
+          )}
+
           <span className="empresa-nombre">
             {nombreEmpresa}
           </span>
+
         </div>
 
         {/* USUARIO */}
@@ -80,7 +96,6 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
             className="btn-copiar-link"
           >
             <FaCopy />
-
             {copiado ? "¡Copiado!" : "Copiar link"}
           </button>
 
