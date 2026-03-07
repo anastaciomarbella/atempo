@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { supabase } from "../supabaseClient";
 import logo from "../assets/logo.png";
 import "../styles/login.css";
 
@@ -10,7 +9,6 @@ export default function Register() {
 
   const [verPassword, setVerPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [logoEmpresa, setLogoEmpresa] = useState(null);
 
   const initialForm = {
     nombre: "",
@@ -29,79 +27,68 @@ export default function Register() {
     });
   };
 
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // VALIDAR CORREO
+  const validarCorreo = (correo) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(correo);
+  };
 
-    if (!file.type.startsWith("image/")) {
-      Swal.fire({
-        icon: "error",
-        title: "Archivo inválido",
-        text: "Solo puedes subir imágenes",
-      });
-      return;
-    }
+  // VALIDAR TELEFONO
+  const validarTelefono = (telefono) => {
+    const regex = /^[0-9]{10}$/;
+    return regex.test(telefono);
+  };
 
-    setLogoEmpresa(file);
+  // VALIDAR PASSWORD
+  const validarPassword = (password) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(password);
   };
 
   const limpiarFormulario = () => {
     setForm(initialForm);
-    setLogoEmpresa(null);
     setVerPassword(false);
-  };
-
-  // 🔥 SUBIR A SUPABASE (CORREGIDO)
-  const subirLogoASupabase = async (file) => {
-    try {
-      const fileName = `${Date.now()}-${file.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("logo") // ✅ NOMBRE CORRECTO
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error("Error subiendo logo:", uploadError);
-        return null;
-      }
-
-      const { data } = supabase.storage
-        .from("logo")
-        .getPublicUrl(fileName);
-
-      return data.publicUrl;
-
-    } catch (error) {
-      console.error("Error inesperado:", error);
-      return null;
-    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (loading) return;
 
     setLoading(true);
 
+    // VALIDACIONES
+    if (!validarCorreo(form.correo)) {
+      Swal.fire({
+        icon: "error",
+        title: "Correo inválido",
+        text: "Ingresa un correo válido",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!validarTelefono(form.telefono)) {
+      Swal.fire({
+        icon: "error",
+        title: "Teléfono inválido",
+        text: "El teléfono debe tener 10 números",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!validarPassword(form.password)) {
+      Swal.fire({
+        icon: "error",
+        title: "Contraseña insegura",
+        text: "Debe tener mínimo 8 caracteres, una mayúscula y un número",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
-      let logoUrl = null;
-
-      // 1️⃣ Subir logo primero
-      if (logoEmpresa) {
-        logoUrl = await subirLogoASupabase(logoEmpresa);
-
-        if (!logoUrl) {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "No se pudo subir el logo",
-          });
-          setLoading(false);
-          return;
-        }
-      }
-
-      // 2️⃣ Enviar datos al backend
       const res = await fetch(
         "https://mi-api-atempo.onrender.com/api/auth/register",
         {
@@ -115,7 +102,6 @@ export default function Register() {
             correo: form.correo,
             telefono: form.telefono,
             password: form.password,
-            logo_url: logoUrl,
           }),
         }
       );
@@ -128,6 +114,7 @@ export default function Register() {
           title: "Error",
           text: data.message || "Error en registro",
         });
+
         setLoading(false);
         return;
       }
@@ -176,17 +163,6 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} autoComplete="off">
-
-          <div className="input-group">
-            <input
-              type="file"
-              name="logo"
-              className="login-input"
-              accept="image/*"
-              onChange={handleLogoChange}
-              required
-            />
-          </div>
 
           <div className="input-group">
             <input
@@ -240,7 +216,11 @@ export default function Register() {
               className="login-input"
               placeholder=" "
               value={form.telefono}
-              onChange={handleChange}
+              maxLength={10}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "");
+                setForm({ ...form, telefono: value });
+              }}
               required
             />
             <label className="floating-label-text">
@@ -256,6 +236,7 @@ export default function Register() {
               placeholder=" "
               value={form.password}
               onChange={handleChange}
+              minLength={8}
               required
             />
             <label className="floating-label-text">

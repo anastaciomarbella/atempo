@@ -169,7 +169,7 @@
 }
 
 /* Responsive */
-/* Para tabletas o pantallas medianas */
+
 @media (max-width: 1024px) {
   .register-card {
     min-width: 210px;
@@ -195,7 +195,6 @@
   }
 }
 
-/* Para pantallas muy pequeñas */
 @media (max-width: 500px) {
   .register-card {
     min-width: 190px;
@@ -235,4 +234,39 @@
     height: 28px;
     font-size: 16px;
   }
+}
+
+/* MENSAJES */
+
+.register-success{
+  margin-top:15px;
+  color:#2e7d32;
+  font-weight:600;
+}
+
+.register-error{
+  margin-top:15px;
+  color:#d32f2f;
+  font-weight:600;
+}
+
+/* BOTON AGREGAR EMPLEADO */
+
+.agregar-empleado-btn{
+  background:linear-gradient(to right,#1976d2,#42a5f5);
+  color:white;
+  border:none;
+  padding:10px 18px;
+  border-radius:10px;
+  font-weight:600;
+  margin-bottom:15px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  box-shadow:0 4px 8px rgba(25,118,210,0.25);
+}
+
+.agregar-empleado-btn:hover{
+  background:linear-gradient(to right,#1565c0,#1e88e5);
 }
