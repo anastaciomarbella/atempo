@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/configuracion.css";
 import { FaSave, FaImage } from "react-icons/fa";
-import Header from "../components/header"; // 👈 importar tu header
+import Header from "../components/header/header"; // 👈 importar tu header
 
 const API = "https://mi-api-atempo.onrender.com";
 
