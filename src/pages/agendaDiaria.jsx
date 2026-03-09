@@ -12,7 +12,6 @@ const AgendaDiaria = () => {
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   const token = localStorage.getItem("token");
-  const idEmpresa = JSON.parse(localStorage.getItem("user"))?.id_empresa; // 👈 AGREGADO
 
   // ================= FETCH =================
   const fetchCitas = async () => {
@@ -32,10 +31,6 @@ const AgendaDiaria = () => {
 
       const citasDelDia = data.filter((cita) => {
         if (!cita.fecha) return false;
-
-        // 👇 FILTRO POR EMPRESA
-        if (idEmpresa && String(cita.id_empresa) !== String(idEmpresa)) return false;
-
         const [y, m, d] = cita.fecha.split("-");
         const fechaCita = new Date(y, m - 1, d);
         return (
@@ -137,6 +132,7 @@ const AgendaDiaria = () => {
         ))}
       </div>
 
+      {/* Modal abre siempre en modo "ver" */}
       {citaSeleccionada && (
         <ModalCita
           modo="ver"
