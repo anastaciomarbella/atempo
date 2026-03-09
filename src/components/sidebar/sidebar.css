@@ -192,6 +192,36 @@
 
 .icon { font-size: 17px; }
 
+/* ── CONFIGURACIÓN ── */
+.config-btn {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+}
+
+.config-btn:hover {
+  background: rgba(167,139,250,0.12);
+  color: #ffffff;
+  border-color: rgba(167,139,250,0.2);
+  transform: translateX(3px);
+}
+
+.config-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(102,126,234,0.35);
+}
+
 /* ── LINK PÚBLICO ── */
 .link-publico {
   width: 100%;

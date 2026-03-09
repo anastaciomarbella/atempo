@@ -9,7 +9,7 @@ import {
   FaSignOutAlt,
   FaUserCircle,
   FaCopy,
-  FaCog,
+  FaEdit,
   FaStore
 } from "react-icons/fa";
 
@@ -165,8 +165,8 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
           isActive ? "config-btn active" : "config-btn"
         }
       >
-        <FaCog className="icon" />
-        Configuración
+        <FaEdit className="icon" />
+        Editar perfil
       </NavLink>
 
       {/* LOGOUT */}
