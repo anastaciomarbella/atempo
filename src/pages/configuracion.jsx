@@ -19,7 +19,7 @@ const Configuracion = () => {
 
   const [preview, setPreview] = useState(null);
   const [cargando, setCargando] = useState(false);
-  const [alerta, setAlerta] = useState(null);
+  const [alerta, setAlerta] = useState(null); // { tipo: 'exito' | 'error', mensaje: string }
 
   useEffect(() => {
     setForm({
@@ -110,10 +110,6 @@ const Configuracion = () => {
       };
 
       localStorage.setItem("user", JSON.stringify(nuevoUser));
-
-      // ✅ Notificar al Sidebar del nuevo logo
-      window.dispatchEvent(new Event("user-updated"));
-
       mostrarAlerta("exito", "✅ Cambios realizados correctamente");
 
     } catch (err) {

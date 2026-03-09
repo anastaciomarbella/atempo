@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -18,19 +18,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
 
-  // ✅ user como estado reactivo
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user") || "{}")
-  );
-
-  // ✅ Escuchar cambios de login y configuración
-  useEffect(() => {
-    const actualizar = () => {
-      setUser(JSON.parse(localStorage.getItem("user") || "{}"));
-    };
-    window.addEventListener("user-updated", actualizar);
-    return () => window.removeEventListener("user-updated", actualizar);
-  }, []);
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
@@ -51,8 +39,10 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
   const copiarLink = () => {
     if (!linkPublico) return;
+
     navigator.clipboard.writeText(linkPublico);
     setCopiado(true);
+
     setTimeout(() => setCopiado(false), 2000);
   };
 
