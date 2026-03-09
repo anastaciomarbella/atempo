@@ -67,6 +67,9 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.usuario));
 
+      // 🔔 Notificar al Sidebar que el usuario cambió
+      window.dispatchEvent(new Event("user-updated"));
+
       limpiarFormulario();
 
       // Redirigir
