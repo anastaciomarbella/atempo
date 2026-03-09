@@ -9,7 +9,6 @@ const coloresDisponibles = [
 
 const API = 'https://mi-api-atempo.onrender.com';
 
-// ✅ Sanitiza URLs de imágenes para evitar Mixed Content
 const safeUrl = (url) => url?.replace('http://', 'https://') || '';
 
 const ReservarCita = () => {
@@ -29,6 +28,7 @@ const ReservarCita = () => {
   const [misCitas, setMisCitas] = useState([]);
   const [loadingCitas, setLoadingCitas] = useState(false);
   const [citasOcupadas, setCitasOcupadas] = useState([]);
+  const [citaEditando, setCitaEditando] = useState(null); // 👈 NUEVO
 
   const [formulario, setFormulario] = useState({
     id_encargado: null,
@@ -47,7 +47,6 @@ const ReservarCita = () => {
     if (!clienteToken) navigate(`/login-cliente/${slug}`);
   }, []);
 
-  // ── Cargar empresa y personas ──
   useEffect(() => {
     fetch(`${API}/api/publico/${slug}`)
       .then(r => r.json())
@@ -61,17 +60,12 @@ const ReservarCita = () => {
         setPersonas(Array.isArray(d) ? d : []);
         setLoadingPersonas(false);
       })
-      .catch(() => {
-        setPersonas([]);
-        setLoadingPersonas(false);
-      });
+      .catch(() => { setPersonas([]); setLoadingPersonas(false); });
   }, [slug]);
 
-  // ── Cargar citas ocupadas cuando cambia empleado o fecha ──
   useEffect(() => {
     const { id_encargado, fecha } = formulario;
     if (!id_encargado || !fecha) { setCitasOcupadas([]); return; }
-
     fetch(`${API}/api/publico/${slug}/citas-ocupadas?id_persona=${id_encargado}&fecha=${fecha}`)
       .then(r => r.json())
       .then(d => setCitasOcupadas(Array.isArray(d) ? d : []))
@@ -133,9 +127,16 @@ const ReservarCita = () => {
 
     setGuardando(true);
     try {
-      const res = await fetch(`${API}/api/publico/${slug}/citas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // ── Si hay citaEditando → EDITAR, si no → CREAR ──
+      const url = citaEditando
+        ? `${API}/api/cliente-auth/editar-cita/${citaEditando.id_cita}`
+        : `${API}/api/publico/${slug}/citas`;
+
+      const method = citaEditando ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clienteToken}` },
         body: JSON.stringify({
           id_persona: formulario.id_encargado,
           id_cliente_registro: clienteUser?.id_cliente,
@@ -149,14 +150,42 @@ const ReservarCita = () => {
           color: formulario.color,
         }),
       });
+
       const data = await res.json();
-      if (!res.ok) { setMensaje(data.error || 'Error al agendar'); return; }
-      setExito(true);
+      if (!res.ok) { setMensaje(data.error || 'Error al guardar'); return; }
+
+      if (citaEditando) {
+        setCitaEditando(null);
+        setVista('mis-citas');
+        cargarMisCitas();
+        resetFormulario();
+      } else {
+        setExito(true);
+      }
     } catch {
       setMensaje('Error de conexión');
     } finally {
       setGuardando(false);
     }
+  };
+
+  // 👈 NUEVO: cargar cita en formulario para editar
+  const handleEditar = (cita) => {
+    setCitaEditando(cita);
+    setFormulario({
+      id_encargado: cita.id_cliente,
+      encargado: cita.nombre_encargado || '',
+      titulo: cita.titulo || '',
+      fecha: cita.fecha || '',
+      hora_inicio: cita.hora_inicio?.slice(0, 5) || '',
+      hora_final: cita.hora_final?.slice(0, 5) || '',
+      nombre_cliente: cita.nombre_cliente || '',
+      numero_cliente: cita.numero_cliente || '',
+      motivo: cita.motivo || '',
+      color: cita.color || coloresDisponibles[0],
+    });
+    setVista('reservar');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelar = async (cita) => {
@@ -189,13 +218,15 @@ const ReservarCita = () => {
 
   const resetFormulario = () => {
     setExito(false);
+    setCitaEditando(null);
     setCitasOcupadas([]);
-    setFormulario(prev => ({
-      ...prev,
+    setFormulario({
       id_encargado: null, encargado: '', titulo: '',
       fecha: '', hora_inicio: '', hora_final: '',
+      nombre_cliente: clienteUser?.nombre || '',
+      numero_cliente: clienteUser?.telefono || '',
       motivo: '', color: coloresDisponibles[0],
-    }));
+    });
   };
 
   const conflictoEnVivo = hayConflictoHorario(formulario.hora_inicio, formulario.hora_final);
@@ -205,9 +236,7 @@ const ReservarCita = () => {
 
   if (exito) return (
     <div className="rc-exito">
-      {empresa.logo_url && (
-        <img src={safeUrl(empresa.logo_url)} alt="logo" className="rc-exito-logo" />
-      )}
+      {empresa.logo_url && <img src={safeUrl(empresa.logo_url)} alt="logo" className="rc-exito-logo" />}
       <h2>{empresa.nombre_empresa}</h2>
       <div className="rc-exito-icono">✅</div>
       <h3>¡Cita agendada con éxito!</h3>
@@ -236,26 +265,42 @@ const ReservarCita = () => {
           <p className="rc-bienvenida">Hola, <strong>{clienteUser?.nombre}</strong> 👋</p>
 
           <div className="rc-tabs">
-            <button className={vista === 'reservar' ? 'rc-tab rc-tab-activo' : 'rc-tab'} onClick={() => setVista('reservar')}>
-              📅 Agendar cita
+            <button className={vista === 'reservar' ? 'rc-tab rc-tab-activo' : 'rc-tab'}
+              onClick={() => { resetFormulario(); setVista('reservar'); }}>
+              📅 {citaEditando ? 'Editando cita' : 'Agendar cita'}
             </button>
-            <button className={vista === 'mis-citas' ? 'rc-tab rc-tab-activo' : 'rc-tab'} onClick={() => setVista('mis-citas')}>
+            <button className={vista === 'mis-citas' ? 'rc-tab rc-tab-activo' : 'rc-tab'}
+              onClick={() => setVista('mis-citas')}>
               📋 Mis citas
             </button>
             <button className="rc-tab rc-tab-logout" onClick={handleLogout}>Salir</button>
           </div>
         </div>
 
-        {/* ===== VISTA: RESERVAR ===== */}
+        {/* ===== VISTA: RESERVAR / EDITAR ===== */}
         {vista === 'reservar' && (
           <div className="rc-form">
+
+            {/* 👈 Banner cuando está editando */}
+            {citaEditando && (
+              <div style={{
+                background: '#fef3c7', border: '1px solid #f59e0b',
+                borderRadius: 8, padding: '10px 14px', marginBottom: 12,
+                fontSize: 13, color: '#92400e'
+              }}>
+                ✏️ Estás editando una cita. <button
+                  onClick={resetFormulario}
+                  style={{ background: 'none', border: 'none', color: '#b45309', cursor: 'pointer', textDecoration: 'underline' }}>
+                  Cancelar edición
+                </button>
+              </div>
+            )}
 
             <div className="rc-field">
               <label>Servicio *</label>
               <input name="titulo" placeholder="Ej: Corte de cabello" value={formulario.titulo} onChange={handleChange} />
             </div>
 
-            {/* EMPLEADOS */}
             <div className="rc-field">
               <label>¿Con quién quieres tu cita? *</label>
 
@@ -277,19 +322,14 @@ const ReservarCita = () => {
                   {personas.map(p => {
                     const seleccionado = formulario.id_encargado === p.id_persona;
                     return (
-                      <button
-                        key={p.id_persona}
-                        type="button"
+                      <button key={p.id_persona} type="button"
                         className={`rc-empleado-card ${seleccionado ? 'rc-empleado-seleccionado' : ''}`}
                         onClick={() => {
                           setFormulario(prev => ({ ...prev, id_encargado: p.id_persona, encargado: p.nombre }));
                           setMensaje('');
-                        }}
-                      >
-                        <div
-                          className="rc-empleado-avatar"
-                          style={{ background: `hsl(${(p.id_persona * 67) % 360}, 50%, 62%)` }}
-                        >
+                        }}>
+                        <div className="rc-empleado-avatar"
+                          style={{ background: `hsl(${(p.id_persona * 67) % 360}, 50%, 62%)` }}>
                           {p.nombre?.charAt(0).toUpperCase()}
                         </div>
                         <div className="rc-empleado-info">
@@ -308,14 +348,12 @@ const ReservarCita = () => {
               )}
             </div>
 
-            {/* FECHA */}
             <div className="rc-field">
               <label>Fecha *</label>
               <input type="date" name="fecha" value={formulario.fecha} onChange={handleChange}
                 min={new Date().toISOString().split('T')[0]} />
             </div>
 
-            {/* HORARIOS OCUPADOS */}
             {citasOcupadas.length > 0 && formulario.fecha && (
               <div className="rc-horarios-ocupados">
                 <p>⚠️ Horarios ocupados con <strong>{formulario.encargado}</strong> ese día:</p>
@@ -332,29 +370,21 @@ const ReservarCita = () => {
             <div className="rc-row">
               <div className="rc-field">
                 <label>Hora inicio *</label>
-                <input
-                  type="time" name="hora_inicio" value={formulario.hora_inicio} onChange={handleChange}
-                  className={conflictoEnVivo ? 'rc-input-error' : ''}
-                />
+                <input type="time" name="hora_inicio" value={formulario.hora_inicio} onChange={handleChange}
+                  className={conflictoEnVivo ? 'rc-input-error' : ''} />
               </div>
               <div className="rc-field">
                 <label>Hora fin *</label>
-                <input
-                  type="time" name="hora_final" value={formulario.hora_final} onChange={handleChange}
-                  className={conflictoEnVivo || horaInvalida ? 'rc-input-error' : ''}
-                />
+                <input type="time" name="hora_final" value={formulario.hora_final} onChange={handleChange}
+                  className={conflictoEnVivo || horaInvalida ? 'rc-input-error' : ''} />
               </div>
             </div>
 
             {conflictoEnVivo && (
-              <p className="rc-aviso-conflicto">
-                ⚠️ Horario ocupado con {formulario.encargado}. Elige otro horario.
-              </p>
+              <p className="rc-aviso-conflicto">⚠️ Horario ocupado con {formulario.encargado}. Elige otro horario.</p>
             )}
             {horaInvalida && (
-              <p className="rc-aviso-conflicto">
-                ⚠️ La hora de fin debe ser mayor a la hora de inicio.
-              </p>
+              <p className="rc-aviso-conflicto">⚠️ La hora de fin debe ser mayor a la hora de inicio.</p>
             )}
 
             <div className="rc-field">
@@ -387,12 +417,9 @@ const ReservarCita = () => {
 
             {mensaje && <p className="rc-mensaje-error">{mensaje}</p>}
 
-            <button
-              className="rc-btn"
-              onClick={handleGuardar}
-              disabled={guardando || conflictoEnVivo || horaInvalida}
-            >
-              {guardando ? 'Agendando...' : 'Confirmar cita'}
+            <button className="rc-btn" onClick={handleGuardar}
+              disabled={guardando || conflictoEnVivo || horaInvalida}>
+              {guardando ? 'Guardando...' : citaEditando ? '💾 Guardar cambios' : 'Confirmar cita'}
             </button>
           </div>
         )}
@@ -415,6 +442,7 @@ const ReservarCita = () => {
                 const pasada = citaDate < new Date();
                 const horasRestantes = (citaDate - new Date()) / (1000 * 60 * 60);
                 const puedeCancelar = !pasada && horasRestantes >= 3;
+                const puedeEditar = !pasada && horasRestantes >= 3; // 👈 misma regla
 
                 return (
                   <div key={cita.id_cita}
@@ -431,13 +459,20 @@ const ReservarCita = () => {
                     {cita.motivo && <p>💬 {cita.motivo}</p>}
 
                     {!pasada && (
-                      puedeCancelar ? (
-                        <button className="rc-btn-cancelar" onClick={() => handleCancelar(cita)}>
-                          Cancelar cita
-                        </button>
+                      puedeEditar ? (
+                        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                          {/* 👈 Botón editar */}
+                          <button className="rc-btn-editar" onClick={() => handleEditar(cita)}>
+                            ✏️ Editar
+                          </button>
+                          {/* Botón cancelar */}
+                          <button className="rc-btn-cancelar" onClick={() => handleCancelar(cita)}>
+                            🗑 Cancelar
+                          </button>
+                        </div>
                       ) : (
                         <p className="rc-aviso-cancelar">
-                          🔒 Solo se puede cancelar con 3+ horas de anticipación
+                          🔒 Solo se puede modificar con 3+ horas de anticipación
                         </p>
                       )
                     )}
