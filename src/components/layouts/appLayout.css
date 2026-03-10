@@ -11,6 +11,7 @@
   flex-direction: column;
   overflow: hidden;
   margin-left: 240px;
+  transition: margin-left 0.3s ease;
 }
 
 .page-content {
@@ -18,4 +19,32 @@
   overflow: auto;
   background: transparent;
   padding: 0;
+}
+
+/* OVERLAY para cerrar sidebar tocando fuera */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+/* ── TABLET (≤ 1024px) ── */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 200px;
+  }
+}
+
+/* ── MÓVIL (≤ 768px) ── */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -10,21 +10,30 @@ import {
   FaUserCircle,
   FaCopy,
   FaEdit,
-  FaStore
+  FaStore,
+  FaTimes
 } from "react-icons/fa";
 
-const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => {
+const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas, abierto, onCerrar }) => {
 
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user") || "{}")
+  );
+
+  useEffect(() => {
+    const actualizar = () => {
+      setUser(JSON.parse(localStorage.getItem("user") || "{}"));
+    };
+    window.addEventListener("user-updated", actualizar);
+    return () => window.removeEventListener("user-updated", actualizar);
+  }, []);
 
   const nombreEmpresa = user.nombre_empresa || "Mi Empresa";
   const nombreUsuario = user.nombre || "Usuario";
   const slug = user.slug;
-
-  /* LOGO DE EMPRESA */
   const logoEmpresa = user.logo_url || null;
 
   const linkPublico = slug
@@ -39,48 +48,34 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
   const copiarLink = () => {
     if (!linkPublico) return;
-
     navigator.clipboard.writeText(linkPublico);
     setCopiado(true);
-
     setTimeout(() => setCopiado(false), 2000);
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${abierto ? "sidebar--abierto" : ""}`}>
+
+      {/* BOTÓN CERRAR — solo visible en móvil */}
+      <button className="sidebar-close-btn" onClick={onCerrar}>
+        <FaTimes />
+      </button>
 
       {/* EMPRESA */}
       <div className="sidebar-profile">
-
         <div className="empresa-info">
-
           {logoEmpresa ? (
-            <img
-              src={logoEmpresa}
-              alt="logo"
-              className="empresa-logo"
-            />
+            <img src={logoEmpresa} alt="logo" className="empresa-logo" />
           ) : (
             <FaStore className="empresa-icon" />
           )}
-
-          <span className="empresa-nombre">
-            {nombreEmpresa}
-          </span>
-
+          <span className="empresa-nombre">{nombreEmpresa}</span>
         </div>
 
-        {/* USUARIO */}
         <div className="usuario-info">
-
           <FaUserCircle className="usuario-icon" />
-
-          <span className="usuario-nombre">
-            {nombreUsuario}
-          </span>
-
+          <span className="usuario-nombre">{nombreUsuario}</span>
         </div>
-
       </div>
 
       <div className="sidebar-divider" />
@@ -88,17 +83,11 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
       {/* LINK PUBLICO */}
       {linkPublico && (
         <div className="link-publico">
-
           <span>Link de reservas para clientes:</span>
-
-          <button
-            onClick={copiarLink}
-            className="btn-copiar-link"
-          >
+          <button onClick={copiarLink} className="btn-copiar-link">
             <FaCopy />
             {copiado ? "¡Copiado!" : "Copiar link"}
           </button>
-
         </div>
       )}
 
@@ -106,27 +95,23 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
       {/* MENU */}
       <nav className="menu">
-
         <NavLink
           to="/agenda-diaria"
-          onClick={onMarcarVistas}
+          onClick={() => { onMarcarVistas?.(); onCerrar?.(); }}
           className={({ isActive }) =>
             isActive && modalActivo !== "cita" ? "active" : ""
           }
         >
           <FaCalendarDay className="icon" />
           Agenda diaria
-
           {citasNuevas > 0 && (
-            <span className="badge-notificacion">
-              {citasNuevas}
-            </span>
+            <span className="badge-notificacion">{citasNuevas}</span>
           )}
-
         </NavLink>
 
         <NavLink
           to="/agenda-semanal"
+          onClick={() => onCerrar?.()}
           className={({ isActive }) =>
             isActive && modalActivo !== "cita" ? "active" : ""
           }
@@ -146,6 +131,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
 
         <NavLink
           to="/empleados"
+          onClick={() => onCerrar?.()}
           className={({ isActive }) =>
             isActive && modalActivo !== "cita" ? "active" : ""
           }
@@ -153,14 +139,13 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
           <FaUsers className="icon" />
           Empleados
         </NavLink>
-
       </nav>
 
       <div className="sidebar-divider" />
 
-      {/* CONFIGURACION */}
       <NavLink
         to="/configuracion"
+        onClick={() => onCerrar?.()}
         className={({ isActive }) =>
           isActive ? "config-btn active" : "config-btn"
         }
@@ -169,12 +154,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas }) => 
         Editar perfil
       </NavLink>
 
-      {/* LOGOUT */}
-      <button
-        type="button"
-        className="logout-btn"
-        onClick={handleLogout}
-      >
+      <button type="button" className="logout-btn" onClick={handleLogout}>
         <FaSignOutAlt className="icon" />
         Cerrar sesión
       </button>

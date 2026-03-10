@@ -54,3 +54,44 @@
   background-clip: text;
   letter-spacing: 0.01em;
 }
+/* ── Agrega esto al final de tu header.css existente ── */
+
+/* Botón hamburguesa — oculto en desktop */
+.hamburger-btn {
+  display: none;
+  background: rgba(167, 139, 250, 0.15);
+  border: none;
+  color: #a78bfa;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 11px;
+  transition: background 0.2s;
+  position: absolute;
+  left: 16px;
+}
+
+.hamburger-btn:hover {
+  background: rgba(167, 139, 250, 0.3);
+}
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .top-header {
+    position: relative; /* para que el botón absolute funcione */
+  }
+
+  .business-name {
+    font-size: 20px;
+  }
+
+  .empresa-logo-header {
+    width: 36px;
+    height: 36px;
+  }
+}
