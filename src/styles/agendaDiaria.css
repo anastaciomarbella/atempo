@@ -143,3 +143,56 @@
   color: rgba(255,255,255,0.7);
   margin-top: 2px;
 }
+/* ── Agrega esto a tu agendaDiaria.css ────────────────────────────────────── */
+
+.notif-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #f0f4ff;
+  border: 1px solid #c7d4f5;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.notif-badge {
+  font-weight: 600;
+}
+.notif-badge--on  { color: #1a7f4b; }
+.notif-badge--off { color: #555; }
+
+.notif-hint {
+  color: #666;
+  font-size: 13px;
+  flex: 1;
+}
+
+.notif-btn {
+  border: none;
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.notif-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.notif-btn--on  { background: #4f6ef7; color: #fff; }
+.notif-btn--on:hover  { background: #3a57d4; }
+
+.notif-btn--off { background: transparent; color: #e53e3e; border: 1px solid #e53e3e; }
+.notif-btn--off:hover { background: #fff5f5; }
+
+.notif-blocked {
+  font-size: 13px;
+  color: #c53030;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+}

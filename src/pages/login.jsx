@@ -9,28 +9,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const initialForm = {
-    correo: "",
-    password: "",
-  };
-
+  const initialForm = { correo: "", password: "" };
   const [form, setForm] = useState(initialForm);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
-  };
-
-  const limpiarFormulario = () => {
-    setForm(initialForm);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!form.correo || !form.password) {
       setError("Todos los campos son obligatorios");
       return;
@@ -42,9 +30,7 @@ export default function Login() {
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           correo: form.correo.trim().toLowerCase(),
           password: form.password.trim(),
@@ -63,20 +49,22 @@ export default function Login() {
         return;
       }
 
+      // 🔍 DEBUG TEMPORAL — borra estas líneas una vez que funcione el logo
+      console.log("✅ Respuesta del login:", data);
+      console.log("🖼️ logo_url recibido:", data.usuario?.logo_url);
+
       // Guardar sesión
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.usuario));
 
-      // 🔔 Notificar al Sidebar que el usuario cambió
+      // Notificar al Sidebar
       window.dispatchEvent(new Event("user-updated"));
 
-      limpiarFormulario();
-
-      // Redirigir
+      setForm(initialForm);
       navigate("/agenda-diaria");
 
-    } catch (error) {
-      console.error("Error login:", error);
+    } catch (err) {
+      console.error("Error login:", err);
       setError("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
@@ -92,11 +80,8 @@ export default function Login() {
             src={logo}
             alt="Logo"
             style={{
-              width: "90px",
-              height: "90px",
-              borderRadius: "50%",
-              objectFit: "cover",
-              marginBottom: "10px",
+              width: "90px", height: "90px", borderRadius: "50%",
+              objectFit: "cover", marginBottom: "10px",
               boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
             }}
           />
@@ -105,58 +90,32 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} autoComplete="off">
-
           <div className="input-group">
             <input
-              type="email"
-              name="correo"
-              className="login-input"
-              placeholder=" "
-              value={form.correo}
-              onChange={handleChange}
-              required
+              type="email" name="correo" className="login-input"
+              placeholder=" " value={form.correo} onChange={handleChange} required
             />
-            <label className="floating-label-text">
-              Correo
-            </label>
+            <label className="floating-label-text">Correo</label>
           </div>
 
           <div className="input-group">
             <input
-              type="password"
-              name="password"
-              className="login-input"
-              placeholder=" "
-              value={form.password}
-              onChange={handleChange}
-              required
+              type="password" name="password" className="login-input"
+              placeholder=" " value={form.password} onChange={handleChange} required
             />
-            <label className="floating-label-text">
-              Contraseña
-            </label>
+            <label className="floating-label-text">Contraseña</label>
           </div>
 
-          {error && (
-            <div className="login-error">
-              {error}
-            </div>
-          )}
+          {error && <div className="login-error">{error}</div>}
 
-          <button
-            type="submit"
-            className="login-button"
-            disabled={loading}
-          >
+          <button type="submit" className="login-button" disabled={loading}>
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
-
         </form>
 
         <div className="login-footer">
           ¿No tienes cuenta?{" "}
-          <Link to="/register" className="login-link">
-            Crear cuenta
-          </Link>
+          <Link to="/register" className="login-link">Crear cuenta</Link>
         </div>
 
       </div>
