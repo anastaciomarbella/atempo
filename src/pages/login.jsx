@@ -8,7 +8,6 @@ export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [logoError, setLogoError] = useState(false);
 
   const initialForm = {
     correo: "",
@@ -16,12 +15,6 @@ export default function Login() {
   };
 
   const [form, setForm] = useState(initialForm);
-
-  // 🔍 Debug del logo al montar el componente
-  console.log("🖼️ [Logo] Valor importado:", logo);
-  console.log("🖼️ [Logo] Tipo:", typeof logo);
-  console.log("🖼️ [Logo] Es string vacío?", logo === "");
-  console.log("🖼️ [Logo] Es undefined?", logo === undefined);
 
   const handleChange = (e) => {
     setForm({
@@ -92,17 +85,9 @@ export default function Login() {
 
   return (
     <div className="login-container">
-      {/* ✅ Logo FUERA del login-card para que persista */}
-      <div className="login-logo-wrapper">
-        {logoError ? (
-          <div style={{
-            width: "90px", height: "90px", borderRadius: "50%",
-            background: "#ccc", display: "flex", alignItems: "center",
-            justifyContent: "center", fontSize: "12px", color: "#666"
-          }}>
-            Sin logo
-          </div>
-        ) : (
+      <div className="login-card show">
+
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img
             src={logo}
             alt="Logo"
@@ -114,22 +99,8 @@ export default function Login() {
               marginBottom: "10px",
               boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
             }}
-            onLoad={() => {
-              console.log("✅ [Logo] Imagen cargada correctamente. src:", logo);
-            }}
-            onError={(e) => {
-              console.error("❌ [Logo] Error al cargar la imagen");
-              console.error("❌ [Logo] src intentado:", e.target.src);
-              console.error("❌ [Logo] Verifica que el archivo exista en: src/assets/logo.png");
-              setLogoError(true);
-            }}
           />
-        )}
-        <h1 className="login-title">Citalia</h1>
-      </div>
-
-      <div className="login-card show">
-        <div style={{ textAlign: "center", marginTop: "10px" }}>
+          <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Iniciar sesión</h2>
         </div>
 
@@ -145,7 +116,9 @@ export default function Login() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Correo</label>
+            <label className="floating-label-text">
+              Correo
+            </label>
           </div>
 
           <div className="input-group">
@@ -158,11 +131,15 @@ export default function Login() {
               onChange={handleChange}
               required
             />
-            <label className="floating-label-text">Contraseña</label>
+            <label className="floating-label-text">
+              Contraseña
+            </label>
           </div>
 
           {error && (
-            <div className="login-error">{error}</div>
+            <div className="login-error">
+              {error}
+            </div>
           )}
 
           <button
