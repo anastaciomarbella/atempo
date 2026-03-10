@@ -92,7 +92,7 @@ const AgendaDiaria = () => {
 
     try {
       // 1. Registrar service worker
-      const reg = await navigator.serviceWorker.register("/sw.js");
+      const reg = await navigator.serviceWorker.register("/service-worker.js");
 
       // 2. Pedir permiso
       const permiso = await Notification.requestPermission();
