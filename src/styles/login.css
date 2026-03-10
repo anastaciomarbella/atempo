@@ -228,3 +228,58 @@ font-size:20px;
 }
 
 }
+
+
+/* ── Validación de correo en tiempo real ───────────────────────────────────── */
+
+/* Posición relativa para el ícono absoluto */
+.correo-group {
+  position: relative;
+}
+
+/* Borde verde cuando es válido */
+.input--ok {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.15);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Borde rojo cuando es inválido */
+.input--error {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Ícono flotante a la derecha del input */
+.correo-icono {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: bold;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+/* Ajuste cuando hay mensaje de hint debajo (el icono sube un poco) */
+.correo-group:has(.correo-hint) .correo-icono {
+  top: 22px;
+}
+
+.correo-icono--ok  { color: #28a745; }
+.correo-icono--err { color: #dc3545; }
+
+/* Mensaje de ayuda debajo del input */
+.correo-hint {
+  margin: 4px 0 0 2px;
+  font-size: 12px;
+  color: #dc3545;
+  animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
