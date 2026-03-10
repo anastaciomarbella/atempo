@@ -17,7 +17,24 @@ function urlBase64ToUint8Array(base64String) {
 const VAPID_PUBLIC_KEY = process.env.REACT_APP_VAPID_PUBLIC_KEY;
 
 // ─── Cuántos minutos antes avisar ────────────────────────────────────────────
-const MINUTOS_AVISO = 15;
+const MINUTOS_AVISO_15 = 15;
+const MINUTOS_AVISO_30 = 30;
+
+// ─── Utilidad: disparar una notificación local ────────────────────────────────
+function dispararNotificacion({ titulo, cuerpo, tag, cita, abrirModal }) {
+  if (Notification.permission !== "granted") return;
+  const notif = new Notification(titulo, {
+    body: cuerpo,
+    icon: "/logo192.png",
+    tag,
+    requireInteraction: true,
+  });
+  notif.onclick = () => {
+    window.focus();
+    if (cita && abrirModal) abrirModal(cita);
+    notif.close();
+  };
+}
 
 const AgendaDiaria = () => {
   const [fechaActual, setFechaActual] = useState(new Date());
@@ -32,8 +49,9 @@ const AgendaDiaria = () => {
   const [notifSuscrita, setNotifSuscrita] = useState(false);
   const [notifCargando, setNotifCargando] = useState(false);
 
-  // Ref para no registrar el mismo recordatorio dos veces
+  // Refs para no duplicar recordatorios ni notificaciones de creación
   const recordatoriosYaProgramados = useRef(new Set());
+  const citasYaNotificadas = useRef(new Set()); // ← NUEVO: evita notif duplicada al crear
 
   const token = localStorage.getItem("token");
 
@@ -72,6 +90,37 @@ const AgendaDiaria = () => {
     if (token) fetchCitas();
   }, [fetchCitas, token]);
 
+  // ================= NOTIFICACIÓN AL CREAR UNA CITA ========================
+  // Cada vez que el arreglo "citas" cambia, detecta IDs nuevos y notifica
+  useEffect(() => {
+    if (notifPermiso !== "granted") return;
+
+    citas.forEach((cita) => {
+      const clave = `nueva-${cita.id}`;
+      if (citasYaNotificadas.current.has(clave)) return; // ya notificamos esta
+
+      // La primera vez que montamos NO notificamos (solo marcamos como conocidas)
+      // Solo notificamos en recargas posteriores (cuando el Set ya fue inicializado)
+      if (!citasYaNotificadas.current.has("__init__")) return;
+
+      citasYaNotificadas.current.add(clave);
+
+      dispararNotificacion({
+        titulo: "📅 Nueva cita agendada",
+        cuerpo: `${cita.titulo || "Cita"} con ${cita.nombre_cliente || "cliente"} el ${cita.fecha} a las ${cita.hora_inicio?.slice(0, 5)}`,
+        tag: clave,
+        cita,
+        abrirModal,
+      });
+    });
+
+    // Marcar que ya se hizo la inicialización y registrar las citas actuales
+    if (!citasYaNotificadas.current.has("__init__")) {
+      citasYaNotificadas.current.add("__init__");
+      citas.forEach((c) => citasYaNotificadas.current.add(`nueva-${c.id}`));
+    }
+  }, [citas, notifPermiso]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ================= NOTIFICACIONES — SETUP =================
 
   // Verificar si ya hay suscripción activa al montar
@@ -88,6 +137,13 @@ const AgendaDiaria = () => {
   // Activar notificaciones push (pide permiso + suscribe al servidor push)
   const activarNotificaciones = async () => {
     if (!("serviceWorker" in navigator) || !("Notification" in window)) return;
+
+    // ✅ Validar que la clave VAPID esté definida
+    if (!VAPID_PUBLIC_KEY) {
+      console.error("Falta REACT_APP_VAPID_PUBLIC_KEY en el .env");
+      return;
+    }
+
     setNotifCargando(true);
 
     try {
@@ -148,12 +204,10 @@ const AgendaDiaria = () => {
     }
   };
 
-  // ================= NOTIFICACIONES — RECORDATORIOS ========================
-  // Programa una notificación local X minutos antes de cada cita del día actual
+  // ================= NOTIFICACIONES — RECORDATORIOS (15 y 30 min) ==========
   useEffect(() => {
     if (notifPermiso !== "granted") return;
 
-    // Solo programar recordatorios para el día de hoy
     const hoy = new Date();
     const esDiaDeHoy =
       fechaActual.getFullYear() === hoy.getFullYear() &&
@@ -165,43 +219,37 @@ const AgendaDiaria = () => {
     citas.forEach((cita) => {
       if (!cita.hora_inicio || !cita.fecha) return;
 
-      const [y, m, d]    = cita.fecha.split("-");
-      const [hh, mm]     = cita.hora_inicio.split(":").map(Number);
-      const inicioCita   = new Date(y, m - 1, d, hh, mm, 0);
-      const avisarEn     = new Date(inicioCita.getTime() - MINUTOS_AVISO * 60 * 1000);
-      const msRestantes  = avisarEn.getTime() - Date.now();
+      const [y, m, d]  = cita.fecha.split("-");
+      const [hh, mm]   = cita.hora_inicio.split(":").map(Number);
+      const inicioCita = new Date(y, m - 1, d, hh, mm, 0);
 
-      // Clave única para no programar dos veces la misma cita
-      const claveUnica = `${cita.id}-${cita.hora_inicio}`;
-      if (recordatoriosYaProgramados.current.has(claveUnica)) return;
-      if (msRestantes <= 0) return; // ya pasó
+      // ── Programar recordatorio a los dos intervalos ──────────────────────
+      [MINUTOS_AVISO_30, MINUTOS_AVISO_15].forEach((minutos) => {
+        const claveUnica = `${cita.id}-${cita.hora_inicio}-${minutos}min`;
+        if (recordatoriosYaProgramados.current.has(claveUnica)) return;
 
-      recordatoriosYaProgramados.current.add(claveUnica);
+        const avisarEn    = new Date(inicioCita.getTime() - minutos * 60 * 1000);
+        const msRestantes = avisarEn.getTime() - Date.now();
+        if (msRestantes <= 0) return; // ya pasó
 
-      setTimeout(() => {
-        // Notificación local (no requiere servidor, funciona en pestaña abierta)
-        if (Notification.permission === "granted") {
-          const notif = new Notification("⏰ Cita en 15 minutos", {
-            body: `${cita.titulo || "Cita"} con ${cita.nombre_cliente || "cliente"} a las ${cita.hora_inicio?.slice(0, 5)}`,
-            icon: "/logo192.png",
-            tag: claveUnica, // evita duplicados del navegador
-            requireInteraction: true,
+        recordatoriosYaProgramados.current.add(claveUnica);
+
+        setTimeout(() => {
+          dispararNotificacion({
+            titulo: `⏰ Cita en ${minutos} minutos`,
+            cuerpo: `${cita.titulo || "Cita"} con ${cita.nombre_cliente || "cliente"} a las ${cita.hora_inicio?.slice(0, 5)}`,
+            tag: claveUnica,
+            cita,
+            abrirModal,
           });
+        }, msRestantes);
 
-          // Click en la notificación → abre la cita en el modal
-          notif.onclick = () => {
-            window.focus();
-            abrirModal(cita);
-            notif.close();
-          };
-        }
-      }, msRestantes);
-
-      console.log(
-        `[Agenda] Recordatorio programado: "${cita.titulo}" en ${Math.round(msRestantes / 60000)} min`
-      );
+        console.log(
+          `[Agenda] Recordatorio ${minutos}min programado: "${cita.titulo}" en ${Math.round(msRestantes / 60000)} min`
+        );
+      });
     });
-  }, [citas, notifPermiso, fechaActual]);
+  }, [citas, notifPermiso, fechaActual]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ================= CAMBIAR DÍA =================
   const cambiarDia = (delta) => {
@@ -219,9 +267,9 @@ const AgendaDiaria = () => {
     });
 
   // ================= MODAL =================
-  const abrirModal  = (cita) => setCitaSeleccionada(cita);
-  const cerrarModal = ()     => setCitaSeleccionada(null);
-  const guardarYCerrar = ()  => { cerrarModal(); fetchCitas(); };
+  const abrirModal      = (cita) => setCitaSeleccionada(cita);
+  const cerrarModal     = ()     => setCitaSeleccionada(null);
+  const guardarYCerrar  = ()     => { cerrarModal(); fetchCitas(); };
 
   // ================= RENDER =================
   const soportaNotif =
@@ -253,7 +301,7 @@ const AgendaDiaria = () => {
             <>
               <span className="notif-badge notif-badge--on">🔔 Notificaciones activas</span>
               <span className="notif-hint">
-                Te avisaremos 15 min antes de cada cita
+                Avisamos al crear una cita y 30 y 15 min antes de cada una
               </span>
               <button
                 className="notif-btn notif-btn--off"
