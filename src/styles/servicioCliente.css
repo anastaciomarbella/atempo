@@ -1,0 +1,310 @@
+/* ==============================
+   CONTENEDOR PRINCIPAL
+============================== */
+
+.container {
+  padding: 24px;
+  min-height: 100vh;
+  background: #0f0f1a;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.subtitulo {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #888;
+}
+
+.btnAgregar {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ==============================
+   GRID
+============================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* ==============================
+   TARJETAS
+============================== */
+
+.card {
+  background: #1a1a2e;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #2a2a40;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardImgWrap {
+  height: 150px;
+  background: #12122a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cardImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardImgPlaceholder {
+  font-size: 48px;
+}
+
+.cardBody {
+  padding: 14px;
+}
+
+.cardNombre {
+  margin-bottom: 6px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cardDesc {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badgeGris {
+  background: #2a2a40;
+  color: #ccc;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  margin-top: auto;
+}
+
+.btnEditar {
+  flex: 1;
+  background: #2a2a40;
+  color: #ccc;
+  border: none;
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnEliminar {
+  flex: 1;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ==============================
+   ESTADOS
+============================== */
+
+.loadingWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+.loadingText {
+  color: #888;
+}
+
+.emptyState {
+  text-align: center;
+  margin-top: 80px;
+  color: #888;
+}
+
+.emptyText {
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+/* ==============================
+   MODAL
+============================== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: #1a1a2e;
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid #2a2a40;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalTitulo {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ==============================
+   IMAGEN
+============================== */
+
+.imgUploadWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.imgLabel {
+  cursor: pointer;
+  display: block;
+}
+
+.imgPreview {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #a855f7;
+}
+
+.imgPlaceholder {
+  width: 120px;
+  height: 120px;
+  background: #12122a;
+  border: 2px dashed #3a3a55;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==============================
+   FORMULARIO
+============================== */
+
+.campo {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  background: #12122a;
+  border: 1px solid #2a2a40;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+/* ==============================
+   BOTONES MODAL
+============================== */
+
+.modalBtns {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btnCancelar {
+  flex: 1;
+  background: #2a2a40;
+  color: #ccc;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btnGuardar {
+  flex: 2;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
