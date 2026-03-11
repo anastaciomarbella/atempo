@@ -15,6 +15,7 @@ import ReservarCita from "./pages/ReservarCita";
 import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
 import Configuracion from "./pages/configuracion";
+import ServiciosClientes from "./pages/serviciosClientes";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/reservar/:slug" element={<ReservarCita />} />
         <Route path="/registro-cliente/:slug" element={<RegistroCliente />} />
         <Route path="/login-cliente/:slug" element={<LoginCliente />} />
+        <Route path="/servicios-clientes/:slug" element={<ServiciosClientes />} />
 
         {/* ================= PRIVADAS ================= */}
         <Route
