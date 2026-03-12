@@ -15,7 +15,7 @@ import ReservarCita from "./pages/ReservarCita";
 import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
 import Configuracion from "./pages/configuracion";
-import ServiciosClientes from "./pages/serviciosClientes";
+import ServiciosClientes from "./pages/ServiciosCliente";
 
 function App() {
   return (

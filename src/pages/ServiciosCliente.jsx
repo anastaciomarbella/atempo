@@ -1,7 +1,7 @@
 // src/pages/GestionServicios.jsx
 
 import { useState, useEffect } from "react";
-import { styles } from "../styles/servicioCliente";
+import styles from '../styles/servicios.css';
 
 // URL de tu API
 const API_URL = "https://citalia-api.onrender.com/api";
