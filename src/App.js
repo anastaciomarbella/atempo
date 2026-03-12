@@ -16,7 +16,7 @@ import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
 import Configuracion from "./pages/configuracion";
 import ServiciosClientes from "./pages/ServiciosClienteS";
-import GestionServicios from "./pages/GestionServicios"; // ← NUEVO
+
 
 function App() {
   return (
