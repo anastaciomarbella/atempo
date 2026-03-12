@@ -147,7 +147,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas, abier
       {/* SERVICIOS — justo arriba de Editar perfil */}
       {slug && (
         <NavLink
-          to={`/servicios-clientes/${slug}`}
+          to="/servisiosClienteS"
           onClick={() => onCerrar?.()}
           className={({ isActive }) =>
             isActive ? "config-btn active" : "config-btn"

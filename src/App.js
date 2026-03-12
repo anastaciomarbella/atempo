@@ -51,7 +51,7 @@ function App() {
           <Route path="/clientes-frecuentes" element={<ClientesFrecuentes />} />
           <Route path="/nuevos-empleados"    element={<RegisterEmployees />} />
           <Route path="/configuracion"       element={<Configuracion />} />
-          <Route path="/ServiciosClientes"           element={<ServiciosClientes />} /> {/* ← NUEVO */}
+          <Route path="/ServiciosClientes"           element={<ServiciosClientes />} /> 
         </Route>
 
         {/* ================= FALLBACK ================= */}
