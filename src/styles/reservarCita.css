@@ -682,25 +682,23 @@
 }
 
 /* ============================================================
-   AGREGADO: SERVICIOS — contenedor con scroll y cards de servicio
-   Se agregaron estas clases porque el JSX usa rc-servicios-scroll,
-   rc-servicios-grid, rc-servicio-card, rc-servicio-seleccionado,
-   rc-servicio-img-wrap, rc-servicio-img, rc-servicio-img-placeholder,
-   rc-servicio-check, rc-servicio-info, rc-servicio-nombre,
-   rc-servicio-meta, rc-servicio-precio, rc-servicio-duracion,
-   rc-servicio-desc, rc-servicios-loading y rc-servicio-skeleton,
-   pero ninguna estaba definida en el CSS original.
+   AGREGADO: SERVICIOS — scroll, grid, tarjetas, toggle y hints
    ============================================================ */
 
-/* Contenedor exterior con scroll vertical
-   — max-height limita la lista para que haya scroll cuando hay muchos servicios */
+/* AGREGADO: wrapper externo con position:relative para posicionar
+   el hint de scroll flotante encima del borde inferior */
+.rc-servicios-wrapper {
+  position: relative;
+  margin-top: 4px;
+}
+
+/* AGREGADO: área de scroll — limita la altura y activa overflow-y:auto
+   para que la barra aparezca sólo cuando hay más servicios de los que caben */
 .rc-servicios-scroll {
   max-height: 320px;
   overflow-y: auto;
   padding-right: 4px;
-  margin-top: 4px;
-
-  /* Scrollbar personalizada (estilo consistente con la marca) */
+  border-radius: 14px;
   scrollbar-width: thin;
   scrollbar-color: #c4b5d4 #f3e8ff;
 }
@@ -723,11 +721,35 @@
   background: #9061c2;
 }
 
-/* Grid interior — una columna en móvil, dos en escritorio */
+/* AGREGADO: hint "↓ Desliza para ver más" — flota sobre el borde
+   inferior, usa pointer-events:none para no bloquear clics debajo,
+   y desaparece cuando el usuario llega al fondo (React lo desmonta) */
+.rc-servicios-scroll-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: linear-gradient(to top, rgba(255,255,255,0.96) 55%, transparent);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9061c2;
+  pointer-events: none;
+  border-radius: 0 0 14px 14px;
+  animation: fadeIn .2s ease;
+}
+
+/* AGREGADO: grid interior — 1 col en móvil, 2 col en ≥480px
+   padding:2px para que el box-shadow de las cards no se recorte */
 .rc-servicios-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
+  padding: 2px;
 }
 
 @media (min-width: 480px) {
@@ -736,7 +758,7 @@
   }
 }
 
-/* Tarjeta individual de servicio */
+/* AGREGADO: tarjeta base de servicio */
 .rc-servicio-card {
   display: flex;
   align-items: flex-start;
@@ -748,7 +770,7 @@
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: .2s;
+  transition: border-color .15s, background .15s, transform .15s, box-shadow .15s;
   font-family: inherit;
   position: relative;
 }
@@ -757,17 +779,28 @@
   border-color: #9061c2;
   background: #f3e8ff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(118, 75, 162, 0.12);
+  box-shadow: 0 6px 18px rgba(118, 75, 162, 0.14);
 }
 
-/* Estado seleccionado */
+/* AGREGADO: estado seleccionado — el usuario puede volver a hacer clic
+   para deseleccionar (toggle implementado en handleSeleccionarServicio) */
 .rc-servicio-seleccionado {
   border-color: #764ba2 !important;
   background: linear-gradient(135deg, #f3e8ff, #fce7f3) !important;
-  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.18) !important;
+  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2) !important;
+  animation: rc-pulse-select .25s ease;
 }
 
-/* Envoltorio de imagen — posición relativa para el check encima */
+/* AGREGADO: micro-animación de "pulse" al seleccionar para dar
+   feedback visual inmediato de que el clic fue registrado */
+@keyframes rc-pulse-select {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+
+/* AGREGADO: envoltorio de imagen con position:relative para poder
+   superponer el overlay de check con position:absolute */
 .rc-servicio-img-wrap {
   position: relative;
   flex-shrink: 0;
@@ -777,7 +810,7 @@
   overflow: hidden;
 }
 
-/* Imagen real del servicio */
+/* AGREGADO: imagen real del servicio */
 .rc-servicio-img {
   width: 100%;
   height: 100%;
@@ -786,7 +819,7 @@
   display: block;
 }
 
-/* Placeholder cuando no hay imagen */
+/* AGREGADO: placeholder cuando el servicio no tiene imagen */
 .rc-servicio-img-placeholder {
   width: 54px;
   height: 54px;
@@ -798,11 +831,12 @@
   font-size: 22px;
 }
 
-/* Check verde encima de la imagen al seleccionar */
+/* AGREGADO: overlay morado con ✓ que se superpone a la imagen
+   cuando la tarjeta está seleccionada */
 .rc-servicio-check {
   position: absolute;
   inset: 0;
-  background: rgba(118, 75, 162, 0.75);
+  background: rgba(118, 75, 162, 0.78);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -810,9 +844,10 @@
   color: white;
   font-weight: 700;
   border-radius: 12px;
+  animation: fadeIn .15s ease;
 }
 
-/* Bloque de texto a la derecha de la imagen */
+/* AGREGADO: columna de texto a la derecha de la imagen */
 .rc-servicio-info {
   display: flex;
   flex-direction: column;
@@ -821,7 +856,7 @@
   min-width: 0;
 }
 
-/* Nombre del servicio */
+/* AGREGADO: nombre del servicio */
 .rc-servicio-nombre {
   font-size: 13px;
   font-weight: 700;
@@ -829,7 +864,7 @@
   line-height: 1.3;
 }
 
-/* Fila con precio y duración */
+/* AGREGADO: fila con precio y duración */
 .rc-servicio-meta {
   display: flex;
   align-items: center;
@@ -837,14 +872,14 @@
   flex-wrap: wrap;
 }
 
-/* Precio destacado */
+/* AGREGADO: precio en morado destacado */
 .rc-servicio-precio {
   font-size: 13px;
   font-weight: 800;
   color: #764ba2;
 }
 
-/* Duración con pill de fondo */
+/* AGREGADO: pill de duración */
 .rc-servicio-duracion {
   font-size: 11px;
   color: #9061c2;
@@ -854,7 +889,7 @@
   font-weight: 600;
 }
 
-/* Descripción corta del servicio */
+/* AGREGADO: descripción breve, truncada a 2 líneas */
 .rc-servicio-desc {
   font-size: 11px;
   color: #a78bca;
@@ -865,7 +900,7 @@
   overflow: hidden;
 }
 
-/* Estado de carga: skeleton animado para servicios */
+/* AGREGADO: contenedor de skeletons de carga */
 .rc-servicios-loading {
   display: flex;
   flex-direction: column;
@@ -873,12 +908,22 @@
   margin-top: 4px;
 }
 
+/* AGREGADO: skeleton individual — reutiliza el @keyframes rc-shimmer
+   que ya existe en la sección de empleados */
 .rc-servicio-skeleton {
   height: 80px;
   border-radius: 14px;
   background: linear-gradient(90deg, #f3e8ff 25%, #e9d8fd 50%, #f3e8ff 75%);
   background-size: 200% 100%;
   animation: rc-shimmer 1.6s infinite;
+}
+
+/* AGREGADO: texto secundario dentro del resumen verde que le avisa
+   al usuario que puede tocar de nuevo para quitar la selección */
+.rc-servicio-deselect-hint {
+  color: #4ade80;
+  font-weight: 400;
+  font-style: italic;
 }
 
 /* ============================================================
@@ -926,12 +971,13 @@
     align-items: center;
   }
 
-  /* AGREGADO: en móvil el scroll de servicios usa menos altura */
+  /* AGREGADO: en móvil reducir la altura del scroll para respetar
+     el espacio del teclado virtual */
   .rc-servicios-scroll {
     max-height: 260px;
   }
 
-  /* AGREGADO: en móvil forzar una columna aunque la pantalla lo permitiera */
+  /* AGREGADO: en móvil siempre una sola columna */
   .rc-servicios-grid {
     grid-template-columns: 1fr;
   }
