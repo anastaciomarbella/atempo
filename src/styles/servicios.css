@@ -1,13 +1,11 @@
-/* ==============================
-   CONTENEDOR PRINCIPAL
-============================== */
+/* src/styles/servicios.css */
 
 .container {
   padding: 24px;
   min-height: 100vh;
-  background: #0f0f1a;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 40%, #f093fb 100%);
   color: #fff;
-  font-family: sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 .header {
@@ -21,23 +19,34 @@
   margin: 0;
   font-size: 26px;
   font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .subtitulo {
   margin-top: 4px;
   font-size: 13px;
-  color: #888;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .btnAgregar {
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  color: #fff;
+  background: white;
+  color: #764ba2;
   border: none;
   border-radius: 10px;
   padding: 10px 20px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   cursor: pointer;
+  transition: .2s;
+  font-family: inherit;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btnAgregar:hover {
+  background: #f3e8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 /* ==============================
@@ -55,17 +64,25 @@
 ============================== */
 
 .card {
-  background: #1a1a2e;
-  border-radius: 14px;
+  background: white;
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #2a2a40;
+  border: 1px solid #e9d8fd;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 15px rgba(118, 75, 162, 0.1);
+  transition: .2s;
+  animation: fadeIn .35s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(118, 75, 162, 0.2);
 }
 
 .cardImgWrap {
   height: 150px;
-  background: #12122a;
+  background: linear-gradient(135deg, #f3e8ff, #fce7f3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,11 +107,12 @@
   margin-bottom: 6px;
   font-size: 16px;
   font-weight: 700;
+  color: #2d1b69;
 }
 
 .cardDesc {
   font-size: 12px;
-  color: #aaa;
+  color: #9061c2;
   line-height: 1.5;
   margin-bottom: 10px;
 }
@@ -106,20 +124,21 @@
 }
 
 .badge {
-  background: linear-gradient(135deg, #a855f7, #ec4899);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
-  border-radius: 20px;
+  border-radius: 100px;
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 600;
 }
 
 .badgeGris {
-  background: #2a2a40;
-  color: #ccc;
-  border-radius: 20px;
+  background: #e9d8fd;
+  color: #764ba2;
+  border-radius: 100px;
   padding: 3px 10px;
   font-size: 12px;
+  font-weight: 600;
 }
 
 .cardActions {
@@ -131,24 +150,40 @@
 
 .btnEditar {
   flex: 1;
-  background: #2a2a40;
-  color: #ccc;
-  border: none;
+  background: #f3e8ff;
+  color: #764ba2;
+  border: 2px solid #e9d8fd;
   border-radius: 8px;
   padding: 7px;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: .2s;
+  font-family: inherit;
+}
+
+.btnEditar:hover {
+  background: #e9d8fd;
+  border-color: #764ba2;
 }
 
 .btnEliminar {
   flex: 1;
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: #fff5f5;
+  color: #dc2626;
+  border: 2px solid #fecaca;
   border-radius: 8px;
   padding: 7px;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: .2s;
+  font-family: inherit;
+}
+
+.btnEliminar:hover {
+  background: #fee2e2;
+  border-color: #f87171;
 }
 
 /* ==============================
@@ -162,13 +197,14 @@
 }
 
 .loadingText {
-  color: #888;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
 }
 
 .emptyState {
   text-align: center;
   margin-top: 80px;
-  color: #888;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .emptyText {
@@ -183,7 +219,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -192,20 +228,23 @@
 }
 
 .modal {
-  background: #1a1a2e;
-  border-radius: 16px;
+  background: white;
+  border-radius: 20px;
   padding: 28px;
   width: 100%;
   max-width: 480px;
-  border: 1px solid #2a2a40;
+  border: 1px solid #e9d8fd;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(102, 126, 234, 0.3);
+  animation: fadeIn .35s ease;
 }
 
 .modalTitulo {
   margin-bottom: 20px;
   font-size: 20px;
   font-weight: 700;
+  color: #2d1b69;
 }
 
 /* ==============================
@@ -228,19 +267,27 @@
   height: 120px;
   object-fit: cover;
   border-radius: 12px;
-  border: 2px solid #a855f7;
+  border: 2px solid #764ba2;
 }
 
 .imgPlaceholder {
   width: 120px;
   height: 120px;
-  background: #12122a;
-  border: 2px dashed #3a3a55;
+  background: #faf5ff;
+  border: 2px dashed #c4b5d4;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: #9061c2;
+  font-size: 12px;
+  transition: .2s;
+}
+
+.imgPlaceholder:hover {
+  border-color: #764ba2;
+  background: #f3e8ff;
 }
 
 /* ==============================
@@ -254,21 +301,35 @@
 .label {
   display: block;
   font-size: 12px;
-  color: #aaa;
+  color: #764ba2;
   margin-bottom: 6px;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .input {
   width: 100%;
-  background: #12122a;
-  border: 1px solid #2a2a40;
-  border-radius: 8px;
+  background: #faf5ff;
+  border: 2px solid #e9d8fd;
+  border-radius: 10px;
   padding: 10px 12px;
-  color: #fff;
+  color: #2d1b69;
   font-size: 14px;
   box-sizing: border-box;
   outline: none;
+  font-family: inherit;
+  transition: .2s;
+}
+
+.input::placeholder {
+  color: #c4b5d4;
+}
+
+.input:focus {
+  border-color: #764ba2;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.12);
 }
 
 .row {
@@ -288,18 +349,25 @@
 
 .btnCancelar {
   flex: 1;
-  background: #2a2a40;
-  color: #ccc;
-  border: none;
+  background: #f3e8ff;
+  color: #764ba2;
+  border: 2px solid #e9d8fd;
   border-radius: 10px;
   padding: 12px;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
+  transition: .2s;
+}
+
+.btnCancelar:hover {
+  background: #e9d8fd;
 }
 
 .btnGuardar {
   flex: 2;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -307,4 +375,40 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
+  transition: .2s;
+  letter-spacing: 0.02em;
+}
+
+.btnGuardar:hover {
+  background: linear-gradient(135deg, #5a6fd6, #6a3f9a);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+}
+
+.btnGuardar:active {
+  transform: translateY(0);
+}
+
+.btnGuardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==============================
+   ANIMACION
+============================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

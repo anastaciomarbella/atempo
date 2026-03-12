@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import styles from '../styles/servicios.css';
 
 // URL de tu API
-const API_URL = "https://citalia-api.onrender.com/api";
+const API_URL = "https://mi-api-atempo.onrender.com";
+
 
 export default function GestionServicios() {
 
