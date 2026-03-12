@@ -15,7 +15,7 @@ import ReservarCita from "./pages/ReservarCita";
 import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
 import Configuracion from "./pages/configuracion";
-import ServiciosClientes from "./pages/ServiciosCliente";
+import ServiciosClientes from "./pages/ServiciosClienteS";
 import GestionServicios from "./pages/GestionServicios"; // ← NUEVO
 
 function App() {
@@ -51,7 +51,7 @@ function App() {
           <Route path="/clientes-frecuentes" element={<ClientesFrecuentes />} />
           <Route path="/nuevos-empleados"    element={<RegisterEmployees />} />
           <Route path="/configuracion"       element={<Configuracion />} />
-          <Route path="/servicios"           element={<GestionServicios />} /> {/* ← NUEVO */}
+          <Route path="/ServiciosClientes"           element={<ServiciosClientes />} /> {/* ← NUEVO */}
         </Route>
 
         {/* ================= FALLBACK ================= */}
