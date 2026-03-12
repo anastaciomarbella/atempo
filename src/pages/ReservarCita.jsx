@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./reservarCita.css";
+import "../styles/reservarCita.css";
 
 export default function ReservarCita() {
 
