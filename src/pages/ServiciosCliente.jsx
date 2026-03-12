@@ -1,17 +1,15 @@
 // src/pages/GestionServicios.jsx
 
 import { useState, useEffect } from "react";
-import Sidebar from "../components/sidebar/sidebar";
 import "../styles/servicios.css";
 import { API_URL } from "../config";
 
 export default function GestionServicios() {
 
-  const [servicios, setServicios]   = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [editando, setEditando]     = useState(null);
-  const [sidebarAbierto, setSidebarAbierto] = useState(false);
+  const [servicios, setServicios] = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editando, setEditando]   = useState(null);
 
   const [form, setForm] = useState({
     nombre: "", descripcion: "", precio: "", duracion: ""
@@ -119,80 +117,61 @@ export default function GestionServicios() {
   }
 
   return (
-    <div className="sv-layout">
+    <div className="sv-page">
 
-      {/* ── SIDEBAR ── */}
-      <Sidebar
-        abierto={sidebarAbierto}
-        onCerrar={() => setSidebarAbierto(false)}
-      />
-
-      {/* ── CONTENIDO ── */}
-      <main className="sv-main">
-
-        {/* Botón hamburguesa solo en móvil */}
-        <button
-          className="sv-hamburger"
-          onClick={() => setSidebarAbierto(true)}
-          aria-label="Abrir menú"
-        >
-          ☰
-        </button>
-
-        {/* HEADER */}
-        <div className="sv-header">
-          <div>
-            <h1 className="sv-titulo">Gestión de Servicios</h1>
-            <p className="sv-subtitulo">{servicios.length} servicios registrados</p>
-          </div>
-          <button className="sv-btn-agregar" onClick={() => abrirModal()}>
-            + Nuevo Servicio
-          </button>
+      {/* HEADER */}
+      <div className="sv-header">
+        <div>
+          <h1 className="sv-titulo">Gestión de Servicios</h1>
+          <p className="sv-subtitulo">{servicios.length} servicios registrados</p>
         </div>
+        <button className="sv-btn-agregar" onClick={() => abrirModal()}>
+          + Nuevo Servicio
+        </button>
+      </div>
 
-        {/* GRID / ESTADOS */}
-        {loading ? (
-          <div className="sv-loading">
-            <p>Cargando servicios...</p>
-          </div>
-        ) : servicios.length === 0 ? (
-          <div className="sv-empty">
-            <span className="sv-empty-icon">✂️</span>
-            <p>Aún no hay servicios. ¡Agrega el primero!</p>
-          </div>
-        ) : (
-          <div className="sv-grid">
-            {servicios.map((s) => (
-              <div key={s.id_servicio} className="sv-card">
+      {/* CONTENIDO */}
+      {loading ? (
+        <div className="sv-loading">
+          <p>Cargando servicios...</p>
+        </div>
+      ) : servicios.length === 0 ? (
+        <div className="sv-empty">
+          <span className="sv-empty-icon">✂️</span>
+          <p>Aún no hay servicios. ¡Agrega el primero!</p>
+        </div>
+      ) : (
+        <div className="sv-grid">
+          {servicios.map((s) => (
+            <div key={s.id_servicio} className="sv-card">
 
-                <div className="sv-card-img-wrap">
-                  {s.imagen_url
-                    ? <img src={s.imagen_url} alt={s.nombre} className="sv-card-img" />
-                    : <div className="sv-card-img-placeholder">✂️</div>
-                  }
-                </div>
-
-                <div className="sv-card-body">
-                  <h3 className="sv-card-nombre">{s.nombre}</h3>
-                  {s.descripcion && <p className="sv-card-desc">{s.descripcion}</p>}
-                  <div className="sv-card-meta">
-                    <span className="sv-badge">${parseFloat(s.precio).toFixed(2)}</span>
-                    {s.duracion && <span className="sv-badge-gris">{s.duracion} min</span>}
-                  </div>
-                </div>
-
-                <div className="sv-card-actions">
-                  <button className="sv-btn-editar"   onClick={() => abrirModal(s)}>Editar</button>
-                  <button className="sv-btn-eliminar" onClick={() => eliminarServicio(s.id_servicio)}>Eliminar</button>
-                </div>
-
+              <div className="sv-card-img-wrap">
+                {s.imagen_url
+                  ? <img src={s.imagen_url} alt={s.nombre} className="sv-card-img" />
+                  : <div className="sv-card-img-placeholder">✂️</div>
+                }
               </div>
-            ))}
-          </div>
-        )}
-      </main>
 
-      {/* ── MODAL ── */}
+              <div className="sv-card-body">
+                <h3 className="sv-card-nombre">{s.nombre}</h3>
+                {s.descripcion && <p className="sv-card-desc">{s.descripcion}</p>}
+                <div className="sv-card-meta">
+                  <span className="sv-badge">${parseFloat(s.precio).toFixed(2)}</span>
+                  {s.duracion && <span className="sv-badge-gris">{s.duracion} min</span>}
+                </div>
+              </div>
+
+              <div className="sv-card-actions">
+                <button className="sv-btn-editar"   onClick={() => abrirModal(s)}>Editar</button>
+                <button className="sv-btn-eliminar" onClick={() => eliminarServicio(s.id_servicio)}>Eliminar</button>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* MODAL */}
       {modalOpen && (
         <div className="sv-overlay" onClick={cerrarModal}>
           <div className="sv-modal" onClick={(e) => e.stopPropagation()}>
@@ -201,7 +180,6 @@ export default function GestionServicios() {
               {editando ? "Editar Servicio" : "Nuevo Servicio"}
             </h2>
 
-            {/* Imagen */}
             <div className="sv-img-upload">
               <label className="sv-img-label">
                 {preview
@@ -217,7 +195,6 @@ export default function GestionServicios() {
               </label>
             </div>
 
-            {/* Campos */}
             <div className="sv-campo">
               <label className="sv-label">Nombre *</label>
               <input className="sv-input" placeholder="Ej: Corte de cabello"
@@ -249,7 +226,7 @@ export default function GestionServicios() {
 
             <div className="sv-modal-btns">
               <button className="sv-btn-cancelar" onClick={cerrarModal}>Cancelar</button>
-              <button className="sv-btn-guardar"  onClick={guardarServicio} disabled={subiendo}>
+              <button className="sv-btn-guardar" onClick={guardarServicio} disabled={subiendo}>
                 {subiendo ? "Guardando..." : editando ? "Actualizar" : "Crear Servicio"}
               </button>
             </div>
