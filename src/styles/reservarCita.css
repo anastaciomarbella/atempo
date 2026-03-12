@@ -882,3 +882,61 @@
   background-size: 200% 100%;
   animation: rc-shimmer 1.6s infinite;
 }
+
+
+
+
+/* =====================================================
+   ANIMACIONES TARJETAS SERVICIOS
+===================================================== */
+
+/* Animación al aparecer */
+
+@keyframes rc-cardAppear {
+  from{
+    opacity:0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to{
+    opacity:1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.rc-servicio-card{
+  animation: rc-cardAppear .35s ease forwards;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .2s ease;
+}
+
+
+/* Hover profesional */
+
+.rc-servicio-card:hover{
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(118,75,162,.25);
+}
+
+
+/* Zoom imagen */
+
+.rc-servicio-img{
+  transition: transform .4s ease;
+}
+
+.rc-servicio-card:hover .rc-servicio-img{
+  transform: scale(1.08);
+}
+
+
+/* Animación escalonada */
+
+.rc-servicios-grid .rc-servicio-card:nth-child(1){animation-delay:.05s}
+.rc-servicios-grid .rc-servicio-card:nth-child(2){animation-delay:.1s}
+.rc-servicios-grid .rc-servicio-card:nth-child(3){animation-delay:.15s}
+.rc-servicios-grid .rc-servicio-card:nth-child(4){animation-delay:.2s}
+.rc-servicios-grid .rc-servicio-card:nth-child(5){animation-delay:.25s}
+.rc-servicios-grid .rc-servicio-card:nth-child(6){animation-delay:.3s}
+.rc-servicios-grid .rc-servicio-card:nth-child(7){animation-delay:.35s}
+.rc-servicios-grid .rc-servicio-card:nth-child(8){animation-delay:.4s}
+.rc-servicios-grid .rc-servicio-card:nth-child(9){animation-delay:.45s}
+.rc-servicios-grid .rc-servicio-card:nth-child(10){animation-delay:.5s}
