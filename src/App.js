@@ -16,6 +16,7 @@ import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
 import Configuracion from "./pages/configuracion";
 import ServiciosClientes from "./pages/ServiciosCliente";
+import GestionServicios from "./pages/GestionServicios"; // ← NUEVO
 
 function App() {
   return (
@@ -26,15 +27,15 @@ function App() {
         <Route path="/" element={<Navigate to="/register" replace />} />
 
         {/* ================= PUBLICAS NEGOCIO ================= */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/register"         element={<Register />} />
+        <Route path="/login"            element={<Login />} />
         <Route path="/aviso-privacidad" element={<AvisoDePrivacidad />} />
 
         {/* ================= PUBLICAS CLIENTES ================= */}
-        <Route path="/reservar/:slug" element={<ReservarCita />} />
-        <Route path="/registro-cliente/:slug" element={<RegistroCliente />} />
-        <Route path="/login-cliente/:slug" element={<LoginCliente />} />
-        <Route path="/servicios-clientes/:slug" element={<ServiciosClientes />} />
+        <Route path="/reservar/:slug"            element={<ReservarCita />} />
+        <Route path="/registro-cliente/:slug"    element={<RegistroCliente />} />
+        <Route path="/login-cliente/:slug"       element={<LoginCliente />} />
+        <Route path="/servicios-clientes/:slug"  element={<ServiciosClientes />} />
 
         {/* ================= PRIVADAS ================= */}
         <Route
@@ -44,16 +45,17 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/agenda-diaria" element={<AgendaDiaria />} />
-          <Route path="/agenda-semanal" element={<AgendaSemanal />} />
-          <Route path="/empleados" element={<Empleados />} />
+          <Route path="/agenda-diaria"       element={<AgendaDiaria />} />
+          <Route path="/agenda-semanal"      element={<AgendaSemanal />} />
+          <Route path="/empleados"           element={<Empleados />} />
           <Route path="/clientes-frecuentes" element={<ClientesFrecuentes />} />
-          <Route path="/nuevos-empleados" element={<RegisterEmployees />} />
-          <Route path="/configuracion" element={<Configuracion />} />
+          <Route path="/nuevos-empleados"    element={<RegisterEmployees />} />
+          <Route path="/configuracion"       element={<Configuracion />} />
+          <Route path="/servicios"           element={<GestionServicios />} /> {/* ← NUEVO */}
         </Route>
 
         {/* ================= FALLBACK ================= */}
-        <Route path="*" element={<div style={{padding:40}}>Página no encontrada</div>} />
+        <Route path="*" element={<div style={{ padding: 40 }}>Página no encontrada</div>} />
 
       </Routes>
     </Router>
