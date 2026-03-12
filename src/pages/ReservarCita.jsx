@@ -409,8 +409,8 @@ const ReservarCita = () => {
             <div className="rc-field">
               <label>¿Con quién quieres tu cita? *</label>
               {loadingPersonas && (
-                <div className="rc-empleados-loading">
-                  {[1,2,3].map(i => <div key={i} className="rc-empleado-skeleton" />)}
+                <div className="rc-servicios-loading">
+                  {[1,2,3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
                 </div>
               )}
               {!loadingPersonas && personas.length === 0 && (
@@ -420,32 +420,66 @@ const ReservarCita = () => {
                 </div>
               )}
               {!loadingPersonas && personas.length > 0 && (
-                <div className="rc-empleados-grid">
-                  {personas.map(p => {
-                    const seleccionado = formulario.id_encargado === p.id_persona;
-                    return (
-                      <button key={p.id_persona} type="button"
-                        className={`rc-empleado-card ${seleccionado ? 'rc-empleado-seleccionado' : ''}`}
-                        onClick={() => {
-                          setFormulario(prev => ({ ...prev, id_encargado: p.id_persona, encargado: p.nombre }));
-                          setMensaje('');
-                        }}>
-                        <div className="rc-empleado-avatar"
-                          style={{ background: `hsl(${(p.id_persona * 67) % 360}, 50%, 62%)` }}>
-                          {p.nombre?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="rc-empleado-info">
-                          <span className="rc-empleado-nombre">{p.nombre}</span>
-                          {p.especialidad && <span className="rc-empleado-especialidad">{p.especialidad}</span>}
-                        </div>
-                        {seleccionado && <span className="rc-empleado-check">✓</span>}
-                      </button>
-                    );
-                  })}
+                <div className="rc-servicios-wrapper">
+                  <div className="rc-servicios-scroll">
+                    <div className="rc-servicios-grid">
+                      {personas.map(p => {
+                        const seleccionado = formulario.id_encargado === p.id_persona;
+                        const colorAvatar  = `hsl(${(p.id_persona * 67) % 360}, 45%, 60%)`;
+                        return (
+                          <button key={p.id_persona} type="button"
+                            className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
+                            onClick={() => {
+                              if (formulario.id_encargado === p.id_persona) {
+                                setFormulario(prev => ({ ...prev, id_encargado: null, encargado: '' }));
+                              } else {
+                                setFormulario(prev => ({ ...prev, id_encargado: p.id_persona, encargado: p.nombre }));
+                              }
+                              setMensaje('');
+                            }}
+                            aria-pressed={seleccionado}
+                          >
+                            {/* Avatar circular — izquierda */}
+                            <div className="rc-servicio-img-wrap">
+                              {p.foto_url
+                                ? <img src={safeUrl(p.foto_url)} alt={p.nombre} className="rc-servicio-img"
+                                    style={{ borderRadius: '50%' }} />
+                                : <div className="rc-servicio-img-placeholder"
+                                    style={{
+                                      background: colorAvatar,
+                                      borderRadius: '50%',
+                                      color: 'white',
+                                      fontSize: 22,
+                                      fontWeight: 800,
+                                    }}>
+                                    {p.nombre?.charAt(0).toUpperCase()}
+                                  </div>
+                              }
+                              {seleccionado && <div className="rc-servicio-check" style={{ borderRadius: '50%' }}>✓</div>}
+                            </div>
+
+                            {/* Texto — centro */}
+                            <div className="rc-servicio-info">
+                              <span className="rc-servicio-nombre">{p.nombre}</span>
+                              {p.especialidad && (
+                                <span className="rc-servicio-desc">{p.especialidad}</span>
+                              )}
+                            </div>
+
+                            {/* Radio — derecha */}
+                            <div className="rc-servicio-radio" aria-hidden="true" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
               {formulario.encargado && (
-                <p className="rc-empleado-resumen">✅ Seleccionaste a <strong>{formulario.encargado}</strong></p>
+                <p className="rc-empleado-resumen">
+                  ✅ Seleccionaste a <strong>{formulario.encargado}</strong>
+                  <span className="rc-servicio-deselect-hint"> · Toca de nuevo para quitar</span>
+                </p>
               )}
             </div>
 
