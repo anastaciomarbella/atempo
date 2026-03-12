@@ -10,6 +10,28 @@ const coloresDisponibles = [
 const API     = 'https://mi-api-atempo.onrender.com';
 const safeUrl = (url) => url?.replace('http://', 'https://') || '';
 
+// AGREGADO: formatea minutos totales a texto legible "30 min", "1 h", "1 h 30 min"
+function formatearDuracion(duracion) {
+  if (!duracion) return '';
+  let total = 0;
+  if (typeof duracion === 'number') {
+    total = duracion;
+  } else if (typeof duracion === 'string') {
+    if (duracion.includes(':')) {
+      const [h, m] = duracion.split(':');
+      total = parseInt(h) * 60 + parseInt(m);
+    } else {
+      total = parseInt(duracion) || 0;
+    }
+  }
+  if (total <= 0) return '';
+  const horas   = Math.floor(total / 60);
+  const minutos = total % 60;
+  if (horas > 0 && minutos > 0) return `${horas} h ${minutos} min`;
+  if (horas > 0)                 return `${horas} h`;
+  return `${minutos} min`;
+}
+
 const ReservarCita = () => {
   const { slug }    = useParams();
   const navigate    = useNavigate();
@@ -31,8 +53,6 @@ const ReservarCita = () => {
   const [loadingCitas, setLoadingCitas]     = useState(false);
   const [citasOcupadas, setCitasOcupadas]   = useState([]);
   const [citaEditando, setCitaEditando]     = useState(null);
-
-  // AGREGADO: estado para saber si el scroll llegó al fondo
   const [scrollAlFondo, setScrollAlFondo]   = useState(false);
 
   const [formulario, setFormulario] = useState({
@@ -97,18 +117,14 @@ const ReservarCita = () => {
     setMensaje('');
   };
 
-  // MODIFICADO: ahora hace toggle — si ya está seleccionado lo deselecciona,
-  // si no está seleccionado lo selecciona y calcula hora_final automáticamente.
+  // Toggle: clic en el mismo servicio lo deselecciona
   const handleSeleccionarServicio = (servicio) => {
-    // Si el servicio ya está seleccionado, deseleccionarlo
     if (servicioSeleccionado?.id_servicio === servicio.id_servicio) {
       setServicioSeleccionado(null);
       setFormulario(prev => ({ ...prev, titulo: '', hora_final: '' }));
       setMensaje('');
       return;
     }
-
-    // Si es un servicio diferente, seleccionarlo
     setServicioSeleccionado(servicio);
     let hora_final = formulario.hora_final;
     if (formulario.hora_inicio && servicio.duracion) {
@@ -225,8 +241,7 @@ const ReservarCita = () => {
 
   const resetFormulario = () => {
     setExito(false); setCitaEditando(null); setCitasOcupadas([]);
-    setServicioSeleccionado(null);
-    setScrollAlFondo(false); // AGREGADO: resetear indicador de scroll
+    setServicioSeleccionado(null); setScrollAlFondo(false);
     setFormulario({
       id_encargado: null, encargado: '', titulo: '', fecha: '',
       hora_inicio: '', hora_final: '',
@@ -236,11 +251,9 @@ const ReservarCita = () => {
     });
   };
 
-  // AGREGADO: manejador del scroll para ocultar el hint al llegar al fondo
   const handleScrollServicios = (e) => {
     const el = e.target;
-    const alFondo = el.scrollTop + el.clientHeight >= el.scrollHeight - 10;
-    setScrollAlFondo(alFondo);
+    setScrollAlFondo(el.scrollTop + el.clientHeight >= el.scrollHeight - 10);
   };
 
   const conflictoEnVivo = hayConflictoHorario(formulario.hora_inicio, formulario.hora_final);
@@ -325,12 +338,9 @@ const ReservarCita = () => {
               )}
 
               {!loadingServicios && servicios.length > 0 && (
-                // MODIFICADO: contenedor relativo para posicionar el hint de scroll encima
                 <div className="rc-servicios-wrapper">
-                  <div
-                    className="rc-servicios-scroll"
-                    onScroll={handleScrollServicios}  // AGREGADO: detectar scroll
-                  >
+                  <div className="rc-servicios-scroll" onScroll={handleScrollServicios}>
+                    {/* MODIFICADO: rc-servicios-grid ahora es flex column (lista vertical) */}
                     <div className="rc-servicios-grid">
                       {servicios.map(s => {
                         const seleccionado = servicioSeleccionado?.id_servicio === s.id_servicio;
@@ -338,55 +348,58 @@ const ReservarCita = () => {
                           <button
                             key={s.id_servicio}
                             type="button"
-                            // MODIFICADO: clase extra "rc-servicio-seleccionado" si está seleccionado
                             className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
-                            // MODIFICADO: llama a handleSeleccionarServicio que ahora hace toggle
                             onClick={() => handleSeleccionarServicio(s)}
-                            // AGREGADO: aria-pressed para accesibilidad
                             aria-pressed={seleccionado}
                           >
-                            {/* Imagen o placeholder */}
+                            {/* Imagen o placeholder — izquierda */}
                             <div className="rc-servicio-img-wrap">
                               {s.imagen_url
                                 ? <img src={safeUrl(s.imagen_url)} alt={s.nombre} className="rc-servicio-img" />
                                 : <div className="rc-servicio-img-placeholder">✂️</div>
                               }
-                              {/* MODIFICADO: check visible cuando está seleccionado */}
                               {seleccionado && <div className="rc-servicio-check">✓</div>}
                             </div>
-                            {/* Info */}
+
+                            {/* Texto — centro */}
                             <div className="rc-servicio-info">
                               <span className="rc-servicio-nombre">{s.nombre}</span>
-                              <div className="rc-servicio-meta">
-                                {s.precio   && <span className="rc-servicio-precio">${parseFloat(s.precio).toFixed(2)}</span>}
-                                {s.duracion && <span className="rc-servicio-duracion">⏱ {s.duracion} min</span>}
-                              </div>
                               {s.descripcion && (
                                 <span className="rc-servicio-desc">{s.descripcion}</span>
                               )}
+                              <div className="rc-servicio-meta">
+                                {/* MODIFICADO: usa formatearDuracion para mostrar "30 min" / "1 h" */}
+                                {s.duracion && (
+                                  <span className="rc-servicio-duracion">
+                                    ⏱ {formatearDuracion(s.duracion)}
+                                  </span>
+                                )}
+                                {s.precio && (
+                                  <span className="rc-servicio-precio">
+                                    ${parseFloat(s.precio).toFixed(2)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
+
+                            {/* AGREGADO: radio button — derecha */}
+                            <div className="rc-servicio-radio" aria-hidden="true" />
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
-                  {/* AGREGADO: hint de scroll — se oculta cuando el usuario llegó al fondo
-                      o cuando hay 3 o menos servicios (no hace falta scroll) */}
-                  {servicios.length > 3 && !scrollAlFondo && (
-                    <div className="rc-servicios-scroll-hint">
-                      ↓ Desliza para ver más
-                    </div>
+                  {servicios.length > 4 && !scrollAlFondo && (
+                    <div className="rc-servicios-scroll-hint">↓ Desliza para ver más</div>
                   )}
                 </div>
               )}
 
-              {/* MODIFICADO: mensaje de resumen — muestra "Toca de nuevo para quitar" */}
               {servicioSeleccionado && (
                 <p className="rc-empleado-resumen">
                   ✅ Seleccionaste: <strong>{servicioSeleccionado.nombre}</strong>
-                  {servicioSeleccionado.duracion && ` · ${servicioSeleccionado.duracion} min`}
-                  {/* AGREGADO: hint de deselección */}
+                  {servicioSeleccionado.duracion && ` · ${formatearDuracion(servicioSeleccionado.duracion)}`}
                   <span className="rc-servicio-deselect-hint"> · Toca de nuevo para quitar</span>
                 </p>
               )}

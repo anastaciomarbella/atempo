@@ -259,8 +259,6 @@
 }
 
 .rc-empleado-check {
-  font-size: 14px;
-  color: #764ba2;
   font-weight: 700;
   flex-shrink: 0;
   width: 24px;
@@ -271,6 +269,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 14px;
 }
 
 .rc-empleado-resumen {
@@ -301,13 +300,8 @@
 }
 
 @keyframes rc-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .rc-empleados-vacio {
@@ -670,35 +664,27 @@
 /* ANIMACION */
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ============================================================
-   AGREGADO: SERVICIOS — scroll, grid, tarjetas, toggle y hints
+   SERVICIOS — lista vertical estilo "primer diseño"
+   Imagen a la izquierda · texto en el centro · radio a la derecha
    ============================================================ */
 
-/* AGREGADO: wrapper externo con position:relative para posicionar
-   el hint de scroll flotante encima del borde inferior */
+/* Wrapper sin padding extra — el scroll vive dentro de rc-card normal */
 .rc-servicios-wrapper {
   position: relative;
   margin-top: 4px;
 }
 
-/* AGREGADO: área de scroll — limita la altura y activa overflow-y:auto
-   para que la barra aparezca sólo cuando hay más servicios de los que caben */
+/* Scroll vertical con scrollbar a la derecha, visible siempre */
 .rc-servicios-scroll {
-  max-height: 320px;
+  max-height: 340px;
   overflow-y: auto;
-  padding-right: 4px;
-  border-radius: 14px;
+  overflow-x: hidden;
+  /* Scrollbar fina morada */
   scrollbar-width: thin;
   scrollbar-color: #c4b5d4 #f3e8ff;
 }
@@ -721,186 +707,205 @@
   background: #9061c2;
 }
 
-/* AGREGADO: hint "↓ Desliza para ver más" — flota sobre el borde
-   inferior, usa pointer-events:none para no bloquear clics debajo,
-   y desaparece cuando el usuario llega al fondo (React lo desmonta) */
+/* Hint flotante "↓ Desliza" */
 .rc-servicios-scroll-hint {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 44px;
+  height: 40px;
   background: linear-gradient(to top, rgba(255,255,255,0.96) 55%, transparent);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
   font-size: 11px;
   font-weight: 600;
   color: #9061c2;
   pointer-events: none;
-  border-radius: 0 0 14px 14px;
   animation: fadeIn .2s ease;
 }
 
-/* AGREGADO: grid interior — 1 col en móvil, 2 col en ≥480px
-   padding:2px para que el box-shadow de las cards no se recorte */
+/* ── LISTA: una columna, sin grid de dos columnas ── */
 .rc-servicios-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;           /* sin gap — los separadores los da el border-bottom */
+  padding: 0;
 }
 
-@media (min-width: 480px) {
-  .rc-servicios-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* AGREGADO: tarjeta base de servicio */
+/* ── TARJETA DE SERVICIO — fila horizontal ── */
 .rc-servicio-card {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 14px;
-  background: #faf5ff;
-  border: 2px solid #e9d8fd;
-  border-radius: 14px;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: white;
+  border: none;
+  border-bottom: 1px solid #f0edf8;
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: border-color .15s, background .15s, transform .15s, box-shadow .15s;
+  transition: background .15s;
   font-family: inherit;
   position: relative;
 }
 
+.rc-servicio-card:first-child {
+  border-radius: 12px 12px 0 0;
+}
+
+.rc-servicio-card:last-child {
+  border-bottom: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.rc-servicio-card:only-child {
+  border-radius: 12px;
+}
+
 .rc-servicio-card:hover {
-  border-color: #9061c2;
-  background: #f3e8ff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(118, 75, 162, 0.14);
+  background: #faf5ff;
 }
 
-/* AGREGADO: estado seleccionado — el usuario puede volver a hacer clic
-   para deseleccionar (toggle implementado en handleSeleccionarServicio) */
+/* Estado seleccionado — fondo sutil morado, sin borde extra */
 .rc-servicio-seleccionado {
-  border-color: #764ba2 !important;
-  background: linear-gradient(135deg, #f3e8ff, #fce7f3) !important;
-  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2) !important;
-  animation: rc-pulse-select .25s ease;
+  background: #f5f0ff !important;
 }
 
-/* AGREGADO: micro-animación de "pulse" al seleccionar para dar
-   feedback visual inmediato de que el clic fue registrado */
-@keyframes rc-pulse-select {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.025); }
-  100% { transform: scale(1); }
+.rc-servicio-seleccionado:hover {
+  background: #ede8fd !important;
 }
 
-/* AGREGADO: envoltorio de imagen con position:relative para poder
-   superponer el overlay de check con position:absolute */
+/* Imagen / placeholder a la izquierda */
 .rc-servicio-img-wrap {
   position: relative;
   flex-shrink: 0;
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   border-radius: 12px;
   overflow: hidden;
 }
 
-/* AGREGADO: imagen real del servicio */
 .rc-servicio-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px;
   display: block;
 }
 
-/* AGREGADO: placeholder cuando el servicio no tiene imagen */
 .rc-servicio-img-placeholder {
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #e9d8fd, #fce7f3);
+  background: linear-gradient(135deg, #ede9fe, #fce7f3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+/* Overlay ✓ cuando está seleccionado */
+.rc-servicio-check {
+  position: absolute;
+  inset: 0;
+  background: rgba(118, 75, 162, 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
-}
-
-/* AGREGADO: overlay morado con ✓ que se superpone a la imagen
-   cuando la tarjeta está seleccionada */
-.rc-servicio-check {
-  position: absolute;
-  inset: 0;
-  background: rgba(118, 75, 162, 0.78);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
   color: white;
   font-weight: 700;
   border-radius: 12px;
   animation: fadeIn .15s ease;
 }
 
-/* AGREGADO: columna de texto a la derecha de la imagen */
+/* Bloque de texto central */
 .rc-servicio-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   min-width: 0;
 }
 
-/* AGREGADO: nombre del servicio */
 .rc-servicio-nombre {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  color: #2d1b69;
+  color: #1a1033;
   line-height: 1.3;
 }
 
-/* AGREGADO: fila con precio y duración */
+/* Descripción debajo del nombre */
+.rc-servicio-desc {
+  font-size: 12px;
+  color: #7c6fa0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+/* Fila duración + precio */
 .rc-servicio-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
+  margin-top: 2px;
 }
 
-/* AGREGADO: precio en morado destacado */
+/* Duración con ícono de reloj */
+.rc-servicio-duracion {
+  font-size: 12px;
+  color: #9061c2;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Precio destacado */
 .rc-servicio-precio {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: #764ba2;
 }
 
-/* AGREGADO: pill de duración */
-.rc-servicio-duracion {
-  font-size: 11px;
-  color: #9061c2;
-  background: #ede9fe;
-  padding: 2px 8px;
-  border-radius: 100px;
-  font-weight: 600;
+/* Radio button a la derecha — círculo vacío / relleno */
+.rc-servicio-radio {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #d0c4ea;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .15s, background .15s;
+  margin-left: 4px;
 }
 
-/* AGREGADO: descripción breve, truncada a 2 líneas */
-.rc-servicio-desc {
-  font-size: 11px;
-  color: #a78bca;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* Cuando la tarjeta está seleccionada el radio se rellena */
+.rc-servicio-seleccionado .rc-servicio-radio {
+  border-color: #764ba2;
+  background: #764ba2;
 }
 
-/* AGREGADO: contenedor de skeletons de carga */
+/* Punto interior del radio seleccionado */
+.rc-servicio-seleccionado .rc-servicio-radio::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* skeletons de carga */
 .rc-servicios-loading {
   display: flex;
   flex-direction: column;
@@ -908,8 +913,6 @@
   margin-top: 4px;
 }
 
-/* AGREGADO: skeleton individual — reutiliza el @keyframes rc-shimmer
-   que ya existe en la sección de empleados */
 .rc-servicio-skeleton {
   height: 80px;
   border-radius: 14px;
@@ -918,8 +921,7 @@
   animation: rc-shimmer 1.6s infinite;
 }
 
-/* AGREGADO: texto secundario dentro del resumen verde que le avisa
-   al usuario que puede tocar de nuevo para quitar la selección */
+/* hint de deselección */
 .rc-servicio-deselect-hint {
   color: #4ade80;
   font-weight: 400;
@@ -927,7 +929,7 @@
 }
 
 /* ============================================================
-   FIN AGREGADO: SERVICIOS
+   FIN SERVICIOS
    ============================================================ */
 
 /* RESPONSIVE */
@@ -971,16 +973,11 @@
     align-items: center;
   }
 
-  /* AGREGADO: en móvil reducir la altura del scroll para respetar
-     el espacio del teclado virtual */
   .rc-servicios-scroll {
-    max-height: 260px;
+    max-height: 280px;
   }
 
-  /* AGREGADO: en móvil siempre una sola columna */
-  .rc-servicios-grid {
-    grid-template-columns: 1fr;
-  }
+  /* En móvil la lista ya es de una columna, no hace falta override */
 
   .rc-btn-editar {
     flex: 1;
