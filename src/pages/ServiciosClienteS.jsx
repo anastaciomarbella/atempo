@@ -1,5 +1,3 @@
-// src/pages/GestionServicios.jsx
-
 import { useState, useEffect } from "react";
 import "../styles/servicios.css";
 import { API_URL } from "../config";
@@ -27,6 +25,7 @@ export default function GestionServicios() {
   }
 
   async function apiRequest(path, options = {}) {
+
     const res = await fetch(`${API_URL}${path}`, {
       ...options,
       headers: {
@@ -36,19 +35,27 @@ export default function GestionServicios() {
     });
 
     const data = await res.json();
+
     if (!res.ok) throw new Error(data.error || "Error en la solicitud");
 
     return data;
   }
 
   async function cargarServicios() {
+
     setLoading(true);
+
     try {
+
       const data = await apiRequest("/api/servicios");
       setServicios(Array.isArray(data) ? data : []);
+
     } catch (err) {
+
       console.error("No se pudo cargar servicios:", err);
+
     }
+
     setLoading(false);
   }
 
@@ -59,6 +66,7 @@ export default function GestionServicios() {
   function abrirModal(servicio = null) {
 
     if (servicio) {
+
       setEditando(servicio.id_servicio);
 
       setForm({
@@ -89,6 +97,7 @@ export default function GestionServicios() {
   }
 
   function cerrarModal() {
+
     setModalOpen(false);
     setEditando(null);
     setPreview(null);
@@ -96,7 +105,9 @@ export default function GestionServicios() {
   }
 
   function handleImagen(e) {
+
     const file = e.target.files[0];
+
     if (!file) return;
 
     setImagenFile(file);
@@ -125,11 +136,14 @@ export default function GestionServicios() {
       }
 
       if (editando) {
+
         await apiRequest(`/api/servicios/${editando}`, {
           method: "PUT",
           body: formData
         });
+
       } else {
+
         await apiRequest("/api/servicios", {
           method: "POST",
           body: formData
@@ -167,28 +181,48 @@ export default function GestionServicios() {
     }
   }
 
+  // CORRECCIÓN DEL ERROR split
+
   function formatearDuracion(duracion) {
 
     if (!duracion) return "";
 
-    const [h, m] = duracion.split(":");
+    if (typeof duracion === "number") {
 
-    const horas = parseInt(h);
-    const minutos = parseInt(m);
+      const horas = Math.floor(duracion / 60);
+      const minutos = duracion % 60;
 
-    let texto = "";
+      let texto = "";
 
-    if (horas > 0) texto += `${horas}h `;
-    if (minutos > 0) texto += `${minutos}m`;
+      if (horas > 0) texto += `${horas}h `;
+      if (minutos > 0) texto += `${minutos}m`;
 
-    return texto.trim();
+      return texto.trim();
+    }
+
+    if (typeof duracion === "string") {
+
+      if (!duracion.includes(":")) return duracion;
+
+      const [h, m] = duracion.split(":");
+
+      const horas = parseInt(h);
+      const minutos = parseInt(m);
+
+      let texto = "";
+
+      if (horas > 0) texto += `${horas}h `;
+      if (minutos > 0) texto += `${minutos}m`;
+
+      return texto.trim();
+    }
+
+    return "";
   }
 
   return (
 
     <div className="sv-page">
-
-      {/* HEADER */}
 
       <div className="sv-header">
 
@@ -205,8 +239,6 @@ export default function GestionServicios() {
         </button>
 
       </div>
-
-      {/* CONTENIDO */}
 
       {loading ? (
 
@@ -330,8 +362,6 @@ export default function GestionServicios() {
               {editando ? "Editar Servicio" : "Nuevo Servicio"}
             </h2>
 
-            {/* IMAGEN */}
-
             <div className="sv-img-upload">
 
               <label className="sv-img-label">
@@ -364,8 +394,6 @@ export default function GestionServicios() {
 
             </div>
 
-            {/* NOMBRE */}
-
             <div className="sv-campo">
 
               <label className="sv-label">
@@ -374,7 +402,6 @@ export default function GestionServicios() {
 
               <input
                 className="sv-input"
-                placeholder="Ej: Corte de cabello"
                 value={form.nombre}
                 onChange={(e) =>
                   setForm({ ...form, nombre: e.target.value })
@@ -382,8 +409,6 @@ export default function GestionServicios() {
               />
 
             </div>
-
-            {/* DESCRIPCIÓN */}
 
             <div className="sv-campo">
 
@@ -393,7 +418,6 @@ export default function GestionServicios() {
 
               <input
                 className="sv-input"
-                placeholder="Describe el servicio..."
                 value={form.descripcion}
                 onChange={(e) =>
                   setForm({ ...form, descripcion: e.target.value })
@@ -401,8 +425,6 @@ export default function GestionServicios() {
               />
 
             </div>
-
-            {/* PRECIO Y DURACIÓN */}
 
             <div className="sv-row">
 
@@ -415,7 +437,6 @@ export default function GestionServicios() {
                 <input
                   className="sv-input"
                   type="number"
-                  placeholder="0.00"
                   value={form.precio}
                   onChange={(e) =>
                     setForm({ ...form, precio: e.target.value })
@@ -443,8 +464,6 @@ export default function GestionServicios() {
               </div>
 
             </div>
-
-            {/* BOTONES */}
 
             <div className="sv-modal-btns">
 
