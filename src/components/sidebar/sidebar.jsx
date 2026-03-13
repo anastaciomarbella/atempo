@@ -12,7 +12,8 @@ import {
   FaEdit,
   FaStore,
   FaTimes,
-  FaConciergeBell
+  FaConciergeBell,
+  FaChartBar,
 } from "react-icons/fa";
 
 const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas, abierto, onCerrar }) => {
@@ -144,7 +145,7 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas, abier
 
       <div className="sidebar-divider" />
 
-      {/* SERVICIOS — justo arriba de Editar perfil */}
+      {/* SERVICIOS */}
       {slug && (
         <NavLink
           to="/serviciosClienteS"
@@ -157,6 +158,18 @@ const Sidebar = ({ onAbrirModal, modalActivo, citasNuevas, onMarcarVistas, abier
           Servicios
         </NavLink>
       )}
+
+      {/* ESTADÍSTICAS — justo arriba de Editar perfil */}
+      <NavLink
+        to="/estadisticas"
+        onClick={() => onCerrar?.()}
+        className={({ isActive }) =>
+          isActive ? "config-btn active" : "config-btn"
+        }
+      >
+        <FaChartBar className="icon" />
+        Estadísticas
+      </NavLink>
 
       <NavLink
         to="/configuracion"

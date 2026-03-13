@@ -16,6 +16,7 @@ import RegistroCliente from "./pages/RegistroCliente";
 import LoginCliente from "./pages/LoginCliente";
 import Configuracion from "./pages/configuracion";
 import ServiciosClientes from "./pages/ServiciosClienteS";
+import estadisticas from "./pages/estadisticas";
 
 
 function App() {
@@ -51,7 +52,8 @@ function App() {
           <Route path="/clientes-frecuentes" element={<ClientesFrecuentes />} />
           <Route path="/nuevos-empleados"    element={<RegisterEmployees />} />
           <Route path="/configuracion"       element={<Configuracion />} />
-          <Route path="/ServiciosClientes"           element={<ServiciosClientes />} /> 
+          <Route path="/ServiciosClientes"   element={<ServiciosClientes />} /> 
+          <Route path="/estadisticas"        element={<Estadisticas />} />
         </Route>
 
         {/* ================= FALLBACK ================= */}
