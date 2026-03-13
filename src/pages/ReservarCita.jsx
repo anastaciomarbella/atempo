@@ -2,12 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/reservarCita.css';
 
+
 const coloresDisponibles = [
   '#f16b74', '#56fa47', '#f58225', '#bbf7d0',
   '#00fca8', '#47f183', '#58b4f1', '#3dc2ff',
 ];
 
-const API = 'https://mi-api-atempo.onrender.com';
+const API     = 'https://mi-api-atempo.onrender.com';
 const safeUrl = (url) => url?.replace('http://', 'https://') || '';
 
 // AGREGADO: formatea minutos totales a texto legible "30 min", "1 h", "1 h 30 min"
@@ -25,52 +26,53 @@ function formatearDuracion(duracion) {
     }
   }
   if (total <= 0) return '';
-  const horas = Math.floor(total / 60);
+  const horas   = Math.floor(total / 60);
   const minutos = total % 60;
   if (horas > 0 && minutos > 0) return `${horas} h ${minutos} min`;
-  if (horas > 0) return `${horas} h`;
+  if (horas > 0)                 return `${horas} h`;
   return `${minutos} min`;
 }
 
 const ReservarCita = () => {
-  const { slug } = useParams();
-  const navigate = useNavigate();
+  const { slug }    = useParams();
+  const navigate    = useNavigate();
 
-  const clienteUser = JSON.parse(localStorage.getItem('clienteUser') || 'null');
+  const clienteUser  = JSON.parse(localStorage.getItem('clienteUser') || 'null');
   const clienteToken = localStorage.getItem('clienteToken');
 
   // REF para hacer scroll hasta la sección de empleados
   const empleadosRef = useRef(null);
 
-  const [vista, setVista] = useState('reservar');
-  const [empresa, setEmpresa] = useState(null);
-  const [personas, setPersonas] = useState([]);
+  const [vista, setVista]                   = useState('reservar');
+  const [empresa, setEmpresa]               = useState(null);
+  const [personas, setPersonas]             = useState([]);
   const [loadingPersonas, setLoadingPersonas] = useState(true);
-  const [servicios, setServicios] = useState([]);
+  const [servicios, setServicios]           = useState([]);
   const [loadingServicios, setLoadingServicios] = useState(true);
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
-  const [busquedaServicio, setBusquedaServicio] = useState('');
+  const [busquedaServicio, setBusquedaServicio]         = useState('');
   const busquedaRef = useRef(null);
-  const [guardando, setGuardando] = useState(false);
-  const [mensaje, setMensaje] = useState('');
-  const [exito, setExito] = useState(false);
-  const [misCitas, setMisCitas] = useState([]);
-  const [loadingCitas, setLoadingCitas] = useState(false);
-  const [citasOcupadas, setCitasOcupadas] = useState([]);
-  const [citaEditando, setCitaEditando] = useState(null);
-  const [scrollAlFondo, setScrollAlFondo] = useState(false);
+  const [guardando, setGuardando]           = useState(false);
+  const [mensaje, setMensaje]               = useState('');
+  const [exito, setExito]                   = useState(false);
+  const [misCitas, setMisCitas]             = useState([]);
+  const [loadingCitas, setLoadingCitas]     = useState(false);
+  const [citasOcupadas, setCitasOcupadas]   = useState([]);
+  const [citaEditando, setCitaEditando]     = useState(null);
+  const [scrollAlFondo, setScrollAlFondo]   = useState(false);
+  const [scrollAlFondoEmpleados, setScrollAlFondoEmpleados] = useState(false);
 
   const [formulario, setFormulario] = useState({
-    id_encargado: null,
-    encargado: '',
-    titulo: '',
-    fecha: '',
-    hora_inicio: '',
-    hora_final: '',
-    nombre_cliente: clienteUser?.nombre || '',
+    id_encargado:   null,
+    encargado:      '',
+    titulo:         '',
+    fecha:          '',
+    hora_inicio:    '',
+    hora_final:     '',
+    nombre_cliente: clienteUser?.nombre   || '',
     numero_cliente: clienteUser?.telefono || '',
-    motivo: '',
-    color: coloresDisponibles[0],
+    motivo:         '',
+    color:          coloresDisponibles[0],
   });
 
   useEffect(() => {
@@ -106,13 +108,13 @@ const ReservarCita = () => {
   const cargarMisCitas = async () => {
     setLoadingCitas(true);
     try {
-      const res = await fetch(`${API}/api/cliente-auth/mis-citas`, {
+      const res  = await fetch(`${API}/api/cliente-auth/mis-citas`, {
         headers: { Authorization: `Bearer ${clienteToken}` }
       });
       const data = await res.json();
       setMisCitas(Array.isArray(data) ? data : []);
     } catch { setMisCitas([]); }
-    finally { setLoadingCitas(false); }
+    finally  { setLoadingCitas(false); }
   };
 
   useEffect(() => { if (vista === 'mis-citas') cargarMisCitas(); }, [vista]);
@@ -161,7 +163,7 @@ const ReservarCita = () => {
 
   const handleHoraInicioChange = (e) => {
     const hora_inicio = e.target.value;
-    let hora_final = formulario.hora_final;
+    let hora_final    = formulario.hora_final;
     if (hora_inicio && servicioSeleccionado?.duracion) {
       const [hh, mm] = hora_inicio.split(':').map(Number);
       const totalMin = hh * 60 + mm + Number(servicioSeleccionado.duracion);
@@ -184,24 +186,24 @@ const ReservarCita = () => {
     }
     setGuardando(true);
     try {
-      const url = citaEditando
+      const url    = citaEditando
         ? `${API}/api/cliente-auth/editar-cita/${citaEditando.id_cita}`
         : `${API}/api/publico/${slug}/citas`;
       const method = citaEditando ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const res    = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clienteToken}` },
         body: JSON.stringify({
-          id_persona: formulario.id_encargado,
+          id_persona:          formulario.id_encargado,
           id_cliente_registro: clienteUser?.id_cliente,
-          titulo: formulario.titulo,
-          fecha: formulario.fecha,
-          hora_inicio: formulario.hora_inicio,
-          hora_final: formulario.hora_final,
-          nombre_cliente: formulario.nombre_cliente,
-          numero_cliente: formulario.numero_cliente,
-          motivo: formulario.motivo,
-          color: formulario.color,
+          titulo:              formulario.titulo,
+          fecha:               formulario.fecha,
+          hora_inicio:         formulario.hora_inicio,
+          hora_final:          formulario.hora_final,
+          nombre_cliente:      formulario.nombre_cliente,
+          numero_cliente:      formulario.numero_cliente,
+          motivo:              formulario.motivo,
+          color:               formulario.color,
         }),
       });
       const data = await res.json();
@@ -210,22 +212,22 @@ const ReservarCita = () => {
         setCitaEditando(null); setVista('mis-citas'); cargarMisCitas(); resetFormulario();
       } else { setExito(true); }
     } catch { setMensaje('Error de conexión'); }
-    finally { setGuardando(false); }
+    finally  { setGuardando(false); }
   };
 
   const handleEditar = (cita) => {
     setCitaEditando(cita);
     setFormulario({
-      id_encargado: cita.id_cliente,
-      encargado: cita.nombre_encargado || '',
-      titulo: cita.titulo || '',
-      fecha: cita.fecha || '',
-      hora_inicio: cita.hora_inicio?.slice(0, 5) || '',
-      hora_final: cita.hora_final?.slice(0, 5) || '',
-      nombre_cliente: cita.nombre_cliente || '',
-      numero_cliente: cita.numero_cliente || '',
-      motivo: cita.motivo || '',
-      color: cita.color || coloresDisponibles[0],
+      id_encargado:   cita.id_cliente,
+      encargado:      cita.nombre_encargado || '',
+      titulo:         cita.titulo           || '',
+      fecha:          cita.fecha            || '',
+      hora_inicio:    cita.hora_inicio?.slice(0, 5) || '',
+      hora_final:     cita.hora_final?.slice(0, 5)  || '',
+      nombre_cliente: cita.nombre_cliente   || '',
+      numero_cliente: cita.numero_cliente   || '',
+      motivo:         cita.motivo           || '',
+      color:          cita.color            || coloresDisponibles[0],
     });
     setVista('reservar');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -251,11 +253,11 @@ const ReservarCita = () => {
 
   const resetFormulario = () => {
     setExito(false); setCitaEditando(null); setCitasOcupadas([]);
-    setServicioSeleccionado(null); setScrollAlFondo(false); setBusquedaServicio('');
+    setServicioSeleccionado(null); setScrollAlFondo(false); setScrollAlFondoEmpleados(false); setBusquedaServicio('');
     setFormulario({
       id_encargado: null, encargado: '', titulo: '', fecha: '',
       hora_inicio: '', hora_final: '',
-      nombre_cliente: clienteUser?.nombre || '',
+      nombre_cliente: clienteUser?.nombre   || '',
       numero_cliente: clienteUser?.telefono || '',
       motivo: '', color: coloresDisponibles[0],
     });
@@ -266,8 +268,13 @@ const ReservarCita = () => {
     setScrollAlFondo(el.scrollTop + el.clientHeight >= el.scrollHeight - 10);
   };
 
+  const handleScrollEmpleados = (e) => {
+    const el = e.target;
+    setScrollAlFondoEmpleados(el.scrollTop + el.clientHeight >= el.scrollHeight - 10);
+  };
+
   const conflictoEnVivo = hayConflictoHorario(formulario.hora_inicio, formulario.hora_final);
-  const horaInvalida = !horaFinalValida();
+  const horaInvalida    = !horaFinalValida();
 
   if (!empresa) return <div className="rc-loading">Cargando...</div>;
 
@@ -360,7 +367,7 @@ const ReservarCita = () => {
 
               {loadingServicios && (
                 <div className="rc-servicios-loading">
-                  {[1, 2, 3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
+                  {[1,2,3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
                 </div>
               )}
 
@@ -382,49 +389,49 @@ const ReservarCita = () => {
                           s.descripcion?.toLowerCase().includes(busquedaServicio.toLowerCase())
                         )
                         .map(s => {
-                          const seleccionado = servicioSeleccionado?.id_servicio === s.id_servicio;
-                          return (
-                            <button
-                              key={s.id_servicio}
-                              type="button"
-                              className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
-                              onClick={() => handleSeleccionarServicio(s)}
-                              aria-pressed={seleccionado}
-                            >
-                              {/* Imagen o placeholder — izquierda */}
-                              <div className="rc-servicio-img-wrap">
-                                {s.imagen_url
-                                  ? <img src={safeUrl(s.imagen_url)} alt={s.nombre} className="rc-servicio-img" />
-                                  : <div className="rc-servicio-img-placeholder">✂️</div>
-                                }
-                                {seleccionado && <div className="rc-servicio-check">✓</div>}
-                              </div>
+                        const seleccionado = servicioSeleccionado?.id_servicio === s.id_servicio;
+                        return (
+                          <button
+                            key={s.id_servicio}
+                            type="button"
+                            className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
+                            onClick={() => handleSeleccionarServicio(s)}
+                            aria-pressed={seleccionado}
+                          >
+                            {/* Imagen o placeholder — izquierda */}
+                            <div className="rc-servicio-img-wrap">
+                              {s.imagen_url
+                                ? <img src={safeUrl(s.imagen_url)} alt={s.nombre} className="rc-servicio-img" />
+                                : <div className="rc-servicio-img-placeholder">✂️</div>
+                              }
+                              {seleccionado && <div className="rc-servicio-check">✓</div>}
+                            </div>
 
-                              {/* Texto — centro */}
-                              <div className="rc-servicio-info">
-                                <span className="rc-servicio-nombre">{s.nombre}</span>
-                                {s.descripcion && (
-                                  <span className="rc-servicio-desc">{s.descripcion}</span>
+                            {/* Texto — centro */}
+                            <div className="rc-servicio-info">
+                              <span className="rc-servicio-nombre">{s.nombre}</span>
+                              {s.descripcion && (
+                                <span className="rc-servicio-desc">{s.descripcion}</span>
+                              )}
+                              <div className="rc-servicio-meta">
+                                {s.duracion && (
+                                  <span className="rc-servicio-duracion">
+                                    ⏱ {formatearDuracion(s.duracion)}
+                                  </span>
                                 )}
-                                <div className="rc-servicio-meta">
-                                  {s.duracion && (
-                                    <span className="rc-servicio-duracion">
-                                      ⏱ {formatearDuracion(s.duracion)}
-                                    </span>
-                                  )}
-                                  {s.precio && (
-                                    <span className="rc-servicio-precio">
-                                      ${parseFloat(s.precio).toFixed(2)}
-                                    </span>
-                                  )}
-                                </div>
+                                {s.precio && (
+                                  <span className="rc-servicio-precio">
+                                    ${parseFloat(s.precio).toFixed(2)}
+                                  </span>
+                                )}
                               </div>
+                            </div>
 
-                              {/* Radio button — derecha */}
-                              <div className="rc-servicio-radio" aria-hidden="true" />
-                            </button>
-                          );
-                        })}
+                            {/* Radio button — derecha */}
+                            <div className="rc-servicio-radio" aria-hidden="true" />
+                          </button>
+                        );
+                      })}
                     </div>
                     {/* Sin resultados de búsqueda */}
                     {busquedaServicio.trim() &&
@@ -432,11 +439,11 @@ const ReservarCita = () => {
                         s.nombre?.toLowerCase().includes(busquedaServicio.toLowerCase()) ||
                         s.descripcion?.toLowerCase().includes(busquedaServicio.toLowerCase())
                       ).length === 0 && (
-                        <div className="rc-buscador-sin-resultados">
-                          <span>🔍</span>
-                          <p>No se encontró "<strong>{busquedaServicio}</strong>"</p>
-                        </div>
-                      )}
+                      <div className="rc-buscador-sin-resultados">
+                        <span>🔍</span>
+                        <p>No se encontró "<strong>{busquedaServicio}</strong>"</p>
+                      </div>
+                    )}
                   </div>
 
                   {servicios.length > 4 && !scrollAlFondo && (
@@ -460,7 +467,7 @@ const ReservarCita = () => {
               <label>¿Con quién quieres tu cita? *</label>
               {loadingPersonas && (
                 <div className="rc-servicios-loading">
-                  {[1, 2, 3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
+                  {[1,2,3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
                 </div>
               )}
               {!loadingPersonas && personas.length === 0 && (
@@ -471,11 +478,11 @@ const ReservarCita = () => {
               )}
               {!loadingPersonas && personas.length > 0 && (
                 <div className="rc-servicios-wrapper">
-                  <div className="rc-servicios-scroll">
+                  <div className="rc-servicios-scroll" onScroll={handleScrollEmpleados}>
                     <div className="rc-servicios-grid">
                       {personas.map(p => {
                         const seleccionado = formulario.id_encargado === p.id_persona;
-                        const colorAvatar = `hsl(${(p.id_persona * 67) % 360}, 45%, 60%)`;
+                        const colorAvatar  = `hsl(${(p.id_persona * 67) % 360}, 45%, 60%)`;
                         return (
                           <button key={p.id_persona} type="button"
                             className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
@@ -493,17 +500,17 @@ const ReservarCita = () => {
                             <div className="rc-servicio-img-wrap">
                               {p.foto_url
                                 ? <img src={safeUrl(p.foto_url)} alt={p.nombre} className="rc-servicio-img"
-                                  style={{ borderRadius: '50%' }} />
+                                    style={{ borderRadius: '50%' }} />
                                 : <div className="rc-servicio-img-placeholder"
-                                  style={{
-                                    background: colorAvatar,
-                                    borderRadius: '50%',
-                                    color: 'white',
-                                    fontSize: 22,
-                                    fontWeight: 800,
-                                  }}>
-                                  {p.nombre?.charAt(0).toUpperCase()}
-                                </div>
+                                    style={{
+                                      background: colorAvatar,
+                                      borderRadius: '50%',
+                                      color: 'white',
+                                      fontSize: 22,
+                                      fontWeight: 800,
+                                    }}>
+                                    {p.nombre?.charAt(0).toUpperCase()}
+                                  </div>
                               }
                               {seleccionado && <div className="rc-servicio-check" style={{ borderRadius: '50%' }}>✓</div>}
                             </div>
@@ -523,6 +530,9 @@ const ReservarCita = () => {
                       })}
                     </div>
                   </div>
+                  {personas.length > 3 && !scrollAlFondoEmpleados && (
+                    <div className="rc-servicios-scroll-hint">↓ Desliza para ver más</div>
+                  )}
                 </div>
               )}
               {formulario.encargado && (
@@ -546,7 +556,7 @@ const ReservarCita = () => {
                 <div className="rc-horarios-lista">
                   {citasOcupadas.map((c, i) => (
                     <span key={i} className="rc-horario-badge">
-                      {c.hora_inicio?.slice(0, 5)} – {c.hora_final?.slice(0, 5)}
+                      {c.hora_inicio?.slice(0,5)} – {c.hora_final?.slice(0,5)}
                     </span>
                   ))}
                 </div>
@@ -571,7 +581,7 @@ const ReservarCita = () => {
             </div>
 
             {conflictoEnVivo && <p className="rc-aviso-conflicto">⚠️ Horario ocupado. Elige otro horario.</p>}
-            {horaInvalida && <p className="rc-aviso-conflicto">⚠️ La hora de fin debe ser mayor a la de inicio.</p>}
+            {horaInvalida    && <p className="rc-aviso-conflicto">⚠️ La hora de fin debe ser mayor a la de inicio.</p>}
 
             <div className="rc-field">
               <label>Tu nombre *</label>
@@ -622,8 +632,8 @@ const ReservarCita = () => {
               </div>
             ) : (
               misCitas.map(cita => {
-                const citaDate = new Date(`${cita.fecha}T${cita.hora_inicio}`);
-                const pasada = citaDate < new Date();
+                const citaDate       = new Date(`${cita.fecha}T${cita.hora_inicio}`);
+                const pasada         = citaDate < new Date();
                 const horasRestantes = (citaDate - new Date()) / (1000 * 60 * 60);
                 const puedeModificar = !pasada && horasRestantes >= 3;
                 return (
@@ -636,13 +646,13 @@ const ReservarCita = () => {
                         {pasada ? 'Pasada' : 'Próxima'}
                       </span>
                     </div>
-                    <p>📅 {cita.fecha} · ⏰ {cita.hora_inicio?.slice(0, 5)} – {cita.hora_final?.slice(0, 5)}</p>
+                    <p>📅 {cita.fecha} · ⏰ {cita.hora_inicio?.slice(0,5)} – {cita.hora_final?.slice(0,5)}</p>
                     {cita.nombre_encargado && <p>👤 {cita.nombre_encargado}</p>}
                     {cita.motivo && <p>💬 {cita.motivo}</p>}
                     {!pasada && (
                       puedeModificar ? (
                         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                          <button className="rc-btn-editar" onClick={() => handleEditar(cita)}>✏️ Editar</button>
+                          <button className="rc-btn-editar"   onClick={() => handleEditar(cita)}>✏️ Editar</button>
                           <button className="rc-btn-cancelar" onClick={() => handleCancelar(cita)}>🗑 Cancelar</button>
                         </div>
                       ) : (
