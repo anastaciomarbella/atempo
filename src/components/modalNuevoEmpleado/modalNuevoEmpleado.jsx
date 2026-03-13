@@ -15,7 +15,7 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
   };
 
   const validarTelefono = (tel) => {
-    const regex = /^[0-9]{10}$/; // 10 números
+    const regex = /^[0-9]{10}$/;
     return regex.test(tel);
   };
 
@@ -38,17 +38,28 @@ const ModalNuevoEmpleado = ({ onClose, onEmpleadoCreado }) => {
       return;
     }
 
+    // Leer el token del localStorage
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      setError('⚠️ No hay sesión activa. Por favor inicia sesión nuevamente.');
+      return;
+    }
+
     try {
       const res = await fetch('https://mi-api-atempo.onrender.com/api/personas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,   // ← token agregado
+        },
         body: JSON.stringify({ nombre, email, telefono }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Error al registrar empleado');
+        throw new Error(data.message || data.error || 'Error al registrar empleado');
       }
 
       setMensaje('✅ Empleado registrado correctamente');
