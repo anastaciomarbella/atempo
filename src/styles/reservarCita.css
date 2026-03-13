@@ -673,18 +673,15 @@
    Imagen a la izquierda · texto en el centro · radio a la derecha
    ============================================================ */
 
-/* Wrapper sin padding extra — el scroll vive dentro de rc-card normal */
 .rc-servicios-wrapper {
   position: relative;
   margin-top: 4px;
 }
 
-/* Scroll vertical con scrollbar a la derecha, visible siempre */
 .rc-servicios-scroll {
   max-height: 340px;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Scrollbar fina morada */
   scrollbar-width: thin;
   scrollbar-color: #c4b5d4 #f3e8ff;
 }
@@ -707,7 +704,6 @@
   background: #9061c2;
 }
 
-/* Hint flotante "↓ Desliza" */
 .rc-servicios-scroll-hint {
   position: absolute;
   bottom: 0;
@@ -726,15 +722,13 @@
   animation: fadeIn .2s ease;
 }
 
-/* ── LISTA: una columna, sin grid de dos columnas ── */
 .rc-servicios-grid {
   display: flex;
   flex-direction: column;
-  gap: 0;           /* sin gap — los separadores los da el border-bottom */
+  gap: 0;
   padding: 0;
 }
 
-/* ── TARJETA DE SERVICIO — fila horizontal ── */
 .rc-servicio-card {
   display: flex;
   align-items: center;
@@ -769,7 +763,6 @@
   background: #faf5ff;
 }
 
-/* Estado seleccionado — fondo sutil morado, sin borde extra */
 .rc-servicio-seleccionado {
   background: #f5f0ff !important;
 }
@@ -778,7 +771,6 @@
   background: #ede8fd !important;
 }
 
-/* Imagen / placeholder a la izquierda */
 .rc-servicio-img-wrap {
   position: relative;
   flex-shrink: 0;
@@ -806,7 +798,6 @@
   font-size: 24px;
 }
 
-/* Overlay ✓ cuando está seleccionado */
 .rc-servicio-check {
   position: absolute;
   inset: 0;
@@ -821,7 +812,6 @@
   animation: fadeIn .15s ease;
 }
 
-/* Bloque de texto central */
 .rc-servicio-info {
   display: flex;
   flex-direction: column;
@@ -837,7 +827,6 @@
   line-height: 1.3;
 }
 
-/* Descripción debajo del nombre */
 .rc-servicio-desc {
   font-size: 12px;
   color: #7c6fa0;
@@ -849,7 +838,6 @@
   margin-bottom: 2px;
 }
 
-/* Fila duración + precio */
 .rc-servicio-meta {
   display: flex;
   align-items: center;
@@ -858,7 +846,6 @@
   margin-top: 2px;
 }
 
-/* Duración con ícono de reloj */
 .rc-servicio-duracion {
   font-size: 12px;
   color: #9061c2;
@@ -868,14 +855,12 @@
   gap: 3px;
 }
 
-/* Precio destacado */
 .rc-servicio-precio {
   font-size: 14px;
   font-weight: 800;
   color: #764ba2;
 }
 
-/* Radio button a la derecha — círculo vacío / relleno */
 .rc-servicio-radio {
   flex-shrink: 0;
   width: 22px;
@@ -890,13 +875,11 @@
   margin-left: 4px;
 }
 
-/* Cuando la tarjeta está seleccionada el radio se rellena */
 .rc-servicio-seleccionado .rc-servicio-radio {
   border-color: #764ba2;
   background: #764ba2;
 }
 
-/* Punto interior del radio seleccionado */
 .rc-servicio-seleccionado .rc-servicio-radio::after {
   content: '';
   width: 8px;
@@ -905,7 +888,6 @@
   background: white;
 }
 
-/* skeletons de carga */
 .rc-servicios-loading {
   display: flex;
   flex-direction: column;
@@ -921,11 +903,113 @@
   animation: rc-shimmer 1.6s infinite;
 }
 
-/* hint de deselección */
 .rc-servicio-deselect-hint {
   color: #4ade80;
   font-weight: 400;
   font-style: italic;
+}
+
+/* ============================================================
+   BUSCADOR DE SERVICIOS
+   ============================================================ */
+
+.rc-buscador-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  background: #faf5ff;
+  border: 2px solid #e9d8fd;
+  border-radius: 50px;
+  padding: 0 14px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.rc-buscador-wrap:focus-within {
+  border-color: #764ba2;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.12);
+}
+
+.rc-buscador-icono {
+  font-size: 15px;
+  margin-right: 8px;
+  opacity: 0.45;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.rc-buscador-input {
+  flex: 1;
+  border: none !important;
+  outline: none !important;
+  font-size: 14px;
+  padding: 11px 0 !important;
+  background: transparent !important;
+  color: #2d1b69 !important;
+  font-family: inherit;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.rc-buscador-input::placeholder {
+  color: #c4b5d4;
+}
+
+/* Anula los estilos genéricos de .rc-field input para este input */
+.rc-field .rc-buscador-input:focus {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.rc-buscador-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #b9a8d4;
+  padding: 5px;
+  border-radius: 50%;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+.rc-buscador-clear:hover {
+  color: #764ba2;
+  background: #f3e8ff;
+}
+
+/* Sin resultados */
+.rc-buscador-sin-resultados {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 0 20px;
+  color: #b9a8d4;
+  font-size: 13px;
+  text-align: center;
+}
+
+.rc-buscador-sin-resultados span {
+  font-size: 28px;
+  opacity: 0.6;
+}
+
+.rc-buscador-sin-resultados p {
+  color: #9061c2;
+  margin: 0;
+}
+
+.rc-buscador-sin-resultados strong {
+  color: #764ba2;
 }
 
 /* ============================================================
@@ -976,8 +1060,6 @@
   .rc-servicios-scroll {
     max-height: 280px;
   }
-
-  /* En móvil la lista ya es de una columna, no hace falta override */
 
   .rc-btn-editar {
     flex: 1;
