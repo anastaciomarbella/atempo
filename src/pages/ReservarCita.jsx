@@ -4,317 +4,338 @@ import "../styles/reservarCita.css";
 
 const API = "https://mi-api-atempo.onrender.com";
 
-const ReservarCita = () => {
+const coloresDisponibles = [
+  "#f16b74",
+  "#56fa47",
+  "#f58225",
+  "#bbf7d0",
+  "#00fca8",
+  "#47f183",
+  "#58b4f1",
+  "#3dc2ff",
+];
 
+const safeUrl = (url) => {
+  if (!url || typeof url !== "string") return "";
+  return url.replace("http://", "https://");
+};
+
+function formatearDuracion(duracion) {
+  if (!duracion) return "";
+
+  let total = 0;
+
+  if (typeof duracion === "number") {
+    total = duracion;
+  }
+
+  if (typeof duracion === "string") {
+    if (duracion.includes(":")) {
+      const [h, m] = duracion.split(":");
+      total = parseInt(h) * 60 + parseInt(m);
+    } else {
+      total = parseInt(duracion) || 0;
+    }
+  }
+
+  if (total <= 0) return "";
+
+  const horas = Math.floor(total / 60);
+  const minutos = total % 60;
+
+  if (horas > 0 && minutos > 0) return `${horas} h ${minutos} min`;
+  if (horas > 0) return `${horas} h`;
+
+  return `${minutos} min`;
+}
+
+const ReservarCita = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
 
+  const clienteUser = JSON.parse(localStorage.getItem("clienteUser") || "null");
   const clienteToken = localStorage.getItem("clienteToken");
+
+  const [vista, setVista] = useState("reservar");
+
+  const [empresa, setEmpresa] = useState(null);
+
+  const [personas, setPersonas] = useState([]);
+  const [loadingPersonas, setLoadingPersonas] = useState(true);
+
+  const [servicios, setServicios] = useState([]);
+  const [loadingServicios, setLoadingServicios] = useState(true);
 
   const [misCitas, setMisCitas] = useState([]);
   const [loadingCitas, setLoadingCitas] = useState(false);
 
-  const [servicios, setServicios] = useState([]);
-  const [personas, setPersonas] = useState([]);
+  const [citasOcupadas, setCitasOcupadas] = useState([]);
 
-  const [formData, setFormData] = useState({
-    id_servicio: "",
-    id_persona: "",
+  const [guardando, setGuardando] = useState(false);
+
+  const [mensaje, setMensaje] = useState("");
+  const [exito, setExito] = useState(false);
+
+  const [formulario, setFormulario] = useState({
+    id_encargado: "",
+    encargado: "",
+    titulo: "",
     fecha: "",
-    hora: ""
+    hora_inicio: "",
+    hora_final: "",
+    nombre_cliente: clienteUser?.nombre || "",
+    numero_cliente: clienteUser?.telefono || "",
+    motivo: "",
+    color: coloresDisponibles[0],
   });
-
-  // =========================
-  // VALIDAR SESION
-  // =========================
 
   useEffect(() => {
     if (!clienteToken) {
       navigate(`/login-cliente/${slug}`);
     }
-  }, [clienteToken, slug, navigate]);
+  }, [clienteToken, navigate, slug]);
 
-  // =========================
-  // CARGAR SERVICIOS
-  // =========================
-
-  const cargarServicios = async () => {
-    try {
-      const res = await fetch(`${API}/api/publico/servicios/${slug}`);
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setServicios(data);
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const resEmpresa = await fetch(`${API}/api/publico/${slug}`);
+        const empresaData = await resEmpresa.json();
+        setEmpresa(empresaData);
+      } catch {
+        setEmpresa(null);
       }
 
-    } catch (error) {
-      console.error("Error cargando servicios", error);
-    }
-  };
-
-  // =========================
-  // CARGAR PERSONAS
-  // =========================
-
-  const cargarPersonas = async () => {
-    try {
-
-      const res = await fetch(`${API}/api/personas`, {
-        headers: {
-          Authorization: `Bearer ${clienteToken}`
-        }
-      });
-
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setPersonas(data);
+      try {
+        const resPersonas = await fetch(`${API}/api/publico/${slug}/personas`);
+        const data = await resPersonas.json();
+        setPersonas(Array.isArray(data) ? data : []);
+      } catch {
+        setPersonas([]);
       }
 
-    } catch (error) {
-      console.error("Error cargando personas", error);
-    }
-  };
+      setLoadingPersonas(false);
 
-  // =========================
-  // CARGAR MIS CITAS
-  // =========================
+      try {
+        const resServicios = await fetch(`${API}/api/publico/${slug}/servicios`);
+        const data = await resServicios.json();
+        setServicios(Array.isArray(data) ? data : []);
+      } catch {
+        setServicios([]);
+      }
+
+      setLoadingServicios(false);
+    };
+
+    cargarDatos();
+  }, [slug]);
+
+  useEffect(() => {
+    if (!formulario.id_encargado || !formulario.fecha) {
+      setCitasOcupadas([]);
+      return;
+    }
+
+    const cargarCitas = async () => {
+      try {
+        const res = await fetch(
+          `${API}/api/publico/${slug}/citas-ocupadas?id_persona=${formulario.id_encargado}&fecha=${formulario.fecha}`
+        );
+
+        const data = await res.json();
+        setCitasOcupadas(Array.isArray(data) ? data : []);
+      } catch {
+        setCitasOcupadas([]);
+      }
+    };
+
+    cargarCitas();
+  }, [formulario.id_encargado, formulario.fecha, slug]);
 
   const cargarMisCitas = async () => {
-
-    if (!clienteToken) return;
-
     setLoadingCitas(true);
 
     try {
-
       const res = await fetch(`${API}/api/cliente-auth/mis-citas`, {
         headers: {
           Authorization: `Bearer ${clienteToken}`,
-          "Content-Type": "application/json"
-        }
+        },
       });
 
-      if (res.status === 401) {
-        console.warn("Token expirado");
-
-        localStorage.removeItem("clienteToken");
-        localStorage.removeItem("clienteUser");
-
-        navigate(`/login-cliente/${slug}`);
+      if (!res.ok) {
+        setMisCitas([]);
+        setLoadingCitas(false);
         return;
       }
 
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setMisCitas(data);
-      } else {
-        setMisCitas([]);
-      }
-
-    } catch (error) {
-
-      console.error("Error cargando citas", error);
+      setMisCitas(Array.isArray(data) ? data : []);
+    } catch {
       setMisCitas([]);
-
-    } finally {
-      setLoadingCitas(false);
     }
-  };
 
-  // =========================
-  // LOAD INICIAL
-  // =========================
+    setLoadingCitas(false);
+  };
 
   useEffect(() => {
-    cargarServicios();
-    cargarPersonas();
-    cargarMisCitas();
-  }, []);
-
-  // =========================
-  // HANDLE INPUT
-  // =========================
+    if (vista === "mis-citas") {
+      cargarMisCitas();
+    }
+  }, [vista]);
 
   const handleChange = (e) => {
-
-    const { name, value } = e.target;
-
-    setFormData({
-      ...formData,
-      [name]: value
+    setFormulario({
+      ...formulario,
+      [e.target.name]: e.target.value,
     });
 
+    setMensaje("");
+    setExito(false);
   };
 
-  // =========================
-  // RESERVAR CITA
-  // =========================
+  const handleLogout = () => {
+    localStorage.removeItem("clienteToken");
+    localStorage.removeItem("clienteUser");
+    navigate(`/login-cliente/${slug}`);
+  };
 
-  const handleGuardar = async (e) => {
-
+  const guardarCita = async (e) => {
     e.preventDefault();
 
-    try {
+    setGuardando(true);
+    setMensaje("");
+    setExito(false);
 
-      const res = await fetch(`${API}/api/citas`, {
+    try {
+      const res = await fetch(`${API}/api/publico/${slug}/citas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${clienteToken}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formulario),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Error al reservar");
+        setMensaje(data.message || "Error al guardar cita");
+        setGuardando(false);
         return;
       }
 
-      alert("Cita reservada");
+      setExito(true);
 
-      cargarMisCitas();
-
-    } catch (error) {
-      console.error(error);
-      alert("Error al reservar cita");
-    }
-  };
-
-  // =========================
-  // CANCELAR CITA
-  // =========================
-
-  const cancelarCita = async (id) => {
-
-    if (!window.confirm("¿Cancelar cita?")) return;
-
-    try {
-
-      const res = await fetch(`${API}/api/cliente-auth/cancelar-cita/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${clienteToken}`,
-          "Content-Type": "application/json"
-        }
+      setFormulario({
+        ...formulario,
+        fecha: "",
+        hora_inicio: "",
+        hora_final: "",
+        motivo: "",
       });
-
-      if (!res.ok) {
-        alert("No se pudo cancelar");
-        return;
-      }
-
-      cargarMisCitas();
-
-    } catch (error) {
-      console.error(error);
+    } catch {
+      setMensaje("Error de conexión con el servidor");
     }
+
+    setGuardando(false);
   };
 
-  // =========================
-  // UI
-  // =========================
+  if (!empresa) {
+    return <div className="rc-loading">Cargando...</div>;
+  }
 
   return (
-    <div className="reservar-container">
-
-      <h2>Reservar cita</h2>
-
-      <form onSubmit={handleGuardar} className="form-reserva">
-
-        <select
-          name="id_servicio"
-          value={formData.id_servicio}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Seleccionar servicio</option>
-
-          {servicios.map((s) => (
-            <option key={s.id_servicio} value={s.id_servicio}>
-              {s.nombre}
-            </option>
-          ))}
-
-        </select>
-
-        <select
-          name="id_persona"
-          value={formData.id_persona}
-          onChange={handleChange}
-          required
-        >
-
-          <option value="">Seleccionar persona</option>
-
-          {personas.map((p) => (
-            <option key={p.id_persona} value={p.id_persona}>
-              {p.nombre}
-            </option>
-          ))}
-
-        </select>
-
-        <input
-          type="date"
-          name="fecha"
-          value={formData.fecha}
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="time"
-          name="hora"
-          value={formData.hora}
-          onChange={handleChange}
-          required
-        />
-
-        <button type="submit">
-          Reservar
-        </button>
-
-      </form>
-
-      <h3>Mis citas</h3>
-
-      {loadingCitas ? (
-        <p>Cargando...</p>
-      ) : (
-
-        <div className="mis-citas">
-
-          {misCitas.length === 0 && (
-            <p>No tienes citas</p>
+    <div className="rc-container">
+      <div className="rc-card">
+        <div className="rc-header">
+          {empresa.logo_url ? (
+            <img
+              src={safeUrl(empresa.logo_url)}
+              alt="logo"
+              className="rc-logo"
+            />
+          ) : (
+            <div className="rc-logo-placeholder">
+              {empresa.nombre_empresa?.charAt(0)?.toUpperCase()}
+            </div>
           )}
 
-          {misCitas.map((cita) => (
+          <h1 className="rc-empresa">{empresa.nombre_empresa}</h1>
 
-            <div key={cita.id_cita} className="cita-card">
+          <p className="rc-bienvenida">
+            Hola, <strong>{clienteUser?.nombre}</strong>
+          </p>
 
-              <p><b>Servicio:</b> {cita.servicio}</p>
-              <p><b>Persona:</b> {cita.persona}</p>
-              <p><b>Fecha:</b> {cita.fecha}</p>
-              <p><b>Hora:</b> {cita.hora}</p>
+          <div className="rc-tabs">
+            <button
+              className={
+                vista === "reservar" ? "rc-tab rc-tab-activo" : "rc-tab"
+              }
+              onClick={() => setVista("reservar")}
+            >
+              Agendar cita
+            </button>
 
-              <button
-                onClick={() => cancelarCita(cita.id_cita)}
-              >
-                Cancelar
-              </button>
+            <button
+              className={
+                vista === "mis-citas" ? "rc-tab rc-tab-activo" : "rc-tab"
+              }
+              onClick={() => setVista("mis-citas")}
+            >
+              Mis citas
+            </button>
 
-            </div>
-
-          ))}
-
+            <button className="rc-tab rc-tab-logout" onClick={handleLogout}>
+              Salir
+            </button>
+          </div>
         </div>
 
-      )}
+        {mensaje && <div className="rc-error">{mensaje}</div>}
 
+        {exito && (
+          <div className="rc-success">
+            Tu cita fue reservada correctamente
+          </div>
+        )}
+
+        {vista === "reservar" && (
+          <form className="rc-form" onSubmit={guardarCita}>
+            <input
+              type="date"
+              name="fecha"
+              value={formulario.fecha}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              type="time"
+              name="hora_inicio"
+              value={formulario.hora_inicio}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              type="time"
+              name="hora_final"
+              value={formulario.hora_final}
+              onChange={handleChange}
+              required
+            />
+
+            <textarea
+              name="motivo"
+              placeholder="Motivo"
+              value={formulario.motivo}
+              onChange={handleChange}
+            />
+
+            <button disabled={guardando}>
+              {guardando ? "Guardando..." : "Reservar cita"}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 };
