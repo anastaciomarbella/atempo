@@ -1,340 +1,670 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import "../styles/reservarCita.css";
-
-const API = "https://mi-api-atempo.onrender.com";
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import '../styles/reservarCita.css';
 
 const coloresDisponibles = [
-  "#f16b74",
-  "#56fa47",
-  "#f58225",
-  "#bbf7d0",
-  "#00fca8",
-  "#47f183",
-  "#58b4f1",
-  "#3dc2ff",
+  '#f16b74', '#56fa47', '#f58225', '#bbf7d0',
+  '#00fca8', '#47f183', '#58b4f1', '#3dc2ff',
 ];
 
-const safeUrl = (url) => {
-  if (!url || typeof url !== "string") return "";
-  return url.replace("http://", "https://");
-};
+const API     = 'https://mi-api-atempo.onrender.com';
+const safeUrl = (url) => url?.replace('http://', 'https://') || '';
 
+// AGREGADO: formatea minutos totales a texto legible "30 min", "1 h", "1 h 30 min"
 function formatearDuracion(duracion) {
-  if (!duracion) return "";
-
+  if (!duracion) return '';
   let total = 0;
-
-  if (typeof duracion === "number") {
+  if (typeof duracion === 'number') {
     total = duracion;
-  }
-
-  if (typeof duracion === "string") {
-    if (duracion.includes(":")) {
-      const [h, m] = duracion.split(":");
+  } else if (typeof duracion === 'string') {
+    if (duracion.includes(':')) {
+      const [h, m] = duracion.split(':');
       total = parseInt(h) * 60 + parseInt(m);
     } else {
       total = parseInt(duracion) || 0;
     }
   }
-
-  if (total <= 0) return "";
-
-  const horas = Math.floor(total / 60);
+  if (total <= 0) return '';
+  const horas   = Math.floor(total / 60);
   const minutos = total % 60;
-
   if (horas > 0 && minutos > 0) return `${horas} h ${minutos} min`;
-  if (horas > 0) return `${horas} h`;
-
+  if (horas > 0)                 return `${horas} h`;
   return `${minutos} min`;
 }
 
 const ReservarCita = () => {
-  const { slug } = useParams();
-  const navigate = useNavigate();
+  const { slug }    = useParams();
+  const navigate    = useNavigate();
 
-  const clienteUser = JSON.parse(localStorage.getItem("clienteUser") || "null");
-  const clienteToken = localStorage.getItem("clienteToken");
+  const clienteUser  = JSON.parse(localStorage.getItem('clienteUser') || 'null');
+  const clienteToken = localStorage.getItem('clienteToken');
 
-  const [vista, setVista] = useState("reservar");
+  // REF para hacer scroll hasta la sección de empleados
+  const empleadosRef = useRef(null);
 
-  const [empresa, setEmpresa] = useState(null);
-
-  const [personas, setPersonas] = useState([]);
+  const [vista, setVista]                   = useState('reservar');
+  const [empresa, setEmpresa]               = useState(null);
+  const [personas, setPersonas]             = useState([]);
   const [loadingPersonas, setLoadingPersonas] = useState(true);
-
-  const [servicios, setServicios] = useState([]);
+  const [servicios, setServicios]           = useState([]);
   const [loadingServicios, setLoadingServicios] = useState(true);
-
-  const [misCitas, setMisCitas] = useState([]);
-  const [loadingCitas, setLoadingCitas] = useState(false);
-
-  const [citasOcupadas, setCitasOcupadas] = useState([]);
-
-  const [guardando, setGuardando] = useState(false);
-
-  const [mensaje, setMensaje] = useState("");
-  const [exito, setExito] = useState(false);
+  const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
+  const [busquedaServicio, setBusquedaServicio]         = useState('');
+  const busquedaRef = useRef(null);
+  const [guardando, setGuardando]           = useState(false);
+  const [mensaje, setMensaje]               = useState('');
+  const [exito, setExito]                   = useState(false);
+  const [misCitas, setMisCitas]             = useState([]);
+  const [loadingCitas, setLoadingCitas]     = useState(false);
+  const [citasOcupadas, setCitasOcupadas]   = useState([]);
+  const [citaEditando, setCitaEditando]     = useState(null);
+  const [scrollAlFondo, setScrollAlFondo]   = useState(false);
+  const [scrollAlFondoEmpleados, setScrollAlFondoEmpleados] = useState(false);
 
   const [formulario, setFormulario] = useState({
-    id_encargado: "",
-    encargado: "",
-    titulo: "",
-    fecha: "",
-    hora_inicio: "",
-    hora_final: "",
-    nombre_cliente: clienteUser?.nombre || "",
-    numero_cliente: clienteUser?.telefono || "",
-    motivo: "",
-    color: coloresDisponibles[0],
+    id_encargado:   null,
+    encargado:      '',
+    titulo:         '',
+    fecha:          '',
+    hora_inicio:    '',
+    hora_final:     '',
+    nombre_cliente: clienteUser?.nombre   || '',
+    numero_cliente: clienteUser?.telefono || '',
+    motivo:         '',
+    color:          coloresDisponibles[0],
   });
 
   useEffect(() => {
-    if (!clienteToken) {
-      navigate(`/login-cliente/${slug}`);
-    }
-  }, [clienteToken, navigate, slug]);
+    if (!clienteToken) navigate(`/login-cliente/${slug}`);
+  }, []);
 
   useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const resEmpresa = await fetch(`${API}/api/publico/${slug}`);
-        const empresaData = await resEmpresa.json();
-        setEmpresa(empresaData);
-      } catch {
-        setEmpresa(null);
-      }
+    fetch(`${API}/api/publico/${slug}`)
+      .then(r => r.json()).then(d => setEmpresa(d)).catch(() => setEmpresa(null));
 
-      try {
-        const resPersonas = await fetch(`${API}/api/publico/${slug}/personas`);
-        const data = await resPersonas.json();
-        setPersonas(Array.isArray(data) ? data : []);
-      } catch {
-        setPersonas([]);
-      }
+    setLoadingPersonas(true);
+    fetch(`${API}/api/publico/${slug}/personas`)
+      .then(r => r.json())
+      .then(d => { setPersonas(Array.isArray(d) ? d : []); setLoadingPersonas(false); })
+      .catch(() => { setPersonas([]); setLoadingPersonas(false); });
 
-      setLoadingPersonas(false);
-
-      try {
-        const resServicios = await fetch(`${API}/api/publico/${slug}/servicios`);
-        const data = await resServicios.json();
-        setServicios(Array.isArray(data) ? data : []);
-      } catch {
-        setServicios([]);
-      }
-
-      setLoadingServicios(false);
-    };
-
-    cargarDatos();
+    setLoadingServicios(true);
+    fetch(`${API}/api/publico/${slug}/servicios`)
+      .then(r => r.json())
+      .then(d => { setServicios(Array.isArray(d) ? d : []); setLoadingServicios(false); })
+      .catch(() => { setServicios([]); setLoadingServicios(false); });
   }, [slug]);
 
   useEffect(() => {
-    if (!formulario.id_encargado || !formulario.fecha) {
-      setCitasOcupadas([]);
-      return;
-    }
-
-    const cargarCitas = async () => {
-      try {
-        const res = await fetch(
-          `${API}/api/publico/${slug}/citas-ocupadas?id_persona=${formulario.id_encargado}&fecha=${formulario.fecha}`
-        );
-
-        const data = await res.json();
-        setCitasOcupadas(Array.isArray(data) ? data : []);
-      } catch {
-        setCitasOcupadas([]);
-      }
-    };
-
-    cargarCitas();
-  }, [formulario.id_encargado, formulario.fecha, slug]);
+    const { id_encargado, fecha } = formulario;
+    if (!id_encargado || !fecha) { setCitasOcupadas([]); return; }
+    fetch(`${API}/api/publico/${slug}/citas-ocupadas?id_persona=${id_encargado}&fecha=${fecha}`)
+      .then(r => r.json())
+      .then(d => setCitasOcupadas(Array.isArray(d) ? d : []))
+      .catch(() => setCitasOcupadas([]));
+  }, [formulario.id_encargado, formulario.fecha]);
 
   const cargarMisCitas = async () => {
     setLoadingCitas(true);
-
     try {
-      const res = await fetch(`${API}/api/cliente-auth/mis-citas`, {
-        headers: {
-          Authorization: `Bearer ${clienteToken}`,
-        },
+      const res  = await fetch(`${API}/api/cliente-auth/mis-citas`, {
+        headers: { Authorization: `Bearer ${clienteToken}` }
       });
-
-      if (!res.ok) {
-        setMisCitas([]);
-        setLoadingCitas(false);
-        return;
-      }
-
       const data = await res.json();
       setMisCitas(Array.isArray(data) ? data : []);
-    } catch {
-      setMisCitas([]);
-    }
-
-    setLoadingCitas(false);
+    } catch { setMisCitas([]); }
+    finally  { setLoadingCitas(false); }
   };
 
-  useEffect(() => {
-    if (vista === "mis-citas") {
-      cargarMisCitas();
+  useEffect(() => { if (vista === 'mis-citas') cargarMisCitas(); }, [vista]);
+
+  const handleChange = e => {
+    setFormulario(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setMensaje('');
+  };
+
+  // Toggle: clic en el mismo servicio lo deselecciona
+  const handleSeleccionarServicio = (servicio) => {
+    if (servicioSeleccionado?.id_servicio === servicio.id_servicio) {
+      setServicioSeleccionado(null);
+      setFormulario(prev => ({ ...prev, titulo: '', hora_final: '' }));
+      setMensaje('');
+      return;
     }
-  }, [vista]);
+    setServicioSeleccionado(servicio);
+    let hora_final = formulario.hora_final;
+    if (formulario.hora_inicio && servicio.duracion) {
+      const [hh, mm] = formulario.hora_inicio.split(':').map(Number);
+      const totalMin = hh * 60 + mm + Number(servicio.duracion);
+      const h = String(Math.floor(totalMin / 60) % 24).padStart(2, '0');
+      const m = String(totalMin % 60).padStart(2, '0');
+      hora_final = `${h}:${m}`;
+    }
+    setFormulario(prev => ({ ...prev, titulo: servicio.nombre, hora_final }));
+    setMensaje('');
 
-  const handleChange = (e) => {
+    // Scroll automático hacia la sección de empleados
+    setTimeout(() => {
+      empleadosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const hayConflictoHorario = (hi, hf) => {
+    if (!hi || !hf) return false;
+    return citasOcupadas.some(c => hi < c.hora_final && hf > c.hora_inicio);
+  };
+
+  const horaFinalValida = () => {
+    const { hora_inicio, hora_final } = formulario;
+    if (!hora_inicio || !hora_final) return true;
+    return hora_final > hora_inicio;
+  };
+
+  const handleHoraInicioChange = (e) => {
+    const hora_inicio = e.target.value;
+    let hora_final    = formulario.hora_final;
+    if (hora_inicio && servicioSeleccionado?.duracion) {
+      const [hh, mm] = hora_inicio.split(':').map(Number);
+      const totalMin = hh * 60 + mm + Number(servicioSeleccionado.duracion);
+      const h = String(Math.floor(totalMin / 60) % 24).padStart(2, '0');
+      const m = String(totalMin % 60).padStart(2, '0');
+      hora_final = `${h}:${m}`;
+    }
+    setFormulario(prev => ({ ...prev, hora_inicio, hora_final }));
+    setMensaje('');
+  };
+
+  const handleGuardar = async () => {
+    const { id_encargado, titulo, fecha, hora_inicio, hora_final, nombre_cliente, numero_cliente } = formulario;
+    if (!id_encargado || !titulo || !fecha || !hora_inicio || !hora_final || !nombre_cliente || !numero_cliente) {
+      setMensaje('Por favor completa todos los campos obligatorios.'); return;
+    }
+    if (!horaFinalValida()) { setMensaje('La hora de fin debe ser mayor a la hora de inicio.'); return; }
+    if (hayConflictoHorario(hora_inicio, hora_final)) {
+      setMensaje(`${formulario.encargado} ya tiene una cita en ese horario.`); return;
+    }
+    setGuardando(true);
+    try {
+      const url    = citaEditando
+        ? `${API}/api/cliente-auth/editar-cita/${citaEditando.id_cita}`
+        : `${API}/api/publico/${slug}/citas`;
+      const method = citaEditando ? 'PUT' : 'POST';
+      const res    = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${clienteToken}` },
+        body: JSON.stringify({
+          id_persona:          formulario.id_encargado,
+          id_cliente_registro: clienteUser?.id_cliente,
+          titulo:              formulario.titulo,
+          fecha:               formulario.fecha,
+          hora_inicio:         formulario.hora_inicio,
+          hora_final:          formulario.hora_final,
+          nombre_cliente:      formulario.nombre_cliente,
+          numero_cliente:      formulario.numero_cliente,
+          motivo:              formulario.motivo,
+          color:               formulario.color,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMensaje(data.error || 'Error al guardar'); return; }
+      if (citaEditando) {
+        setCitaEditando(null); setVista('mis-citas'); cargarMisCitas(); resetFormulario();
+      } else { setExito(true); }
+    } catch { setMensaje('Error de conexión'); }
+    finally  { setGuardando(false); }
+  };
+
+  const handleEditar = (cita) => {
+    setCitaEditando(cita);
     setFormulario({
-      ...formulario,
-      [e.target.name]: e.target.value,
+      id_encargado:   cita.id_cliente,
+      encargado:      cita.nombre_encargado || '',
+      titulo:         cita.titulo           || '',
+      fecha:          cita.fecha            || '',
+      hora_inicio:    cita.hora_inicio?.slice(0, 5) || '',
+      hora_final:     cita.hora_final?.slice(0, 5)  || '',
+      nombre_cliente: cita.nombre_cliente   || '',
+      numero_cliente: cita.numero_cliente   || '',
+      motivo:         cita.motivo           || '',
+      color:          cita.color            || coloresDisponibles[0],
     });
+    setVista('reservar');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    setMensaje("");
-    setExito(false);
+  const handleCancelar = async (cita) => {
+    const horasRestantes = (new Date(`${cita.fecha}T${cita.hora_inicio}`) - new Date()) / (1000 * 60 * 60);
+    if (horasRestantes < 3) { alert('Solo puedes cancelar con al menos 3 horas de anticipación.'); return; }
+    if (!window.confirm('¿Cancelar esta cita?')) return;
+    try {
+      const res = await fetch(`${API}/api/cliente-auth/cancelar-cita/${cita.id_cita}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${clienteToken}` }
+      });
+      if (res.ok) cargarMisCitas(); else alert('Error al cancelar la cita');
+    } catch { alert('Error de conexión'); }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("clienteToken");
-    localStorage.removeItem("clienteUser");
+    localStorage.removeItem('clienteToken');
+    localStorage.removeItem('clienteUser');
     navigate(`/login-cliente/${slug}`);
   };
 
-  const guardarCita = async (e) => {
-    e.preventDefault();
-
-    setGuardando(true);
-    setMensaje("");
-    setExito(false);
-
-    try {
-      const res = await fetch(`${API}/api/publico/${slug}/citas`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formulario),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setMensaje(data.message || "Error al guardar cita");
-        setGuardando(false);
-        return;
-      }
-
-      setExito(true);
-
-      setFormulario({
-        ...formulario,
-        fecha: "",
-        hora_inicio: "",
-        hora_final: "",
-        motivo: "",
-      });
-    } catch {
-      setMensaje("Error de conexión con el servidor");
-    }
-
-    setGuardando(false);
+  const resetFormulario = () => {
+    setExito(false); setCitaEditando(null); setCitasOcupadas([]);
+    setServicioSeleccionado(null); setScrollAlFondo(false); setScrollAlFondoEmpleados(false); setBusquedaServicio('');
+    setFormulario({
+      id_encargado: null, encargado: '', titulo: '', fecha: '',
+      hora_inicio: '', hora_final: '',
+      nombre_cliente: clienteUser?.nombre   || '',
+      numero_cliente: clienteUser?.telefono || '',
+      motivo: '', color: coloresDisponibles[0],
+    });
   };
 
-  if (!empresa) {
-    return <div className="rc-loading">Cargando...</div>;
-  }
+  const handleScrollServicios = (e) => {
+    const el = e.target;
+    setScrollAlFondo(el.scrollTop + el.clientHeight >= el.scrollHeight - 10);
+  };
+
+  const handleScrollEmpleados = (e) => {
+    const el = e.target;
+    setScrollAlFondoEmpleados(el.scrollTop + el.clientHeight >= el.scrollHeight - 10);
+  };
+
+  const conflictoEnVivo = hayConflictoHorario(formulario.hora_inicio, formulario.hora_final);
+  const horaInvalida    = !horaFinalValida();
+
+  if (!empresa) return <div className="rc-loading">Cargando...</div>;
+
+  if (exito) return (
+    <div className="rc-exito">
+      {empresa.logo_url && <img src={safeUrl(empresa.logo_url)} alt="logo" className="rc-exito-logo" />}
+      <h2>{empresa.nombre_empresa}</h2>
+      <div className="rc-exito-icono">✅</div>
+      <h3>¡Cita agendada con éxito!</h3>
+      <p>Te esperamos el <strong>{formulario.fecha}</strong> a las <strong>{formulario.hora_inicio}</strong></p>
+      <p style={{ marginTop: 4, fontSize: 13 }}>con <strong>{formulario.encargado}</strong></p>
+      <div className="rc-exito-btns">
+        <button className="rc-btn" onClick={resetFormulario}>Agendar otra cita</button>
+        <button className="rc-btn-outline" onClick={() => { resetFormulario(); setVista('mis-citas'); }}>
+          Ver mis citas
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="rc-container">
       <div className="rc-card">
+
+        {/* HEADER */}
         <div className="rc-header">
-          {empresa.logo_url ? (
-            <img
-              src={safeUrl(empresa.logo_url)}
-              alt="logo"
-              className="rc-logo"
-            />
-          ) : (
-            <div className="rc-logo-placeholder">
-              {empresa.nombre_empresa?.charAt(0)?.toUpperCase()}
-            </div>
-          )}
-
+          {empresa.logo_url
+            ? <img src={safeUrl(empresa.logo_url)} alt="logo" className="rc-logo" />
+            : <div className="rc-logo-placeholder">{empresa.nombre_empresa?.charAt(0).toUpperCase()}</div>
+          }
           <h1 className="rc-empresa">{empresa.nombre_empresa}</h1>
-
-          <p className="rc-bienvenida">
-            Hola, <strong>{clienteUser?.nombre}</strong>
-          </p>
-
+          <p className="rc-bienvenida">Hola, <strong>{clienteUser?.nombre}</strong> 👋</p>
           <div className="rc-tabs">
-            <button
-              className={
-                vista === "reservar" ? "rc-tab rc-tab-activo" : "rc-tab"
-              }
-              onClick={() => setVista("reservar")}
-            >
-              Agendar cita
+            <button className={vista === 'reservar' ? 'rc-tab rc-tab-activo' : 'rc-tab'}
+              onClick={() => { resetFormulario(); setVista('reservar'); }}>
+              📅 {citaEditando ? 'Editando cita' : 'Agendar cita'}
             </button>
-
-            <button
-              className={
-                vista === "mis-citas" ? "rc-tab rc-tab-activo" : "rc-tab"
-              }
-              onClick={() => setVista("mis-citas")}
-            >
-              Mis citas
+            <button className={vista === 'mis-citas' ? 'rc-tab rc-tab-activo' : 'rc-tab'}
+              onClick={() => setVista('mis-citas')}>
+              📋 Mis citas
             </button>
-
-            <button className="rc-tab rc-tab-logout" onClick={handleLogout}>
-              Salir
-            </button>
+            <button className="rc-tab rc-tab-logout" onClick={handleLogout}>Salir</button>
           </div>
         </div>
 
-        {mensaje && <div className="rc-error">{mensaje}</div>}
+        {/* ===== VISTA: RESERVAR ===== */}
+        {vista === 'reservar' && (
+          <div className="rc-form">
 
-        {exito && (
-          <div className="rc-success">
-            Tu cita fue reservada correctamente
+            {citaEditando && (
+              <div style={{
+                background: '#fef3c7', border: '1px solid #f59e0b',
+                borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: '#92400e'
+              }}>
+                ✏️ Estás editando una cita.{' '}
+                <button onClick={resetFormulario}
+                  style={{ background: 'none', border: 'none', color: '#b45309', cursor: 'pointer', textDecoration: 'underline' }}>
+                  Cancelar edición
+                </button>
+              </div>
+            )}
+
+            {/* ── SELECCIÓN DE SERVICIO ── */}
+            <div className="rc-field">
+              <label>Selecciona un servicio *</label>
+
+              {/* BUSCADOR tipo Google */}
+              {!loadingServicios && servicios.length > 0 && (
+                <div className="rc-buscador-wrap">
+                  <span className="rc-buscador-icono">🔍</span>
+                  <input
+                    ref={busquedaRef}
+                    type="text"
+                    className="rc-buscador-input"
+                    placeholder="Buscar servicio..."
+                    value={busquedaServicio}
+                    onChange={e => setBusquedaServicio(e.target.value)}
+                    autoComplete="off"
+                  />
+                  {busquedaServicio && (
+                    <button
+                      type="button"
+                      className="rc-buscador-clear"
+                      onClick={() => { setBusquedaServicio(''); busquedaRef.current?.focus(); }}
+                      aria-label="Limpiar búsqueda"
+                    >✕</button>
+                  )}
+                </div>
+              )}
+
+              {loadingServicios && (
+                <div className="rc-servicios-loading">
+                  {[1,2,3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
+                </div>
+              )}
+
+              {!loadingServicios && servicios.length === 0 && (
+                <div className="rc-empleados-vacio">
+                  <span>🛎️</span>
+                  <p>Este negocio aún no tiene servicios registrados.</p>
+                </div>
+              )}
+
+              {!loadingServicios && servicios.length > 0 && (
+                <div className="rc-servicios-wrapper">
+                  <div className="rc-servicios-scroll" onScroll={handleScrollServicios}>
+                    <div className="rc-servicios-grid">
+                      {servicios
+                        .filter(s =>
+                          !busquedaServicio.trim() ||
+                          s.nombre?.toLowerCase().includes(busquedaServicio.toLowerCase()) ||
+                          s.descripcion?.toLowerCase().includes(busquedaServicio.toLowerCase())
+                        )
+                        .map(s => {
+                        const seleccionado = servicioSeleccionado?.id_servicio === s.id_servicio;
+                        return (
+                          <button
+                            key={s.id_servicio}
+                            type="button"
+                            className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
+                            onClick={() => handleSeleccionarServicio(s)}
+                            aria-pressed={seleccionado}
+                          >
+                            {/* Imagen o placeholder — izquierda */}
+                            <div className="rc-servicio-img-wrap">
+                              {s.imagen_url
+                                ? <img src={safeUrl(s.imagen_url)} alt={s.nombre} className="rc-servicio-img" />
+                                : <div className="rc-servicio-img-placeholder">✂️</div>
+                              }
+                              {seleccionado && <div className="rc-servicio-check">✓</div>}
+                            </div>
+
+                            {/* Texto — centro */}
+                            <div className="rc-servicio-info">
+                              <span className="rc-servicio-nombre">{s.nombre}</span>
+                              {s.descripcion && (
+                                <span className="rc-servicio-desc">{s.descripcion}</span>
+                              )}
+                              <div className="rc-servicio-meta">
+                                {s.duracion && (
+                                  <span className="rc-servicio-duracion">
+                                    ⏱ {formatearDuracion(s.duracion)}
+                                  </span>
+                                )}
+                                {s.precio && (
+                                  <span className="rc-servicio-precio">
+                                    ${parseFloat(s.precio).toFixed(2)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Radio button — derecha */}
+                            <div className="rc-servicio-radio" aria-hidden="true" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Sin resultados de búsqueda */}
+                    {busquedaServicio.trim() &&
+                      servicios.filter(s =>
+                        s.nombre?.toLowerCase().includes(busquedaServicio.toLowerCase()) ||
+                        s.descripcion?.toLowerCase().includes(busquedaServicio.toLowerCase())
+                      ).length === 0 && (
+                      <div className="rc-buscador-sin-resultados">
+                        <span>🔍</span>
+                        <p>No se encontró "<strong>{busquedaServicio}</strong>"</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {servicios.length > 4 && !scrollAlFondo && (
+                    <div className="rc-servicios-scroll-hint">↓ Desliza para ver más</div>
+                  )}
+                </div>
+              )}
+
+              {servicioSeleccionado && (
+                <p className="rc-empleado-resumen">
+                  ✅ Seleccionaste: <strong>{servicioSeleccionado.nombre}</strong>
+                  {servicioSeleccionado.duracion && ` · ${formatearDuracion(servicioSeleccionado.duracion)}`}
+                  <span className="rc-servicio-deselect-hint"> · Toca de nuevo para quitar</span>
+                </p>
+              )}
+            </div>
+
+            {/* ── EMPLEADO ── */}
+            {/* REF agregado aquí para que el scroll llegue a esta sección */}
+            <div className="rc-field" ref={empleadosRef}>
+              <label>¿Con quién quieres tu cita? *</label>
+              {loadingPersonas && (
+                <div className="rc-servicios-loading">
+                  {[1,2,3].map(i => <div key={i} className="rc-servicio-skeleton" />)}
+                </div>
+              )}
+              {!loadingPersonas && personas.length === 0 && (
+                <div className="rc-empleados-vacio">
+                  <span>👥</span>
+                  <p>Esta empresa aún no tiene encargados registrados.</p>
+                </div>
+              )}
+              {!loadingPersonas && personas.length > 0 && (
+                <div className="rc-servicios-wrapper">
+                  <div className="rc-servicios-scroll" onScroll={handleScrollEmpleados}>
+                    <div className="rc-servicios-grid">
+                      {personas.map(p => {
+                        const seleccionado = formulario.id_encargado === p.id_persona;
+                        const colorAvatar  = `hsl(${(p.id_persona * 67) % 360}, 45%, 60%)`;
+                        return (
+                          <button key={p.id_persona} type="button"
+                            className={`rc-servicio-card ${seleccionado ? 'rc-servicio-seleccionado' : ''}`}
+                            onClick={() => {
+                              if (formulario.id_encargado === p.id_persona) {
+                                setFormulario(prev => ({ ...prev, id_encargado: null, encargado: '' }));
+                              } else {
+                                setFormulario(prev => ({ ...prev, id_encargado: p.id_persona, encargado: p.nombre }));
+                              }
+                              setMensaje('');
+                            }}
+                            aria-pressed={seleccionado}
+                          >
+                            {/* Avatar circular — izquierda */}
+                            <div className="rc-servicio-img-wrap">
+                              {p.foto_url
+                                ? <img src={safeUrl(p.foto_url)} alt={p.nombre} className="rc-servicio-img"
+                                    style={{ borderRadius: '50%' }} />
+                                : <div className="rc-servicio-img-placeholder"
+                                    style={{
+                                      background: colorAvatar,
+                                      borderRadius: '50%',
+                                      color: 'white',
+                                      fontSize: 22,
+                                      fontWeight: 800,
+                                    }}>
+                                    {p.nombre?.charAt(0).toUpperCase()}
+                                  </div>
+                              }
+                              {seleccionado && <div className="rc-servicio-check" style={{ borderRadius: '50%' }}>✓</div>}
+                            </div>
+
+                            {/* Texto — centro */}
+                            <div className="rc-servicio-info">
+                              <span className="rc-servicio-nombre">{p.nombre}</span>
+                              {p.especialidad && (
+                                <span className="rc-servicio-desc">{p.especialidad}</span>
+                              )}
+                            </div>
+
+                            {/* Radio — derecha */}
+                            <div className="rc-servicio-radio" aria-hidden="true" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {personas.length > 3 && !scrollAlFondoEmpleados && (
+                    <div className="rc-servicios-scroll-hint">↓ Desliza para ver más</div>
+                  )}
+                </div>
+              )}
+              {formulario.encargado && (
+                <p className="rc-empleado-resumen">
+                  ✅ Seleccionaste a <strong>{formulario.encargado}</strong>
+                  <span className="rc-servicio-deselect-hint"> · Toca de nuevo para quitar</span>
+                </p>
+              )}
+            </div>
+
+            {/* ── FECHA ── */}
+            <div className="rc-field">
+              <label>Fecha *</label>
+              <input type="date" name="fecha" value={formulario.fecha} onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]} />
+            </div>
+
+            {citasOcupadas.length > 0 && formulario.fecha && (
+              <div className="rc-horarios-ocupados">
+                <p>⚠️ Horarios ocupados con <strong>{formulario.encargado}</strong> ese día:</p>
+                <div className="rc-horarios-lista">
+                  {citasOcupadas.map((c, i) => (
+                    <span key={i} className="rc-horario-badge">
+                      {c.hora_inicio?.slice(0,5)} – {c.hora_final?.slice(0,5)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── HORARIOS ── */}
+            <div className="rc-row">
+              <div className="rc-field">
+                <label>Hora inicio *</label>
+                <input type="time" name="hora_inicio" value={formulario.hora_inicio}
+                  onChange={handleHoraInicioChange}
+                  className={conflictoEnVivo ? 'rc-input-error' : ''} />
+              </div>
+              <div className="rc-field">
+                <label>Hora fin *{servicioSeleccionado?.duracion ? ' (calculada)' : ''}</label>
+                <input type="time" name="hora_final" value={formulario.hora_final}
+                  onChange={handleChange}
+                  className={conflictoEnVivo || horaInvalida ? 'rc-input-error' : ''}
+                  readOnly={!!servicioSeleccionado?.duracion} />
+              </div>
+            </div>
+
+            {conflictoEnVivo && <p className="rc-aviso-conflicto">⚠️ Horario ocupado. Elige otro horario.</p>}
+            {horaInvalida    && <p className="rc-aviso-conflicto">⚠️ La hora de fin debe ser mayor a la de inicio.</p>}
+
+            <div className="rc-field">
+              <label>Tu nombre *</label>
+              <input name="nombre_cliente" value={formulario.nombre_cliente} onChange={handleChange} />
+            </div>
+
+            <div className="rc-field">
+              <label>Tu teléfono *</label>
+              <input name="numero_cliente" value={formulario.numero_cliente} onChange={handleChange} />
+            </div>
+
+            <div className="rc-field">
+              <label>Comentario</label>
+              <input name="motivo" placeholder="Opcional" value={formulario.motivo} onChange={handleChange} />
+            </div>
+
+            <div className="rc-field">
+              <label>Color de tu cita</label>
+              <div className="rc-colores">
+                {coloresDisponibles.map(c => (
+                  <span key={c}
+                    className={`rc-color ${formulario.color === c ? 'rc-color-activo' : ''}`}
+                    style={{ backgroundColor: c }}
+                    onClick={() => setFormulario(prev => ({ ...prev, color: c }))}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {mensaje && <p className="rc-mensaje-error">{mensaje}</p>}
+
+            <button className="rc-btn" onClick={handleGuardar}
+              disabled={guardando || conflictoEnVivo || horaInvalida}>
+              {guardando ? 'Guardando...' : citaEditando ? '💾 Guardar cambios' : 'Confirmar cita'}
+            </button>
           </div>
         )}
 
-        {vista === "reservar" && (
-          <form className="rc-form" onSubmit={guardarCita}>
-            <input
-              type="date"
-              name="fecha"
-              value={formulario.fecha}
-              onChange={handleChange}
-              required
-            />
-
-            <input
-              type="time"
-              name="hora_inicio"
-              value={formulario.hora_inicio}
-              onChange={handleChange}
-              required
-            />
-
-            <input
-              type="time"
-              name="hora_final"
-              value={formulario.hora_final}
-              onChange={handleChange}
-              required
-            />
-
-            <textarea
-              name="motivo"
-              placeholder="Motivo"
-              value={formulario.motivo}
-              onChange={handleChange}
-            />
-
-            <button disabled={guardando}>
-              {guardando ? "Guardando..." : "Reservar cita"}
-            </button>
-          </form>
+        {/* ===== VISTA: MIS CITAS ===== */}
+        {vista === 'mis-citas' && (
+          <div className="rc-mis-citas">
+            {loadingCitas ? (
+              <p className="rc-loading-txt">Cargando citas...</p>
+            ) : misCitas.length === 0 ? (
+              <div className="rc-vacio">
+                <p>No tienes citas registradas</p>
+                <button className="rc-btn" onClick={() => setVista('reservar')}>Agendar mi primera cita</button>
+              </div>
+            ) : (
+              misCitas.map(cita => {
+                const citaDate       = new Date(`${cita.fecha}T${cita.hora_inicio}`);
+                const pasada         = citaDate < new Date();
+                const horasRestantes = (citaDate - new Date()) / (1000 * 60 * 60);
+                const puedeModificar = !pasada && horasRestantes >= 3;
+                return (
+                  <div key={cita.id_cita}
+                    className={`rc-cita-card ${pasada ? 'rc-cita-pasada' : ''}`}
+                    style={{ borderLeft: `4px solid ${cita.color || '#3b82f6'}` }}>
+                    <div className="rc-cita-header">
+                      <strong>{cita.titulo}</strong>
+                      <span className={`rc-badge ${pasada ? 'rc-badge-pasada' : 'rc-badge-proxima'}`}>
+                        {pasada ? 'Pasada' : 'Próxima'}
+                      </span>
+                    </div>
+                    <p>📅 {cita.fecha} · ⏰ {cita.hora_inicio?.slice(0,5)} – {cita.hora_final?.slice(0,5)}</p>
+                    {cita.nombre_encargado && <p>👤 {cita.nombre_encargado}</p>}
+                    {cita.motivo && <p>💬 {cita.motivo}</p>}
+                    {!pasada && (
+                      puedeModificar ? (
+                        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                          <button className="rc-btn-editar"   onClick={() => handleEditar(cita)}>✏️ Editar</button>
+                          <button className="rc-btn-cancelar" onClick={() => handleCancelar(cita)}>🗑 Cancelar</button>
+                        </div>
+                      ) : (
+                        <p className="rc-aviso-cancelar">🔒 Solo se puede modificar con 3+ horas de anticipación</p>
+                      )
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         )}
+
       </div>
     </div>
   );
