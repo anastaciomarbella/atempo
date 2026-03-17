@@ -6,8 +6,10 @@ import "../styles/login.css";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const initialForm = { correo: "", password: "" };
   const [form, setForm] = useState(initialForm);
@@ -19,6 +21,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.correo || !form.password) {
       setError("Todos los campos son obligatorios");
       return;
@@ -49,7 +52,6 @@ export default function Login() {
         return;
       }
 
-      // 🔍 DEBUG TEMPORAL — borra estas líneas una vez que funcione el logo
       console.log("✅ Respuesta del login:", data);
       console.log("🖼️ logo_url recibido:", data.usuario?.logo_url);
 
@@ -75,13 +77,17 @@ export default function Login() {
     <div className="login-container">
       <div className="login-card show">
 
+        {/* Logo */}
         <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img
             src={logo}
             alt="Logo"
             style={{
-              width: "90px", height: "90px", borderRadius: "50%",
-              objectFit: "cover", marginBottom: "10px",
+              width: "90px",
+              height: "90px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: "10px",
               boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
             }}
           />
@@ -89,33 +95,63 @@ export default function Login() {
           <h2 className="login-subtitle">Iniciar sesión</h2>
         </div>
 
+        {/* Formulario */}
         <form onSubmit={handleSubmit} autoComplete="off">
+
+          {/* Correo */}
           <div className="input-group">
             <input
-              type="email" name="correo" className="login-input"
-              placeholder=" " value={form.correo} onChange={handleChange} required
+              type="email"
+              name="correo"
+              className="login-input"
+              placeholder=" "
+              value={form.correo}
+              onChange={handleChange}
+              required
             />
             <label className="floating-label-text">Correo</label>
           </div>
 
-          <div className="input-group">
+          {/* Contraseña con ojito */}
+          <div className="input-group password-group">
             <input
-              type="password" name="password" className="login-input"
-              placeholder=" " value={form.password} onChange={handleChange} required
+              type={showPassword ? "text" : "password"}
+              name="password"
+              className="login-input"
+              placeholder=" "
+              value={form.password}
+              onChange={handleChange}
+              required
             />
             <label className="floating-label-text">Contraseña</label>
+
+            <span
+              className="toggle-password"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </span>
           </div>
 
+          {/* Error */}
           {error && <div className="login-error">{error}</div>}
 
-          <button type="submit" className="login-button" disabled={loading}>
+          {/* Botón */}
+          <button
+            type="submit"
+            className="login-button"
+            disabled={loading}
+          >
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
 
+        {/* Footer */}
         <div className="login-footer">
           ¿No tienes cuenta?{" "}
-          <Link to="/register" className="login-link">Crear cuenta</Link>
+          <Link to="/register" className="login-link">
+            Crear cuenta
+          </Link>
         </div>
 
       </div>
