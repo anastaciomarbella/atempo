@@ -338,3 +338,100 @@
   margin: 4px 0;
   color: #a78bfa;
 }
+
+
+
+/*Responsivo*/
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* 📱 Tablets */
+@media (max-width: 1024px) {
+  .agendar-overlay {
+    left: 0;
+    width: 100%;
+  }
+
+  .agendar-modal {
+    left: 50%;
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+  }
+
+  .agendar-formulario {
+    grid-template-columns: 1fr; /* una sola columna */
+  }
+
+  .agendar-fila {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .agendar-fila > div {
+    margin: 0;
+  }
+
+  .agendar-colores {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .agendar-color {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* 📱 Celulares */
+@media (max-width: 600px) {
+  .agendar-modal {
+    width: 95%;
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .agendar-titulo-modal {
+    font-size: 18px;
+  }
+
+  .agendar-formulario input,
+  .agendar-formulario select,
+  .agendar-formulario textarea {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .agendar-btn-guardar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .agendar-botones {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .agendar-btn-eliminar,
+  .agendar-btn-cancelar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dropdown-lista {
+    max-height: 120px;
+  }
+}
+
+/* 📱 Pantallas muy pequeñas */
+@media (max-width: 400px) {
+  .agendar-modal {
+    padding: 15px;
+  }
+
+  .agendar-color {
+    width: 45px;
+    height: 45px;
+  }
+}
