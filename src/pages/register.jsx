@@ -8,8 +8,8 @@ export default function Register() {
   const navigate = useNavigate();
 
   const [verPassword, setVerPassword] = useState(false);
-  const [loading, setLoading]         = useState(false);
-  const [correoTocado, setCorreoTocado] = useState(false); // ← NUEVO
+  const [loading, setLoading] = useState(false);
+  const [correoTocado, setCorreoTocado] = useState(false);
 
   const initialForm = {
     nombre: "",
@@ -25,26 +25,19 @@ export default function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // VALIDAR CORREO
   const validarCorreo = (correo) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(correo);
   };
 
-  // Estado derivado del correo ─────────────────────────────────────────────
-  // "vacio"   → el campo está vacío
-  // "invalido"→ tiene texto pero no es correo válido
-  // "valido"  → pasa el regex
   const estadoCorreo = !form.correo
     ? "vacio"
     : validarCorreo(form.correo)
     ? "valido"
     : "invalido";
 
-  // VALIDAR TELEFONO
   const validarTelefono = (telefono) => /^[0-9]{10}$/.test(telefono);
 
-  // VALIDAR PASSWORD
   const validarPassword = (password) =>
     /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
@@ -57,8 +50,9 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+
     setLoading(true);
-    setCorreoTocado(true); // fuerza mostrar error si aún está vacío al enviar
+    setCorreoTocado(true);
 
     if (!validarCorreo(form.correo)) {
       Swal.fire({ icon: "error", title: "Correo inválido", text: "Ingresa un correo válido" });
@@ -73,7 +67,11 @@ export default function Register() {
     }
 
     if (!validarPassword(form.password)) {
-      Swal.fire({ icon: "error", title: "Contraseña insegura", text: "Debe tener mínimo 8 caracteres, una mayúscula y un número" });
+      Swal.fire({
+        icon: "error",
+        title: "Contraseña insegura",
+        text: "Debe tener mínimo 8 caracteres, una mayúscula y un número",
+      });
       setLoading(false);
       return;
     }
@@ -82,13 +80,7 @@ export default function Register() {
       const res = await fetch("https://mi-api-atempo.onrender.com/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre:        form.nombre,
-          nombreEmpresa: form.nombreEmpresa,
-          correo:        form.correo,
-          telefono:      form.telefono,
-          password:      form.password,
-        }),
+        body: JSON.stringify(form),
       });
 
       const data = await res.json();
@@ -110,6 +102,7 @@ export default function Register() {
       });
 
       navigate("/login");
+
     } catch {
       Swal.fire({ icon: "error", title: "Error de conexión", text: "No se pudo conectar con el servidor" });
     } finally {
@@ -121,11 +114,18 @@ export default function Register() {
     <div className="login-container">
       <div className="login-card show">
 
+        {/* Logo */}
         <div style={{ textAlign: "center", marginTop: "20px" }}>
           <img
             src={logo}
             alt="Logo"
-            style={{ width: "70px", height: "70px", borderRadius: "50%", objectFit: "cover", marginBottom: "10px" }}
+            style={{
+              width: "70px",
+              height: "70px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: "10px",
+            }}
           />
           <h1 className="login-title">Citalia</h1>
           <h2 className="login-subtitle">Crear cuenta</h2>
@@ -147,7 +147,7 @@ export default function Register() {
             <label className="floating-label-text">Nombre de la empresa</label>
           </div>
 
-          {/* ── Correo con validación en tiempo real ── */}
+          {/* Correo */}
           <div className={`input-group correo-group ${correoTocado && estadoCorreo !== "vacio" ? `correo--${estadoCorreo}` : ""}`}>
             <input
               type="email"
@@ -157,23 +157,21 @@ export default function Register() {
               value={form.correo}
               onChange={(e) => {
                 handleChange(e);
-                setCorreoTocado(true); // activa feedback apenas empieza a escribir
+                setCorreoTocado(true);
               }}
               required
             />
             <label className="floating-label-text">Correo</label>
 
-            {/* Ícono de estado */}
             {correoTocado && estadoCorreo === "valido" && (
-              <span className="correo-icono correo-icono--ok" title="Correo válido">✔</span>
+              <span className="correo-icono correo-icono--ok">✔</span>
             )}
             {correoTocado && estadoCorreo === "invalido" && (
-              <span className="correo-icono correo-icono--err" title="Correo inválido">✖</span>
+              <span className="correo-icono correo-icono--err">✖</span>
             )}
 
-            {/* Mensaje de error inline */}
             {correoTocado && estadoCorreo === "invalido" && (
-              <p className="correo-hint">Ingresa un correo válido (ej: nombre@dominio.com)</p>
+              <p className="correo-hint">Ingresa un correo válido</p>
             )}
           </div>
 
@@ -195,7 +193,7 @@ export default function Register() {
             <label className="floating-label-text">Teléfono</label>
           </div>
 
-          {/* Contraseña */}
+          {/* Contraseña con ojito */}
           <div className="input-group password-group">
             <input
               type={verPassword ? "text" : "password"}
@@ -204,13 +202,16 @@ export default function Register() {
               placeholder=" "
               value={form.password}
               onChange={handleChange}
-              minLength={8}
               required
             />
             <label className="floating-label-text">Contraseña</label>
-            <button type="button" className="toggle-password" onClick={() => setVerPassword(!verPassword)}>
-              {verPassword ? "Ocultar" : "Ver"}
-            </button>
+
+            <span
+              className="toggle-password"
+              onClick={() => setVerPassword(!verPassword)}
+            >
+              {verPassword ? "🙈" : "👁️"}
+            </span>
           </div>
 
           <button type="submit" className="login-button" disabled={loading}>
@@ -221,7 +222,9 @@ export default function Register() {
 
         <div className="login-footer">
           ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="login-link">Inicia sesión</Link>
+          <Link to="/login" className="login-link">
+            Inicia sesión
+          </Link>
         </div>
 
       </div>
